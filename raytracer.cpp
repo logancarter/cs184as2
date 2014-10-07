@@ -1,6 +1,8 @@
 #include <iostream>
 #include <Eigen/Dense>
 #include "Vectorz.h"
+#include <fstream>
+#include <string>
 
 using namespace std;
 using Eigen::MatrixXd;
@@ -107,6 +109,19 @@ void myKeyboard(unsigned char key, int x, int y) {
 
 
 int main(int argc, char *argv[]) {
+  string STRING;
+  ifstream infile;
+  infile.open (argv[1]);
+  cout<< argv[1];
+        while(!infile.eof()) // To get you all the lines.
+        {
+          getline(infile,STRING); // Current line saved in String
+         // if (strncmp(STRING[0], "cam", strnlen(STRING[0]) * sizeof(char))== 0) {
+         //   cout<<"IT IS CAM";
+         // }
+         // cout<<STRING; // Prints our STRING.
+        }
+  infile.close();
 
   //*******************************
   // ARGUMENT PARSER
