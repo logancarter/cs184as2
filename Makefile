@@ -11,12 +11,14 @@ endif
 	
 RM = /bin/rm -f 
 all: main 
-main: raytracer.o Vectorz.o
-	$(CC) $(CFLAGS) -o raytracer raytracer.o Vectorz.o $(LDFLAGS) 
-raytracer.o: raytracer.cpp Vectorz.h
+main: raytracer.o Util.o
+	$(CC) $(CFLAGS) -o raytracer raytracer.o Util.o $(LDFLAGS) 
+raytracer.o: raytracer.cpp Util.h
 	$(CC) $(CFLAGS) -c raytracer.cpp -o raytracer.o
-Vectorz.o: Vectorz.cpp Vectorz.h
-	$(CC) $(CFLAGS) -c Vectorz.cpp -o Vectorz.o
+# Vectorz.o: Vectorz.cpp Vectorz.h
+	# $(CC) $(CFLAGS) -c Vectorz.cpp -o Vectorz.o
+Util.o: Util.cpp Util.h
+	$(CC) $(CFLAGS) -c Util.cpp -o Util.o
 clean: 
 	$(RM) *.o raytracer
  
