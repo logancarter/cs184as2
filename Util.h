@@ -174,12 +174,15 @@ class Point {
 //****************************************************
 
 class Ray {
-	Point pos;
-	Vectorz dir;
+	// Point pos;
+	// Vectorz dir;
 	GLfloat t_min, t_max;
+	Vector4f pos;
+	Vector4f dir;
 
 public:
 	// ray(t) = pos + t * dir
+	Ray();
 
 };
 
@@ -188,21 +191,64 @@ public:
 // SCENE
 //****************************************************
 
-// class Scene
-// {
-//   public:
+class Scene
+{
+  public:
+  	void render();
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
 //   private:
 //     std::vector<Primitive> primitives;
 //     std::vector<Light> lights;
-// };
+};
 
 
+//****************************************************
+// CAMERA
+//****************************************************
+
+class Camera
+{
+	GLfloat eye_x, eye_y, eye_z;
+	int width, height;
+	// TODO: mapping from for the input corners to output size
+
+public:
+	GLfloat getX() { return eye_x; }
+	GLfloat getY() { return eye_y; }
+	GLfloat getZ() { return eye_z; }
+	Vector4f get_eye() { 
+		static GLfloat arr[3] = {eye_x, eye_y, eye_z};
+		return arr;
+	}
+
+};
 
 
+//****************************************************
+// SAMPLE
+//****************************************************
+
+class Sample {
+	GLfloat x, y;
+
+public:
+	GLfloat getX() { return x; }
+	GLfloat getY() { return y; }
+	setX(GLfloat val) { x = val; }
+	setY(GLfloat val) { y = val; }
+};
 
 
+//****************************************************
+// SAMPLER
+//****************************************************
+
+class Sampler {
+	int width, height;
+
+
+};
 
 
 
