@@ -24,4 +24,4 @@ clean:
  
 
 
-# g++ -o main main.cpp -O2 -lm -lpthread -L/opt/X11/lib -lm -lpthread -lX11 -I/usr/X11R6/include
+#g++ -o main main.cpp -O2 -lm -lpthread -L/opt/X11/lib -lm -lpthread -lX11 -I/usr/X11R6/include
