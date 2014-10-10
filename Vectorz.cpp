@@ -1,4 +1,5 @@
 #include "Vectorz.h"
+#include <Eigen/Dense>
 
 #include <cstdlib>
 #include <memory>

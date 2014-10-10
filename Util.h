@@ -18,13 +18,13 @@
 #include <sys/time.h>
 #endif
 
-#ifdef OSX
-#include <GLUT/glut.h>
-#include <OpenGL/glu.h>
-#else
-#include <GL/glut.h>
-#include <GL/glu.h>
-#endif
+// #ifdef OSX
+// #include <GLUT/glut.h>
+// #include <OpenGL/glu.h>
+// #else
+// #include <GL/glut.h>
+// #include <GL/glu.h>
+// #endif
 
 #include <time.h>
 #include <math.h>
@@ -41,23 +41,23 @@ using namespace Eigen;
 
 class Vectorz
 {
-  GLfloat x, y, z;
+  float x, y, z;
   
     public:
       Vectorz() {x = y = z = 0;}
       // virtual ~Vectorz(){}
-      Vectorz(GLfloat r, GLfloat g, GLfloat b);
-      GLfloat getX() {return x;}
-      GLfloat getY() {return y;}
-      GLfloat getZ() {return z;}
-      void setX(GLfloat val) {x = val;}
-      void setY(GLfloat val) {y = val;}
-      void setZ(GLfloat val) {z = val;}
-      void setValues(GLfloat x1, GLfloat y1, GLfloat z1);
+      Vectorz(float r, float g, float b);
+      float getX() {return x;}
+      float getY() {return y;}
+      float getZ() {return z;}
+      void setX(float val) {x = val;}
+      void setY(float val) {y = val;}
+      void setZ(float val) {z = val;}
+      void setValues(float x1, float y1, float z1);
       Vectorz flip();
-      GLfloat length() {return sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());}
+      float length() {return sqrt(getX() * getX() + getY() * getY() + getZ() * getZ());}
       Vectorz normalize();
-      static GLfloat dot(Vectorz v1, Vectorz v2) {return v1.getX() * v2.getX() + v1.getY() * v2.getY() + v1.getZ() * v2.getZ();}
+      static float dot(Vectorz v1, Vectorz v2) {return v1.getX() * v2.getX() + v1.getY() * v2.getY() + v1.getZ() * v2.getZ();}
       static Vectorz add(Vectorz v1, Vectorz v2) {
         Vectorz res;
         res.setX(v1.getX()+v2.getX());
@@ -82,7 +82,7 @@ class Vectorz
         return res;
       }
 
-      static Vectorz scale(Vectorz v1, GLfloat val) {
+      static Vectorz scale(Vectorz v1, float val) {
         Vectorz res;
         res.setX(v1.getX()*val);
         res.setY(v1.getY()*val);
@@ -104,11 +104,11 @@ class Vectorz
 //****************************************************
 
 class Matrixz {
-	GLfloat mat[4][4];
+	float mat[4][4];
 
 	public:
 		Matrixz();
-		GLfloat** getMatrix();
+		float** getMatrix();
 		Matrixz createRotation();
 		Matrixz createTranslation();
 		Matrixz createScaling();
@@ -122,8 +122,8 @@ class Matrixz {
 
 class Light {
   public:
-    GLfloat r, g, b, x, y, z;
-    void setValues(GLfloat x1, GLfloat y1, GLfloat z1, GLfloat r1, GLfloat g1, GLfloat b1) {
+    float r, g, b, x, y, z;
+    void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
       x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
     }
     virtual int isDLight() { return 30; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
@@ -149,23 +149,23 @@ public:
 //****************************************************
 
 class Point {
-	GLfloat x, y, z;
+	float x, y, z;
   
     public:
       Point() {x = y = z = 0;}
       // virtual ~Vectorz(){}
-      Point(GLfloat r, GLfloat g, GLfloat b) {
+      Point(float r, float g, float b) {
       	x = r; 
  		y = g; 
  		z = b;
       }
-      GLfloat getX() {return x;}
-      GLfloat getY() {return y;}
-      GLfloat getZ() {return z;}
-      void setX(GLfloat val) {x = val;}
-      void setY(GLfloat val) {y = val;}
-      void setZ(GLfloat val) {z = val;}
-      void setValues(GLfloat x1, GLfloat y1, GLfloat z1);
+      float getX() {return x;}
+      float getY() {return y;}
+      float getZ() {return z;}
+      void setX(float val) {x = val;}
+      void setY(float val) {y = val;}
+      void setZ(float val) {z = val;}
+      void setValues(float x1, float y1, float z1);
 };
 
 
@@ -176,7 +176,7 @@ class Point {
 class Ray {
 	// Point pos;
 	// Vectorz dir;
-	GLfloat t_min, t_max;
+	float t_min, t_max;
 	Vector4f pos;
 	Vector4f dir;
 
@@ -209,16 +209,18 @@ class Scene
 
 class Camera
 {
-	GLfloat eye_x, eye_y, eye_z;
+	float eye_x, eye_y, eye_z;
 	int width, height;
 	// TODO: mapping from for the input corners to output size
 
 public:
-	GLfloat getX() { return eye_x; }
-	GLfloat getY() { return eye_y; }
-	GLfloat getZ() { return eye_z; }
-	Vector4f get_eye() { 
-		static GLfloat arr[3] = {eye_x, eye_y, eye_z};
+	Camera(); // four corners, width, height, eye
+	float getX() { return eye_x; }
+	float getY() { return eye_y; }
+	float getZ() { return eye_z; }
+	// Vector4f get_eye() { 
+	float* get_eye() {
+		static float arr[3] = {eye_x, eye_y, eye_z};
 		return arr;
 	}
 
@@ -230,13 +232,13 @@ public:
 //****************************************************
 
 class Sample {
-	GLfloat x, y;
+	float x, y;
 
 public:
-	GLfloat getX() { return x; }
-	GLfloat getY() { return y; }
-	setX(GLfloat val) { x = val; }
-	setY(GLfloat val) { y = val; }
+	float getX() { return x; }
+	float getY() { return y; }
+	void setX(float val) { x = val; }
+	void setY(float val) { y = val; }
 };
 
 
