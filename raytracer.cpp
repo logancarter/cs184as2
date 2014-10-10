@@ -58,48 +58,6 @@ Viewport  viewport;
 
 
 //****************************************************
-// Simple init function
-//****************************************************
-void initScene(){
-
-  // Nothing to do here for this simple example.
-
-}
-
-//****************************************************
-// reshape viewport if the window is resized
-//****************************************************
-// void myReshape(int w, int h) {
-//   viewport.w = w;
-//   viewport.h = h;
-
-//   glViewport (0,0,viewport.w,viewport.h);
-//   glMatrixMode(GL_PROJECTION);
-//   glLoadIdentity();
-//   gluOrtho2D(0, viewport.w, 0, viewport.h);
-
-// }
-
-//****************************************************
-// function that does the actual drawing of stuff
-//***************************************************
-// void myDisplay() {
-
-//   glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
-
-//   glMatrixMode(GL_MODELVIEW);             // indicate we are specifying camera transformations
-//   glLoadIdentity();               // make sure transformation is "zero'd"
-
-
-//   // Start drawing
-//   // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-//   // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
-
-//   glFlush();
-//   glutSwapBuffers();          // swap buffers (we earlier set double buffer)
-// }
-
-//****************************************************
 // function that handles keyboard callback
 //****************************************************
 void myKeyboard(unsigned char key, int x, int y) {
@@ -275,7 +233,19 @@ int main(int argc, char *argv[]) {
        }
   infile.close();
 
-  CImg<unsigned char> image("milla.bmp"), visu(500,400,1,3,0); 
-  image.display("Hello, milla!");
+  CImg<unsigned char> image(500,500, 1,3, 0); 
+  // CImg<double> image("milla.bmp");
+  // CImg<double> visu(image.width(),image.height(),1,3, 0); 
+  const double red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
+  for (int i=0;i<image.width();i++) {
+    for (int j=0;j<image.height();j++) {
+      for (int k=0;k<3;k++) {
+        // visu(i,j,0,k)=image(i,j,0,k)*5; 
+        image(i, j, 0, k) = 100;
+      }
+    }
+  }
+  // image.display("Hello, milla!");
+  image.display("Dark!");
   return 0;
 }
