@@ -189,20 +189,7 @@ public:
 };
 
 
-//****************************************************
-// SCENE
-//****************************************************
 
-class Scene
-{
-  public:
-  	void render();
-//     ...
-//     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
-//   private:
-//     std::vector<Primitive> primitives;
-//     std::vector<Light> lights;
-};
 
 
 //****************************************************
@@ -254,6 +241,7 @@ public:
 class Sampler {
 	int width, height, curr_x, curr_y, done;
 public:
+  Sampler();
 	Sampler(int w, int h);
 	Sample getNextSample();
 	int getWidth() { return width; }
@@ -271,12 +259,31 @@ class Film {
 	CImg<float> image;
 public:
 	// v refers to the RGB (R=0, G=1, B=2)
+  Film();
 	Film(int w, int h, int z, int v, int default_color);
 	void setPixel(int x, int y, int z, int v, int color);
 	void displayToScreen();
 };
 
 
+//****************************************************
+// SCENE
+//****************************************************
+
+class Scene
+{
+  Sampler sampler;
+  Film film;
+
+  public:
+    Scene(Sampler &s, Film &f);
+    void render();
+//     ...
+//     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
+//   private:
+//     std::vector<Primitive> primitives;
+//     std::vector<Light> lights;
+};
 
 
 

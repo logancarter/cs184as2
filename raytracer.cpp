@@ -236,15 +236,17 @@ int main(int argc, char *argv[]) {
   int width = 500;
   int height = 500;
   Sampler sampler = *(new Sampler(width, height));
-  CImg<float> image(width, height, 1, 3, 0); 
+  // CImg<float> image(width, height, 1, 3, 0); 
   Film film = *(new Film(width, height, 1, 3, 0));
-  while (!sampler.isDone()) {
-    Sample sample = sampler.getNextSample();
-    for (int i = 0; i < 3; i++) {
-      film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
-    }
-  }
-  film.displayToScreen();
+  // while (!sampler.isDone()) {
+  //   Sample sample = sampler.getNextSample();
+  //   for (int i = 0; i < 3; i++) {
+  //     film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
+  //   }
+  // }
+  // film.displayToScreen();
+  Scene scene = *(new Scene(sampler, film));
+  scene.render();
 
 
   // const float red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };

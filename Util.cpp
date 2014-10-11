@@ -111,20 +111,7 @@ void Point::setValues(float x1, float y1, float z1) {
 // };
 
 
-//****************************************************
-// SCENE
-//****************************************************
 
-// class Scene
-// {
-//   public:
-//   	void render(); while (!Sampler.done())
-// //     ...
-// //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
-// //   private:
-// //     std::vector<Primitive> primitives;
-// //     std::vector<Light> lights;
-// };
 
 
 //****************************************************
@@ -166,6 +153,12 @@ Sample::Sample(float xval, float yval, float default_color) {
 // SAMPLER (TODO: Discuss whether we need this extra wasted space, rather than working with CImg directly)
 //****************************************************
 
+Sampler::Sampler() {
+	width = 1000;
+	height = 500;
+	curr_x = curr_y = done = 0;
+}
+
 Sampler::Sampler(int w, int h) {
 	width = w;
 	height = h;
@@ -181,7 +174,12 @@ Sample Sampler::getNextSample() {
 			done = 1;
 		}
 	}
-	return *(new Sample(curr_x, curr_y, 0));
+	int color = 0;
+	// Test...later add the function that will calculate color.
+	// if (curr_x > 200 && curr_x < 300) {
+	// 	color = 243;
+	// }
+	return *(new Sample(curr_x, curr_y, color));
 }
 
 
@@ -189,6 +187,10 @@ Sample Sampler::getNextSample() {
 //****************************************************
 // FILM
 //****************************************************
+
+Film::Film() {
+	image.assign(1000, 500, 1, 3, 0); 
+}
 
 Film::Film(int w, int h, int z, int v, int default_color) {
 	image.assign(w, h, z, v, default_color); 
@@ -200,6 +202,26 @@ void Film::setPixel(int x, int y, int z, int v, int color) {
 
 void Film::displayToScreen() {
 	image.display();
+}
+
+
+//****************************************************
+// SCENE
+//****************************************************
+
+Scene::Scene(Sampler &s, Film& f) {
+	sampler = s;
+	film = f;
+
+}
+void Scene::render() {
+	while (!sampler.isDone()) {
+	    Sample sample = sampler.getNextSample();
+	    for (int i = 0; i < 3; i++) {
+	    	film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
+	    }
+  	}
+  	film.displayToScreen();
 }
 
 
