@@ -28,12 +28,14 @@
 
 #include <time.h>
 #include <math.h>
+#include "CImg.h"
 
 #define PI 3.14159265  // Should be used from mathlib
 inline float sqr(float x) { return x*x; }
 
 using namespace std;
 using namespace Eigen;
+using namespace cimg_library; 
 
 //****************************************************
 // VECTORZ
@@ -232,26 +234,47 @@ public:
 //****************************************************
 
 class Sample {
-	float x, y;
+	float x, y, color;
 
 public:
+	Sample(float xval, float yval, float default_color);
 	float getX() { return x; }
 	float getY() { return y; }
+  float getColor() { return color; }
 	void setX(float val) { x = val; }
 	void setY(float val) { y = val; }
+	void setColor(float val) { color = val; }
 };
 
 
 //****************************************************
-// SAMPLER
+// SAMPLER (TODO: Discuss whether we need this extra wasted space, rather than working with CImg directly)
 //****************************************************
 
 class Sampler {
-	int width, height;
-
+	int width, height, curr_x, curr_y, done;
+public:
+	Sampler(int w, int h);
+	Sample getNextSample();
+	int getWidth() { return width; }
+	int getHeight() { return height; }
+	int isDone() { return done; }
 
 };
 
+
+//****************************************************
+// FILM
+//****************************************************
+
+class Film {
+	CImg<float> image;
+public:
+	// v refers to the RGB (R=0, G=1, B=2)
+	Film(int w, int h, int z, int v, int default_color);
+	void setPixel(int x, int y, int z, int v, int color);
+	void displayToScreen();
+};
 
 
 
