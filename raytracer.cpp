@@ -233,6 +233,9 @@ int main(int argc, char *argv[]) {
        }
   infile.close();
 
+
+  // TODO: Make this inputtable from filled
+  // DEV: Hardcode this if you want to override inputs
   int width = 500;
   int height = 500;
   Sampler sampler = *(new Sampler(width, height));

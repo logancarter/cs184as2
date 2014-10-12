@@ -179,41 +179,21 @@ class Ray {
 	// Point pos;
 	// Vectorz dir;
 	float t_min, t_max;
-	Vector4f pos;
-	Vector4f dir;
+	Vector4f pos; // E
+	Vector4f dir; // P - E
 
 public:
 	// ray(t) = pos + t * dir
+  // TODO: getters and setters
 	Ray();
+  // Ray(float pos_x, float pos_y, float pos_z, float dir_x, float dir_y, float dir_z);
+  Ray(Vector4f eye, Vector4f pixel);
+  void setEye(Vector4f eye);
+  void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
 
 };
 
-
-
-
-
-//****************************************************
-// CAMERA
-//****************************************************
-
-class Camera
-{
-	float eye_x, eye_y, eye_z;
-	int width, height;
-	// TODO: mapping from for the input corners to output size
-
-public:
-	Camera(); // four corners, width, height, eye
-	float getX() { return eye_x; }
-	float getY() { return eye_y; }
-	float getZ() { return eye_z; }
-	// Vector4f get_eye() { 
-	float* get_eye() {
-		static float arr[3] = {eye_x, eye_y, eye_z};
-		return arr;
-	}
-
-};
+// TODO: HOMOGENIZE ALL VECTORS? MAKE THEM ALL 4F?
 
 
 //****************************************************
@@ -224,6 +204,7 @@ class Sample {
 	float x, y, color;
 
 public:
+  Sample();
 	Sample(float xval, float yval, float default_color);
 	float getX() { return x; }
 	float getY() { return y; }
@@ -235,18 +216,18 @@ public:
 
 
 //****************************************************
-// SAMPLER (TODO: Discuss whether we need this extra wasted space, rather than working with CImg directly)
+// SAMPLER
 //****************************************************
 
 class Sampler {
-	int width, height, curr_x, curr_y, done;
+	int width, height, curr_x, curr_y;
 public:
   Sampler();
 	Sampler(int w, int h);
-	Sample getNextSample();
+  void getFirstSample(Sample *sample);
+	bool getNextSample(Sample *sample);
 	int getWidth() { return width; }
 	int getHeight() { return height; }
-	int isDone() { return done; }
 
 };
 
@@ -265,6 +246,34 @@ public:
 	void displayToScreen();
 };
 
+
+//****************************************************
+// CAMERA
+//****************************************************
+
+class Camera
+{
+  float eye_x, eye_y, eye_z;
+  int width, height;
+  // DEV: When working with eye and stuff for reals, make a vector on the spot out of them. This class will merely be a container for the values.
+  std::vector<float> eye, lr, ll, ur, ul;
+  float plane_width, plane_height, scale_w, scale_h;
+  // TODO: mapping from for the input corners to output size
+
+public:
+  Camera(); // four corners, width, height, eye
+  Camera(float x, float y, float z, int w, int h, float llx, float lly, float llz, float lrx, float lry, float lrz, float ulx, float uly, float ulz, float urx, float ury, float urz);
+  float getX() { return eye_x; }
+  float getY() { return eye_y; }
+  float getZ() { return eye_z; }
+  // Vector4f get_eye() { 
+  float* get_eye() {
+    static float arr[3] = {eye_x, eye_y, eye_z};
+    return arr;
+  }
+  void generateRay(Sample &sample, Ray *ray);
+
+};
 
 //****************************************************
 // SCENE
