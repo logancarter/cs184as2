@@ -295,6 +295,30 @@ class Scene
 };
 
 
+//****************************************************
+// SHAPE
+//****************************************************
+
+class Shape {
+public:
+  Shape();
+};
+
+//****************************************************
+// SPHERE
+//****************************************************
+
+class Sphere: public Shape {
+  float radius, center_x, center_y, center_z;
+public:
+  Sphere();
+  Sphere(float r, float x, float y, float z);
+  Vector4f getCenter();
+  float getRadius();
+};
+
+
+
 
 
 

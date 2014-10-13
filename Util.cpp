@@ -280,4 +280,35 @@ void Scene::render() {
   	film.displayToScreen();
 }
 
+//****************************************************
+// SHAPE
+//****************************************************
+
+Shape::Shape() {
+
+}
+
+//****************************************************
+// SPHERE
+//****************************************************
+
+Sphere::Sphere() {
+
+}
+
+Sphere::Sphere(float r, float x, float y, float z) {
+	radius = r;
+	center_x = x;
+	center_y = y;
+	center_z = z;
+}
+
+Vector4f Sphere::getCenter() {
+	Vector4f v(center_x, center_y, center_z, 1);
+	return v;
+}
+
+float Sphere::getRadius() {
+	return radius;
+}
 
