@@ -28,12 +28,14 @@
 
 #include <time.h>
 #include <math.h>
+#include "CImg.h"
 
 #define PI 3.14159265  // Should be used from mathlib
 inline float sqr(float x) { return x*x; }
 
 using namespace std;
 using namespace Eigen;
+using namespace cimg_library; 
 
 //****************************************************
 // VECTORZ
@@ -177,29 +179,71 @@ class Ray {
 	// Point pos;
 	// Vectorz dir;
 	float t_min, t_max;
-	Vector4f pos;
-	Vector4f dir;
+	Vector4f pos; // E
+	Vector4f dir; // P - E
 
 public:
 	// ray(t) = pos + t * dir
+  // TODO: getters and setters
 	Ray();
+  // Ray(float pos_x, float pos_y, float pos_z, float dir_x, float dir_y, float dir_z);
+  Ray(Vector4f eye, Vector4f pixel);
+  void setEye(Vector4f eye);
+  void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
+
+};
+
+// TODO: HOMOGENIZE ALL VECTORS? MAKE THEM ALL 4F?
+
+
+//****************************************************
+// SAMPLE
+//****************************************************
+
+class Sample {
+	float x, y, color;
+
+public:
+  Sample();
+	Sample(float xval, float yval, float default_color);
+	float getX() { return x; }
+	float getY() { return y; }
+  float getColor() { return color; }
+	void setX(float val) { x = val; }
+	void setY(float val) { y = val; }
+	void setColor(float val) { color = val; }
+};
+
+
+//****************************************************
+// SAMPLER
+//****************************************************
+
+class Sampler {
+	int width, height, curr_x, curr_y;
+public:
+  Sampler();
+	Sampler(int w, int h);
+  void getFirstSample(Sample *sample);
+	bool getNextSample(Sample *sample);
+	int getWidth() { return width; }
+	int getHeight() { return height; }
 
 };
 
 
 //****************************************************
-// SCENE
+// FILM
 //****************************************************
 
-class Scene
-{
-  public:
-  	void render();
-//     ...
-//     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
-//   private:
-//     std::vector<Primitive> primitives;
-//     std::vector<Light> lights;
+class Film {
+	CImg<float> image;
+public:
+	// v refers to the RGB (R=0, G=1, B=2)
+  Film();
+	Film(int w, int h, int z, int v, int default_color);
+	void setPixel(int x, int y, int z, int v, int color);
+	void displayToScreen();
 };
 
 
@@ -209,51 +253,46 @@ class Scene
 
 class Camera
 {
-	float eye_x, eye_y, eye_z;
-	int width, height;
-	// TODO: mapping from for the input corners to output size
+  float eye_x, eye_y, eye_z;
+  int width, height;
+  // DEV: When working with eye and stuff for reals, make a vector on the spot out of them. This class will merely be a container for the values.
+  std::vector<float> eye, lr, ll, ur, ul;
+  float plane_width, plane_height, scale_w, scale_h;
+  // TODO: mapping from for the input corners to output size
 
 public:
-	Camera(); // four corners, width, height, eye
-	float getX() { return eye_x; }
-	float getY() { return eye_y; }
-	float getZ() { return eye_z; }
-	// Vector4f get_eye() { 
-	float* get_eye() {
-		static float arr[3] = {eye_x, eye_y, eye_z};
-		return arr;
-	}
+  Camera(); // four corners, width, height, eye
+  Camera(float x, float y, float z, int w, int h, float llx, float lly, float llz, float lrx, float lry, float lrz, float ulx, float uly, float ulz, float urx, float ury, float urz);
+  float getX() { return eye_x; }
+  float getY() { return eye_y; }
+  float getZ() { return eye_z; }
+  // Vector4f get_eye() { 
+  float* get_eye() {
+    static float arr[3] = {eye_x, eye_y, eye_z};
+    return arr;
+  }
+  void generateRay(Sample &sample, Ray *ray);
 
 };
 
-
 //****************************************************
-// SAMPLE
+// SCENE
 //****************************************************
 
-class Sample {
-	float x, y;
+class Scene
+{
+  Sampler sampler;
+  Film film;
 
-public:
-	float getX() { return x; }
-	float getY() { return y; }
-	void setX(float val) { x = val; }
-	void setY(float val) { y = val; }
+  public:
+    Scene(Sampler &s, Film &f);
+    void render();
+//     ...
+//     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
+//   private:
+//     std::vector<Primitive> primitives;
+//     std::vector<Light> lights;
 };
-
-
-//****************************************************
-// SAMPLER
-//****************************************************
-
-class Sampler {
-	int width, height;
-
-
-};
-
-
-
 
 
 

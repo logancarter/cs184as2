@@ -232,19 +232,34 @@ int main(int argc, char *argv[]) {
          }
     infile.close();
 
-  CImg<unsigned char> image(500,500, 1,3, 0); 
-  // CImg<double> image("milla.bmp");
-  // CImg<double> visu(image.width(),image.height(),1,3, 0); 
-  const double red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
-  for (int i=0;i<image.width();i++) {
-    for (int j=0;j<image.height();j++) {
-      for (int k=0;k<3;k++) {
-        // visu(i,j,0,k)=image(i,j,0,k)*5; 
-        image(i, j, 0, k) = 100;
-      }
-    }
-  }
+
+  // TODO: Make this inputtable from filled
+  // DEV: Hardcode this if you want to override inputs
+  int width = 500;
+  int height = 500;
+  Sampler sampler = *(new Sampler(width, height));
+  // CImg<float> image(width, height, 1, 3, 0); 
+  Film film = *(new Film(width, height, 1, 3, 0));
+  // while (!sampler.isDone()) {
+  //   Sample sample = sampler.getNextSample();
+  //   for (int i = 0; i < 3; i++) {
+  //     film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
+  //   }
+  // }
+  // film.displayToScreen();
+  Scene scene = *(new Scene(sampler, film));
+  scene.render();
+
+
+  // const float red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
+  // for (int i=0;i<image.width();i++) {
+  //   for (int j=0;j<image.height();j++) {
+  //     for (int k=0;k<3;k++) {
+  //       image(i, j, 0, k) = 100;
+  //     }
+  //   }
+  // }
   // image.display("Hello, milla!");
-  image.display("Dark!");
+  // image.display("Dark!");
   return 0;
 }
