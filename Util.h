@@ -190,10 +190,33 @@ public:
   Ray(Vector4f eye, Vector4f pixel);
   void setEye(Vector4f eye);
   void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
-
 };
 
-// TODO: HOMOGENIZE ALL VECTORS? MAKE THEM ALL 4F?
+
+//****************************************************
+// SHAPE
+//****************************************************
+
+class Shape {
+public:
+  Shape();
+  bool intersect(Ray ray);
+};
+
+
+//****************************************************
+// SPHERE
+//****************************************************
+
+class Sphere: public Shape {
+  float radius, center_x, center_y, center_z;
+public:
+  Sphere();
+  Sphere(float r, float x, float y, float z);
+  Vector4f getCenter();
+  float getRadius();
+};
+
 
 //****************************************************
 // LCAOLGEO
@@ -206,11 +229,26 @@ public:
   LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
 };
 
+
+//****************************************************
+// INTERSECTION
+//****************************************************
+
+class Intersection {
+  LocalGeo lg;
+  Shape* shape;   // TODO: should be Primitive
+public:
+  Intersection();
+  Intersection(LocalGeo local, Shape &s);
+};
+
+
 //****************************************************
 // SAMPLE
 //****************************************************
 
 class Sample {
+  // TODO: MAKE COLOR 3 CHANNEL!!!!!!!!!
 	float x, y, color;
 
 public:
@@ -279,9 +317,22 @@ public:
   Vector4f get_eye() {
     return eye;
   }
-  void generateRay(Sample &sample, Ray *ray);
+  void generateRay(Sample sample, Ray *ray); // sample& to sample TODO
 
 };
+
+
+//****************************************************
+// RAYTRACER
+//****************************************************
+
+class RayTracer {
+public:
+  RayTracer();
+  // void trace(Ray& ray, int depth, Color* color);
+  void trace(Ray ray, Sample *sample, Shape shape);  // Hacked method, deprecate this!
+};
+
 
 //****************************************************
 // SCENE
@@ -289,11 +340,15 @@ public:
 
 class Scene
 {
+  Camera camera;
   Sampler sampler;
   Film film;
+  RayTracer raytracer;
+  std::vector<Shape> shapes;
 
   public:
-    Scene(Sampler &s, Film &f);
+    Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
+    void addShape(Shape shape); // TODO: decide if this needs to be pointer or not
     void render();
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
@@ -305,27 +360,19 @@ class Scene
 };
 
 
-//****************************************************
-// SHAPE
-//****************************************************
 
-class Shape {
-public:
-  Shape();
-};
 
-//****************************************************
-// SPHERE
-//****************************************************
 
-class Sphere: public Shape {
-  float radius, center_x, center_y, center_z;
-public:
-  Sphere();
-  Sphere(float r, float x, float y, float z);
-  Vector4f getCenter();
-  float getRadius();
-};
+
+
+
+
+
+
+
+
+
+
 
 
 

@@ -120,6 +120,42 @@ void Ray::setDir(Vector4f pixel) {
 
 
 //****************************************************
+// SHAPE
+//****************************************************
+
+Shape::Shape() {
+
+}
+
+bool Shape::intersect(Ray ray) {
+	return true;
+}
+
+//****************************************************
+// SPHERE
+//****************************************************
+
+Sphere::Sphere() {
+
+}
+
+Sphere::Sphere(float r, float x, float y, float z) {
+	radius = r;
+	center_x = x;
+	center_y = y;
+	center_z = z;
+}
+
+Vector4f Sphere::getCenter() {
+	Vector4f v(center_x, center_y, center_z, 1);
+	return v;
+}
+
+float Sphere::getRadius() {
+	return radius;
+}
+
+//****************************************************
 // LCAOLGEO
 //****************************************************
 
@@ -138,6 +174,21 @@ void Ray::setDir(Vector4f pixel) {
   	normal(3) = 0;
   	normal.normalize();
   }
+
+//****************************************************
+// INTERSECTION
+//****************************************************
+
+Intersection::Intersection() {
+
+}
+
+
+Intersection::Intersection(LocalGeo local, Shape &s) {
+	lg = local;
+	shape = &s;
+}
+
 
 
 //****************************************************
@@ -215,6 +266,7 @@ Film::Film(int w, int h, int z, int v, int default_color) {
 	image.assign(w, h, z, v, default_color); 
 }
 
+// TODO: CHANGE THIS SO WE CAN SET MULTIPLE COLORSSSSSSS NOT JSUT 1111111 FUCK
 void Film::setPixel(int x, int y, int z, int v, int color) {
 	image(x, y, z, v) = color;
 }
@@ -264,7 +316,7 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 }
 
 // TODO
-void Camera::generateRay(Sample &sample, Ray *ray) {
+void Camera::generateRay(Sample sample, Ray *ray) {
 	float x = sample.getX();
 	float y = sample.getY();
 	float z = 0;	// TODO: Is this 0? or is this...something else?
@@ -273,18 +325,49 @@ void Camera::generateRay(Sample &sample, Ray *ray) {
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
 	Vector4f pixel_vec(x, y, z, 1);
 	// Vector4f dir_vec = pixel_vec - eye_vec;
-	ray->setEye(eye);
+	ray->setEye(eye);	// TODO: fix - redundant
 	ray->setDir(pixel_vec);
 }
+
+
+
+
+
+//****************************************************
+// RAYTRACER
+//****************************************************
+
+RayTracer::RayTracer() {
+
+}
+
+// void RayTracer::trace(Ray& ray, int depth, Color* color) {
+
+// }
+
+void RayTracer::trace(Ray ray, Sample *sample, Shape shape) {
+	if (!shape.intersect(ray)) {
+		sample->setColor(0.0);
+	} else {
+		sample->setColor(243);
+	}
+}
+
+
 
 //****************************************************
 // SCENE
 //****************************************************
 
-Scene::Scene(Sampler &s, Film& f) {
+Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 	sampler = s;
 	film = f;
+	camera = c;
+	raytracer = rt;
+}
 
+void Scene::addShape(Shape shape) {
+	shapes.push_back(shape);
 }
 
 void Scene::render() {
@@ -292,9 +375,12 @@ void Scene::render() {
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
-	    for (int i = 0; i < 3; i++) {
-	    	film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
-	    }
+		camera.generateRay(sample, &ray);
+		raytracer.trace(ray, &sample, shapes[0]); 	// TODO: should be Color class instead of Sample, but hack it
+	    // for (int i = 0; i < 3; i++) {
+	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
+	    // }
+    	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getColor());
 	    notDone = sampler.getNextSample(&sample);
   	}
   	film.displayToScreen();
@@ -314,35 +400,18 @@ void Scene::render() {
 //   }
 // }
 
-//****************************************************
-// SHAPE
-//****************************************************
 
-Shape::Shape() {
 
-}
 
-//****************************************************
-// SPHERE
-//****************************************************
 
-Sphere::Sphere() {
 
-}
 
-Sphere::Sphere(float r, float x, float y, float z) {
-	radius = r;
-	center_x = x;
-	center_y = y;
-	center_z = z;
-}
 
-Vector4f Sphere::getCenter() {
-	Vector4f v(center_x, center_y, center_z, 1);
-	return v;
-}
 
-float Sphere::getRadius() {
-	return radius;
-}
+
+
+
+
+
+
 

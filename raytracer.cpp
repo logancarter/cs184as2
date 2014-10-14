@@ -237,29 +237,15 @@ int main(int argc, char *argv[]) {
   // DEV: Hardcode this if you want to override inputs
   int width = 100;
   int height = 100;
+
+  Sphere sphere = *(new Sphere(1, 0, 0, -2));
+
   Sampler sampler = *(new Sampler(width, height));
-  // CImg<float> image(width, height, 1, 3, 0); 
   Film film = *(new Film(width, height, 1, 3, 0));
-  // while (!sampler.isDone()) {
-  //   Sample sample = sampler.getNextSample();
-  //   for (int i = 0; i < 3; i++) {
-  //     film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
-  //   }
-  // }
-  // film.displayToScreen();
-  Scene scene = *(new Scene(sampler, film));
+  Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1));
+  RayTracer raytracer = *(new RayTracer());
+  Scene scene = *(new Scene(sampler, film, camera, raytracer));
   scene.render();
 
-
-  // const float red[] = { 255,0,0 }, green[] = { 0,255,0 }, blue[] = { 0,0,255 };
-  // for (int i=0;i<image.width();i++) {
-  //   for (int j=0;j<image.height();j++) {
-  //     for (int k=0;k<3;k++) {
-  //       image(i, j, 0, k) = 100;
-  //     }
-  //   }
-  // }
-  // image.display("Hello, milla!");
-  // image.display("Dark!");
   return 0;
 }
