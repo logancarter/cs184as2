@@ -190,6 +190,23 @@ Intersection::Intersection(LocalGeo local, Shape &s) {
 }
 
 
+//****************************************************
+// COLOR
+//****************************************************
+
+
+Color::Color() {
+
+}
+
+Color::Color(float rv, float gv, float bv) {
+	r = rv; g = gv; b = bv;
+}
+float Color::getR() { return r; }
+float Color::getG() { return g; }
+float Color::getB() { return b; }
+void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
+
 
 //****************************************************
 // SAMPLE

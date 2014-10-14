@@ -231,6 +231,22 @@ public:
 
 
 //****************************************************
+// COLOR
+//****************************************************
+
+class Color {
+  float r, g, b;
+public:
+  Color();
+  Color(float rv, float gv, float bv);
+  float getR();
+  float getG();
+  float getB();
+  void setRGB(float rv, float gv, float bv);
+};
+
+
+//****************************************************
 // INTERSECTION
 //****************************************************
 
