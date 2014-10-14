@@ -195,6 +195,16 @@ public:
 
 // TODO: HOMOGENIZE ALL VECTORS? MAKE THEM ALL 4F?
 
+//****************************************************
+// LCAOLGEO
+//****************************************************
+class LocalGeo {
+  float x, y, z;
+  Vector4f pos, normal; // normalize
+public:
+  LocalGeo();
+  LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
+};
 
 //****************************************************
 // SAMPLE
@@ -256,7 +266,7 @@ class Camera
   float eye_x, eye_y, eye_z;
   int width, height;
   // DEV: When working with eye and stuff for reals, make a vector on the spot out of them. This class will merely be a container for the values.
-  std::vector<float> eye, lr, ll, ur, ul;
+  Vector4f eye, lr, ll, ur, ul;
   float plane_width, plane_height, scale_w, scale_h;
   // TODO: mapping from for the input corners to output size
 
@@ -266,10 +276,8 @@ public:
   float getX() { return eye_x; }
   float getY() { return eye_y; }
   float getZ() { return eye_z; }
-  // Vector4f get_eye() { 
-  float* get_eye() {
-    static float arr[3] = {eye_x, eye_y, eye_z};
-    return arr;
+  Vector4f get_eye() {
+    return eye;
   }
   void generateRay(Sample &sample, Ray *ray);
 
@@ -289,7 +297,9 @@ class Scene
     void render();
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
+    // void calculateAcceleration();
 //   private:
+    // AABBNode acceleration_root;
 //     std::vector<Primitive> primitives;
 //     std::vector<Light> lights;
 };

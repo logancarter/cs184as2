@@ -235,8 +235,8 @@ int main(int argc, char *argv[]) {
 
   // TODO: Make this inputtable from filled
   // DEV: Hardcode this if you want to override inputs
-  int width = 500;
-  int height = 500;
+  int width = 100;
+  int height = 100;
   Sampler sampler = *(new Sampler(width, height));
   // CImg<float> image(width, height, 1, 3, 0); 
   Film film = *(new Film(width, height, 1, 3, 0));

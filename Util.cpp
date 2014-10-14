@@ -119,8 +119,25 @@ void Ray::setDir(Vector4f pixel) {
 // }
 
 
+//****************************************************
+// LCAOLGEO
+//****************************************************
 
+  LocalGeo::LocalGeo() {
 
+  }
+
+  LocalGeo::LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz) {
+  	pos(0) = x = x1;
+  	pos(1) = y = y1;
+  	pos(2) = z = z1;
+  	pos(3) = 1;
+  	normal(0) = nx;
+  	normal(1) = ny;
+  	normal(2) = nz;
+  	normal(3) = 0;
+  	normal.normalize();
+  }
 
 
 //****************************************************
@@ -214,30 +231,32 @@ void Film::displayToScreen() {
 Camera::Camera() {
 	eye_x = eye_y = eye_z = 0.0;
 	width = height = 0;
-	eye.assign(3, 0);
-	ll.assign(3, 0);
 }
 
 Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, float llz, float lrx, float lry, float lrz, float ulx, float uly, float ulz, float urx, float ury, float urz) {
 	eye_x = x; eye_y = y; eye_z = z;
 	width = w;
 	height = h;
-	eye.clear();
-	eye.push_back(x);
-	eye.push_back(y);
-	eye.push_back(z);
-	ll.push_back(llx);
-	ll.push_back(lly);
-	ll.push_back(llz);
-	lr.push_back(lrx);
-	lr.push_back(lry);
-	lr.push_back(lrz);
-	ul.push_back(ulx);
-	ul.push_back(uly);
-	ul.push_back(ulz);
-	ur.push_back(urx);
-	ur.push_back(ury);
-	ur.push_back(urz);
+	eye(0) = x;
+	eye(1) = y;
+	eye(2) = z;
+	eye(3) = 1;
+	ll(0) = llx;
+	ll(1) = lly;
+	ll(2) = llz;
+	ll(3) = 1;
+	lr(0) = lrx;
+	lr(1) = lry;
+	lr(2) = lrz;
+	lr(3) = 1;
+	ul(0) = ulx;
+	ul(1) = uly;
+	ul(2) = ulz;
+	ul(3) = 1;
+	ur(0) = urx;
+	ur(1) = ury;
+	ur(2) = urz;
+	ur(3) = 1;
 	plane_width = lrx - llx;
 	plane_height = uly - lly;
 	scale_w = plane_width / width;
@@ -248,13 +267,13 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 void Camera::generateRay(Sample &sample, Ray *ray) {
 	float x = sample.getX();
 	float y = sample.getY();
-	float z = 0;
+	float z = 0;	// TODO: Is this 0? or is this...something else?
 	x = x * scale_w + ll[0];
 	y = y * scale_h + ll[1];
-	Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime.
+	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
 	Vector4f pixel_vec(x, y, z, 1);
 	// Vector4f dir_vec = pixel_vec - eye_vec;
-	ray->setEye(eye_vec);
+	ray->setEye(eye);
 	ray->setDir(pixel_vec);
 }
 
@@ -270,6 +289,7 @@ Scene::Scene(Sampler &s, Film& f) {
 
 void Scene::render() {
 	Sample sample;
+	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
 	    for (int i = 0; i < 3; i++) {
@@ -279,6 +299,20 @@ void Scene::render() {
   	}
   	film.displayToScreen();
 }
+
+// bool scene::intersect(Ray &r, double &closest_t, 
+//   GeometryProperties &geom_prop, MaterialProperties &mat_prop);
+// {
+//   closest_t = std::numeric_limits<double>::infinity();
+//   std::vector<Primitive> relevant_prims = 
+//     acceleration_root.relevant_prims(r);
+//   for(std::vector<Primitive> prim_it = relevant_prims.begin();
+//     prim_it != relevant_prims.end(); ++prim_it)
+//   {
+//     Primitive cur_prim = *prim_it;
+//     ...
+//   }
+// }
 
 //****************************************************
 // SHAPE
