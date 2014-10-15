@@ -388,7 +388,7 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 void Camera::generateRay(Sample sample, Ray *ray) {
 	float x = sample.getX();
 	float y = sample.getY();
-	float z = 0;	// TODO: Is this 0? or is this...something else?
+	float z = ll(2);	// TODO: assume its on same plane...checkcheckcheck
 	x = x * scale_w + ll[0];
 	y = y * scale_h + ll[1];
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
