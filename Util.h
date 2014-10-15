@@ -202,7 +202,8 @@ public:
 class Shape {
 public:
   Shape();
-  bool intersect(Ray ray);
+  virtual void isShape() { cout << "0" << endl; }
+  virtual bool intersect(Ray ray);
 };
 
 
@@ -215,9 +216,11 @@ class Sphere: public Shape {
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
+  virtual void isShape() { cout << "1" << endl; }
   Vector4f getCenter();
   float getRadius();
-  bool intersect(Ray ray);
+  bool testIntersect(float a, float b, float c);
+  virtual bool intersect(Ray ray);
 };
 
 
@@ -349,7 +352,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Shape shape);  // Hacked method, deprecate this!
+  void trace(Ray ray, Sample *sample, Shape &shape);  // Hacked method, deprecate this!
 };
 
 
@@ -363,11 +366,11 @@ class Scene
   Sampler sampler;
   Film film;
   RayTracer raytracer;
-  std::vector<Shape> shapes;
+  std::vector<Shape *> shapes;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
-    void addShape(Shape shape); // TODO: decide if this needs to be pointer or not
+    void addShape(Shape &shape); // TODO: decide if this needs to be pointer or not
     void render();
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);

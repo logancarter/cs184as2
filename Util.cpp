@@ -136,6 +136,7 @@ Shape::Shape() {
 }
 
 bool Shape::intersect(Ray ray) {
+	cout << "hi" << endl;
 	return true;
 }
 
@@ -163,8 +164,9 @@ float Sphere::getRadius() {
 	return radius;
 }
 
-bool testIntersect(float a, float b, float c) {
-	printf("I AM HERE");
+bool Sphere::testIntersect(float a, float b, float c) {
+	// printf("I AM HERE");
+	cout << "test Intersect" << endl;
 	float d = (b*b) - (4 * a * c);
 	if (d >= 0) {
 		//x1 = (-b + sqrt(d))/(2 * a);
@@ -177,6 +179,7 @@ bool testIntersect(float a, float b, float c) {
 
 //algorithm credit goes to scratchapixel.com
 bool Sphere::intersect(Ray ray) {
+	cout << "hi2" << endl;
 	Vector4f difference = ray.getPos() - getCenter();
 	float a = difference.dot(difference);
 	float b = 2 * (ray.getDir()).dot(difference);
@@ -391,7 +394,7 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Shape shape) {
+void RayTracer::trace(Ray ray, Sample *sample, Shape &shape) {
 	if (!shape.intersect(ray)) {
 		sample->setColor(0.0);
 	} else {
@@ -412,8 +415,8 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 	raytracer = rt;
 }
 
-void Scene::addShape(Shape shape) {
-	shapes.push_back(shape);
+void Scene::addShape(Shape &shape) {
+	shapes.push_back(&shape);
 }
 
 void Scene::render() {
@@ -422,7 +425,8 @@ void Scene::render() {
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
 		camera.generateRay(sample, &ray);
-		raytracer.trace(ray, &sample, shapes[0]); 	// TODO: should be Color class instead of Sample, but hack it
+		shapes[0]->isShape();
+		raytracer.trace(ray, &sample, *shapes[0]); 	// TODO: should be Color class instead of Sample, but hack it
 	    // for (int i = 0; i < 3; i++) {
 	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
 	    // }

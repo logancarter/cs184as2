@@ -63,7 +63,6 @@ Viewport  viewport;
 // function that handles keyboard callback
 //****************************************************
 void myKeyboard(unsigned char key, int x, int y) {
-  // TODO: Why won't it print here?
   switch (key) {
     case 0x20:
       exit(0);
@@ -244,10 +243,12 @@ int main(int argc, char *argv[]) {
 
   Sampler sampler = *(new Sampler(width, height));
   Film film = *(new Film(width, height, 1, 3, 0));
+  // Hardcode camera to be at origin, with the image place from (-1,-1,-1) to (1,1,-1)
   Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1));
   RayTracer raytracer = *(new RayTracer());
   Scene scene = *(new Scene(sampler, film, camera, raytracer));
   scene.addShape(sphere);
+
   scene.render();
 
   return 0;
