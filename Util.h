@@ -202,7 +202,7 @@ public:
 class Shape {
 public:
   Shape();
-  virtual void isShape() { cout << "0" << endl; }
+  //virtual void isShape() { cout << "0" << endl; }
   virtual bool intersect(Ray ray);
 };
 
@@ -216,10 +216,10 @@ class Sphere: public Shape {
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
-  virtual void isShape() { cout << "1" << endl; }
+  //virtual void isShape() { cout << "1" << endl; }
   Vector4f getCenter();
   float getRadius();
-  bool testIntersect(float a, float b, float c);
+  bool testIntersect(float a, float b, float c, float &x1, float &x2);
   virtual bool intersect(Ray ray);
 };
 

@@ -236,11 +236,10 @@ int main(int argc, char *argv[]) {
 
   // TODO: Make this inputtable from filled
   // DEV: Hardcode this if you want to override inputs
-  int width = 100;
-  int height = 100;
+  float width = 100.0;
+  float height = 100.0;
 
-  Sphere sphere = *(new Sphere(1, 0, 0, -2));
-
+  Sphere sphere = *(new Sphere(1.0, 0.0, 0.0, -2.0));
   Sampler sampler = *(new Sampler(width, height));
   Film film = *(new Film(width, height, 1, 3, 0));
   // Hardcode camera to be at origin, with the image place from (-1,-1,-1) to (1,1,-1)

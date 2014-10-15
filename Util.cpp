@@ -136,8 +136,8 @@ Shape::Shape() {
 }
 
 bool Shape::intersect(Ray ray) {
-	cout << "hi" << endl;
-	return true;
+	//cout << "hi" << endl;
+	return false;
 }
 
 //****************************************************
@@ -164,27 +164,47 @@ float Sphere::getRadius() {
 	return radius;
 }
 
-bool Sphere::testIntersect(float a, float b, float c) {
-	// printf("I AM HERE");
-	cout << "test Intersect" << endl;
+bool Sphere::testIntersect(float a, float b, float c, float &x0, float &x1) {
+	//cout << "test Intersect" << endl;
 	float d = (b*b) - (4 * a * c);
-	if (d >= 0) {
-		//x1 = (-b + sqrt(d))/(2 * a);
-		//x2 = (-b + sqrt(d))/(2 * a);
-		return true;
-	} else {
+	if (d < 0) {
+		cout << "\ntestIntersect  " << d;
 		return false;
 	}
+	else if (d == 0) {
+		x0 = x1 = -0.5 * b/a;
+	}
+	else {
+		float q = (b > 0) ? 
+		-0.5 * (b + sqrt(d)) :
+		-0.5 * (b - sqrt(d));
+		x0 = q/a;
+		x1 = c/q;
+	}
+	if (x0 > x1) {
+		std::swap(x0, x1);
+	}
+	return true;
 }
 
 //algorithm credit goes to scratchapixel.com
 bool Sphere::intersect(Ray ray) {
-	cout << "hi2" << endl;
+	float t0;
+	float t1;
+	//cout << "hi2" << endl;
 	Vector4f difference = ray.getPos() - getCenter();
-	float a = difference.dot(difference);
+	float a = ray.getDir().dot(ray.getDir());
 	float b = 2 * (ray.getDir()).dot(difference);
 	float c = difference.dot(difference) - getRadius();
-	return testIntersect(a, b, c);
+	if (!testIntersect(a, b, c, t0, t1)) {
+		return false;
+	}
+	// if (t0 > ray.tmax) {
+	// 	return false;
+	// } else {
+	// 	ray.tmax = 0;
+	// }
+	return true;
 }
 
 //****************************************************
@@ -425,7 +445,7 @@ void Scene::render() {
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
 		camera.generateRay(sample, &ray);
-		shapes[0]->isShape();
+		//shapes[0]->isShape();
 		raytracer.trace(ray, &sample, *shapes[0]); 	// TODO: should be Color class instead of Sample, but hack it
 	    // for (int i = 0; i < 3; i++) {
 	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
