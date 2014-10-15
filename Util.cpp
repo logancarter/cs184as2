@@ -24,7 +24,7 @@
 #include <GL/glu.h>
 #endif*/
 
-#include <time.h>
+#include <time.h> 
 #include <math.h>
 #include "CImg.h"
 
@@ -114,6 +114,14 @@ void Ray::setDir(Vector4f pixel) {
 	dir = pixel - pos;
 }
 
+Vector4f Ray::getDir() {
+	return dir;
+}
+
+Vector4f Ray::getPos() {
+	return pos;
+}
+
 // Ray::Ray(float pos_x, float pos_y, float pos_z, float dir_x, float dir_y, float dir_z) {
 // 	pos = Vector4f
 // }
@@ -153,6 +161,27 @@ Vector4f Sphere::getCenter() {
 
 float Sphere::getRadius() {
 	return radius;
+}
+
+bool testIntersect(float a, float b, float c) {
+	printf("I AM HERE");
+	float d = (b*b) - (4 * a * c);
+	if (d >= 0) {
+		//x1 = (-b + sqrt(d))/(2 * a);
+		//x2 = (-b + sqrt(d))/(2 * a);
+		return true;
+	} else {
+		return false;
+	}
+}
+
+//algorithm credit goes to scratchapixel.com
+bool Sphere::intersect(Ray ray) {
+	Vector4f difference = ray.getPos() - getCenter();
+	float a = difference.dot(difference);
+	float b = 2 * (ray.getDir()).dot(difference);
+	float c = difference.dot(difference) - getRadius();
+	return testIntersect(a, b, c);
 }
 
 //****************************************************

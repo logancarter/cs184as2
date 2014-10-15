@@ -190,6 +190,8 @@ public:
   Ray(Vector4f eye, Vector4f pixel);
   void setEye(Vector4f eye);
   void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
+  Vector4f getPos();
+  Vector4f getDir();
 };
 
 
@@ -215,6 +217,7 @@ public:
   Sphere(float r, float x, float y, float z);
   Vector4f getCenter();
   float getRadius();
+  bool intersect(Ray ray);
 };
 
 
