@@ -168,7 +168,7 @@ bool Sphere::testIntersect(float a, float b, float c, float &x0, float &x1) {
 	//cout << "test Intersect" << endl;
 	float d = (b*b) - (4 * a * c);
 	if (d < 0) {
-		cout << "\ntestIntersect  " << d;
+		//cout << "\ntestIntersect  " << d;
 		return false;
 	}
 	else if (d == 0) {
@@ -388,12 +388,22 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 void Camera::generateRay(Sample sample, Ray *ray) {
 	float x = sample.getX();
 	float y = sample.getY();
-	float z = ll(2);	// TODO: assume its on same plane...checkcheckcheck
+
+	//float z = ll(2);	// TODO: assume its on same plane...checkcheckcheck
+	//x = x * scale_w + ll[0];
+	//y = y * scale_h + ll[1];
+
+	float u = x * scale_w;
+	float v = y * scale_h;
+
+	Vector4f pixel_vec = u * ((v * ll) + ((1 - v) * ul)) + (1 - u) * ((v * lr) + ((1 - v) * ur));
 	x = x * scale_w + ll[0];
 	y = y * scale_h + ll[1];
+	cout << x << " X " << y <<" y\n";
+	cout << pixel_vec(0) <<" pixelvecx " << pixel_vec(1) << " pixelvecy end\n";
+
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
-	Vector4f pixel_vec(x, y, z, 1);
-	// Vector4f dir_vec = pixel_vec - eye_vec;
+	//Vector4f pixel_vec(x, y, z, 1);
 	ray->setEye(eye);	// TODO: fix - redundant
 	ray->setDir(pixel_vec);
 }
