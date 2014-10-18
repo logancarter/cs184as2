@@ -393,8 +393,8 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	//x = x * scale_w + ll[0];
 	//y = y * scale_h + ll[1];
 
-	float u = x * scale_w;
-	float v = y * scale_h;
+	float u = x /width;
+	float v = y /height;
 
 	Vector4f pixel_vec = u * ((v * ll) + ((1 - v) * ul)) + (1 - u) * ((v * lr) + ((1 - v) * ur));
 	x = x * scale_w + ll[0];
