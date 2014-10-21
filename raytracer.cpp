@@ -244,9 +244,9 @@ int main(int argc, char *argv[]) {
   Film film = *(new Film(width, height, 1, 3, 0));
   // Hardcode camera to be at origin, with the image place from (-1,-1,-1) to (1,1,-1)
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1));
-  
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
-  Camera camera = *(new Camera(0,0,0,width,height,-1,-1,2,1,-1,-1,-1,1,-1,1,1,20));
+  //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,2,1,-1,-1,-1,1,-1,1,1,20));
+  Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
   RayTracer raytracer = *(new RayTracer());
   Scene scene = *(new Scene(sampler, film, camera, raytracer));
   scene.addShape(sphere);

@@ -266,6 +266,19 @@ public:
 
 
 //****************************************************
+// TRANSFORMATION
+//****************************************************
+
+class Transformation {
+  Matrix4f mat, inv; // transpose
+public:
+  Transformation();
+  void setMat(Matrix4f m);
+  Matrix4f getMat();
+  Matrix4f getInv();
+};
+
+//****************************************************
 // SAMPLE
 //****************************************************
 

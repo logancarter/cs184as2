@@ -243,6 +243,28 @@ Intersection::Intersection(LocalGeo local, Shape &s) {
 
 
 //****************************************************
+// TRANSFORMATION
+//****************************************************
+
+Transformation::Transformation() {
+
+}
+
+void Transformation::setMat(Matrix4f m) {
+	mat = m;
+	inv = m.inverse();
+}
+
+Matrix4f Transformation::getMat() {
+	return mat;
+}
+
+Matrix4f Transformation::getInv() {
+	return inv;
+}
+
+
+//****************************************************
 // COLOR
 //****************************************************
 
@@ -260,7 +282,7 @@ float Color::getB() { return b; }
 void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 
 
-//****************************************************
+//**************************************************** 
 // SAMPLE
 //****************************************************
 
@@ -397,9 +419,9 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	float v = y /height;
 
 	Vector4f pixel_vec = u * ((v * ll) + ((1 - v) * ul)) + (1 - u) * ((v * lr) + ((1 - v) * ur));
-	x = x * scale_w + ll[0];
-	y = y * scale_h + ll[1];
-	cout << x << " X " << y <<" y\n";
+	// x = x * scale_w + ll[0];
+	// y = y * scale_h + ll[1];
+	// cout << x << " X " << y <<" y\n";
 	cout << pixel_vec(0) <<" pixelvecx " << pixel_vec(1) << " pixelvecy end\n";
 
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
