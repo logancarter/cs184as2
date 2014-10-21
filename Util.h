@@ -128,7 +128,18 @@ class Light {
     void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
       x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
     }
-    virtual int isDLight() { return 30; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
+    virtual int isDLight() { return 0; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
+    virtual int isALight() { return 0; }
+};
+
+class AmbientLight: public Light {
+  public:
+    void setValues(float r2, float g2, float b2) {
+      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;//x, y, z shouldn't get used
+    }
+    int isALight() {
+      return 1;
+    }
 };
 
 class PointLight: public Light {
@@ -284,7 +295,8 @@ public:
 
 class Sample {
   // TODO: MAKE COLOR 3 CHANNEL!!!!!!!!!
-	float x, y, color;
+	float x, y;
+  float color;
 
 public:
   Sample();
@@ -365,7 +377,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Shape &shape);  // Hacked method, deprecate this!
+  void trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights);  // Hacked method, deprecate this!
 };
 
 
@@ -380,18 +392,19 @@ class Scene
   Film film;
   RayTracer raytracer;
   std::vector<Shape *> shapes;
+  std::vector<Light> lights;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
     void addShape(Shape &shape); // TODO: decide if this needs to be pointer or not
     void render();
+    void addLight(Light &light);
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
     // void calculateAcceleration();
 //   private:
     // AABBNode acceleration_root;
 //     std::vector<Primitive> primitives;
-//     std::vector<Light> lights;
 };
 
 

@@ -289,7 +289,7 @@ void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 Sample::Sample() {
 	x = 0;
 	y = 0;
-	color = 0.0;
+	color = 0;//Color(0,0,0);
 }
 
 Sample::Sample(float xval, float yval, float default_color) {
@@ -363,6 +363,8 @@ void Film::setPixel(int x, int y, int z, int v, int color) {
 }
 
 void Film::displayToScreen() {
+	image.mirror('y');
+	image.mirror('x');
 	image.display();
 }
 
@@ -422,7 +424,7 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	// x = x * scale_w + ll[0];
 	// y = y * scale_h + ll[1];
 	// cout << x << " X " << y <<" y\n";
-	cout << pixel_vec(0) <<" pixelvecx " << pixel_vec(1) << " pixelvecy end\n";
+	//cout << pixel_vec(0) <<" pixelvecx " << pixel_vec(1) << " pixelvecy end\n";
 
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
 	//Vector4f pixel_vec(x, y, z, 1);
@@ -446,12 +448,16 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Shape &shape) {
+void RayTracer::trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights) {
 	if (!shape.intersect(ray)) {
 		sample->setColor(0.0);
 	} else {
-		sample->setColor(243);
-	}
+		// for (int i = 0; i < lights.size(); i++) {
+		// 	if (lights[i].isALight()) {//check if ambient
+		// 		sample->setColor(lights[i].r);
+		// 	}
+		sample->setColor(2.0);
+		}
 }
 
 
@@ -471,6 +477,10 @@ void Scene::addShape(Shape &shape) {
 	shapes.push_back(&shape);
 }
 
+void Scene::addLight(Light &light) {
+	lights.push_back(light);
+}
+
 void Scene::render() {
 	Sample sample;
 	Ray ray;
@@ -478,7 +488,7 @@ void Scene::render() {
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//shapes[0]->isShape();
-		raytracer.trace(ray, &sample, *shapes[0]); 	// TODO: should be Color class instead of Sample, but hack it
+		raytracer.trace(ray, &sample, *shapes[0], lights); 	// TODO: should be Color class instead of Sample, but hack it
 	    // for (int i = 0; i < 3; i++) {
 	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
 	    // }

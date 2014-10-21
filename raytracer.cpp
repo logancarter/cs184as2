@@ -56,7 +56,13 @@ Viewport  viewport;
 //   GLfloat ka_r, ka_g, ka_b, kd_r, kd_g, kd_b, ks_r, ks_g, ks_b, sp_v, pl_x, pl_y, pl_z, pl_r, pl_g, pl_b, dl_x, dl_y, dl_z, dl_r, dl_g, dl_b;
 //   int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
   // std::vector<Light *> lights;
-
+Camera camera;
+float width = 100.0;
+float height = 100.0;
+std::vector<Shape *> shapes;
+int numshapes = 0;
+std::vector<Light *> lights;
+int numlights = 0;
 
 
 //****************************************************
@@ -114,6 +120,7 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 16) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                camera = *(new Camera(ex,ey,ez,width,height,llx,lly,llz,lrx,lry,lrz,ulx,uly,ulz,urx,ury,urz));
               }
               else if (currentword.compare("sph") == 0) {
                 float cx = atof(words.at(1).c_str());
@@ -123,7 +130,10 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 5) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-              }
+                Sphere sphere = *(new Sphere(r, cx, cy, cz));
+                numshapes++;
+                shapes.push_back(&sphere);
+                }
               else if (currentword.compare("tri") == 0) {
                 float ax = atof(words.at(1).c_str());
                 float ay = atof(words.at(2).c_str());
@@ -160,6 +170,7 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 8) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+
               }
               else if (currentword.compare("ltd") == 0) {
                 float dx = atof(words.at(1).c_str());
@@ -171,6 +182,10 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 7) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                DirectionalLight dlight = *(new DirectionalLight());
+                dlight.setValues(dx, dy, dz, r, g, b);
+                lights.push_back(&dlight);
+                numlights ++;
               }
               else if (currentword.compare("lta") == 0) {
                 float r = atof(words.at(1).c_str());
@@ -179,6 +194,10 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                AmbientLight alight = *(new AmbientLight());
+                alight.setValues(r, g, b);
+                lights.push_back(&alight);
+                numlights ++;
               }
               else if (currentword.compare("mat") == 0) {
                 float kar = atof(words.at(1).c_str());
@@ -236,22 +255,28 @@ int main(int argc, char *argv[]) {
 
   // TODO: Make this inputtable from filled
   // DEV: Hardcode this if you want to override inputs
-  float width = 100.0;
-  float height = 100.0;
 
-  Sphere sphere = *(new Sphere(1.0, 0.0, 0.0, -2.0));
-  Sampler sampler = *(new Sampler(width, height));
-  Film film = *(new Film(width, height, 1, 3, 0));
+
+
+
   // Hardcode camera to be at origin, with the image place from (-1,-1,-1) to (1,1,-1)
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1));
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,2,1,-1,-1,-1,1,-1,1,1,20));
-  Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
+
+  //camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
+  Film film = *(new Film(width, height, 1, 3, 0));
+  Sampler sampler = *(new Sampler(width, height));
   RayTracer raytracer = *(new RayTracer());
   Scene scene = *(new Scene(sampler, film, camera, raytracer));
-  scene.addShape(sphere);
-
+  //make a list of shapes and add them!
+  //scene.addShape(sphere);
+  for (int i = 0; i < numshapes; i++) {
+    scene.addShape(*shapes[i]);
+  }
+  for (int i = 0; i < numlights; i++) {
+    scene.addLight(*lights[i]);
+  }
   scene.render();
-
   return 0;
 }
