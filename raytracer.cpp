@@ -62,6 +62,7 @@ float height = 100.0;
 std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
+std::vector<Transformation *> transformations;
 int numlights = 0;
 
 
@@ -224,6 +225,15 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                Matrix4f translate;
+                translate(0,0) = 1;
+                translate(1,1) = 1;
+                translate(2,2) = 1;
+                translate(3,3) = 1;
+                translate(0,3) = tx;
+                translate(1,3) = ty;
+                translate(2,3) = tz;
+                transformations.push_back(&translate);
               }
               else if (currentword.compare("xfr") == 0) {
                 float rx = atof(words.at(1).c_str());
@@ -240,6 +250,12 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                Matrix4f scale;
+                scale(0,0) = sx;
+                scale(1,1) = sy;
+                scale(2,2) = sz;
+                scale(3,3) = 1;
+                transformations.push_back(&scale);
               }
               else if (currentword.compare("xfz") == 0) {
                 //Need to reset the current transformation to identity

@@ -220,7 +220,7 @@ class Primitive {
   Transformation o2w;
 public:
   Primitive();
-  //virtual void isPrimitive() { cout << "0" << endl; }
+  virtual void isPrimitive() { cout << "0" << endl; }
   Transformation getTransform() { return w2o; }
   virtual bool intersect(Ray ray);
 };
@@ -235,7 +235,7 @@ class Sphere: public Primitive {
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
-  //virtual void isPrimitive() { cout << "1" << endl; }
+  virtual void isPrimitive() { cout << "1" << endl; }
   Vector4f getCenter();
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
@@ -252,7 +252,7 @@ class Triangle: public Primitive {
 public:
   Triangle();
   Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
-  //virtual void isPrimitive() { cout << "2" << endl; }
+  virtual void isPrimitive() { cout << "2" << endl; }
 
   // TODO: triangle intersection
   // bool testIntersect(float a, float b, float c, float &x1, float &x2);
