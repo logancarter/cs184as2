@@ -207,13 +207,13 @@ public:
 
 
 //****************************************************
-// SHAPE
+// Primitive
 //****************************************************
 
-class Shape {
+class Primitive {
 public:
-  Shape();
-  //virtual void isShape() { cout << "0" << endl; }
+  Primitive();
+  //virtual void isPrimitive() { cout << "0" << endl; }
   virtual bool intersect(Ray ray);
 };
 
@@ -222,12 +222,12 @@ public:
 // SPHERE
 //****************************************************
 
-class Sphere: public Shape {
+class Sphere: public Primitive {
   float radius, center_x, center_y, center_z;
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
-  //virtual void isShape() { cout << "1" << endl; }
+  //virtual void isPrimitive() { cout << "1" << endl; }
   Vector4f getCenter();
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
@@ -269,10 +269,10 @@ public:
 
 class Intersection {
   LocalGeo lg;
-  Shape* shape;   // TODO: should be Primitive
+  Primitive* primitive;
 public:
   Intersection();
-  Intersection(LocalGeo local, Shape &s);
+  Intersection(LocalGeo local, Primitive &s);
 };
 
 
@@ -377,7 +377,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights);  // Hacked method, deprecate this!
+  void trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights);  // Hacked method, deprecate this!
 };
 
 
@@ -391,12 +391,12 @@ class Scene
   Sampler sampler;
   Film film;
   RayTracer raytracer;
-  std::vector<Shape *> shapes;
+  std::vector<Primitive *> primitives;
   std::vector<Light> lights;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
-    void addShape(Shape &shape); // TODO: decide if this needs to be pointer or not
+    void addPrimitive(Primitive &primitive); // TODO: decide if this needs to be pointer or not
     void render();
     void addLight(Light &light);
 //     ...

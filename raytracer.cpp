@@ -59,7 +59,7 @@ Viewport  viewport;
 Camera camera;
 float width = 100.0;
 float height = 100.0;
-std::vector<Shape *> shapes;
+std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
 int numlights = 0;
@@ -132,7 +132,7 @@ int main(int argc, char *argv[]) {
                 }
                 Sphere sphere = *(new Sphere(r, cx, cy, cz));
                 numshapes++;
-                shapes.push_back(&sphere);
+                primitives.push_back(&sphere);
                 }
               else if (currentword.compare("tri") == 0) {
                 float ax = atof(words.at(1).c_str());
@@ -272,7 +272,7 @@ int main(int argc, char *argv[]) {
   //make a list of shapes and add them!
   //scene.addShape(sphere);
   for (int i = 0; i < numshapes; i++) {
-    scene.addShape(*shapes[i]);
+    scene.addPrimitive(*primitives[i]);
   }
   for (int i = 0; i < numlights; i++) {
     scene.addLight(*lights[i]);

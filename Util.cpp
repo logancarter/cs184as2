@@ -128,14 +128,14 @@ Vector4f Ray::getPos() {
 
 
 //****************************************************
-// SHAPE
+// Primitive
 //****************************************************
 
-Shape::Shape() {
+Primitive::Primitive() {
 
 }
 
-bool Shape::intersect(Ray ray) {
+bool Primitive::intersect(Ray ray) {
 	//cout << "hi" << endl;
 	return false;
 }
@@ -236,9 +236,9 @@ Intersection::Intersection() {
 }
 
 
-Intersection::Intersection(LocalGeo local, Shape &s) {
+Intersection::Intersection(LocalGeo local, Primitive &s) {
 	lg = local;
-	shape = &s;
+	primitive = &s;
 }
 
 
@@ -448,8 +448,8 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights) {
-	if (!shape.intersect(ray)) {
+void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights) {
+	if (!primitive.intersect(ray)) {
 		sample->setColor(0.0);
 	} else {
 		// for (int i = 0; i < lights.size(); i++) {
@@ -473,8 +473,8 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 	raytracer = rt;
 }
 
-void Scene::addShape(Shape &shape) {
-	shapes.push_back(&shape);
+void Scene::addPrimitive(Primitive &primitive) {
+	primitives.push_back(&primitive);
 }
 
 void Scene::addLight(Light &light) {
@@ -487,8 +487,8 @@ void Scene::render() {
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
 		camera.generateRay(sample, &ray);
-		//shapes[0]->isShape();
-		raytracer.trace(ray, &sample, *shapes[0], lights); 	// TODO: should be Color class instead of Sample, but hack it
+		//Primitives[0]->isPrimitive();
+		raytracer.trace(ray, &sample, *primitives[0], lights); 	// TODO: should be Color class instead of Sample, but hack it
 	    // for (int i = 0; i < 3; i++) {
 	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
 	    // }
