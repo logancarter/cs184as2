@@ -163,18 +163,24 @@ public:
 
 class Point {
 	float x, y, z;
+  Vector4f coordinates;
   
     public:
-      Point() {x = y = z = 0;}
+      Point() { x = y = z = 0; }
       // virtual ~Vectorz(){}
       Point(float r, float g, float b) {
       	x = r; 
- 		y = g; 
- 		z = b;
+     		y = g; 
+     		z = b;
+        coordinates(0) = r;
+        coordinates(1) = g;
+        coordinates(2) = b;
+        coordinates(3) = 1;
       }
       float getX() {return x;}
       float getY() {return y;}
       float getZ() {return z;}
+      Vector4f getCoords() { return coordinates; }
       void setX(float val) {x = val;}
       void setY(float val) {y = val;}
       void setZ(float val) {z = val;}
@@ -211,15 +217,17 @@ public:
 //****************************************************
 
 class Primitive {
+  Transformation o2w;
 public:
   Primitive();
   //virtual void isPrimitive() { cout << "0" << endl; }
+  Transformation getTransform() { return w2o; }
   virtual bool intersect(Ray ray);
 };
 
 
 //****************************************************
-// SPHERE
+// SPHERE         
 //****************************************************
 
 class Sphere: public Primitive {
@@ -232,6 +240,23 @@ public:
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
   virtual bool intersect(Ray ray);
+};
+
+
+//****************************************************
+// TRIANGLE       
+//****************************************************
+
+class Triangle: public Primitive {
+  Point a, b, c;
+public:
+  Triangle();
+  Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
+  //virtual void isPrimitive() { cout << "2" << endl; }
+
+  // TODO: triangle intersection
+  // bool testIntersect(float a, float b, float c, float &x1, float &x2);
+  // virtual bool intersect(Ray ray);
 };
 
 

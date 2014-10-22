@@ -91,6 +91,10 @@ void Point::setValues(float x1, float y1, float z1) {
 	this->x = x1;
 	this->y = y1;
 	this->z = z1;
+    coordinates(0) = x1;
+    coordinates(1) = y1;
+    coordinates(2) = z1;
+    coordinates(3) = 1;
 }
 
 //****************************************************
@@ -206,6 +210,21 @@ bool Sphere::intersect(Ray ray) {
 	// }
 	return true;
 }
+
+//****************************************************
+// TRIANGLE       
+//****************************************************
+
+  Triangle::Triangle() {
+
+  }
+
+  Triangle::Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz) {
+  	a.setValues(ax, ay, az);
+  	b.setValues(bx, by, bz);
+  	c.setValues(cx, cy, cz);
+  }
+
 
 //****************************************************
 // LCAOLGEO
