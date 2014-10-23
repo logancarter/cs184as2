@@ -64,6 +64,7 @@ int numshapes = 0;
 std::vector<Light *> lights;
 std::vector<Matrix4f *> transformations;
 int numlights = 0;
+Material* currentMaterial = NULL;
 
 
 //****************************************************
@@ -131,7 +132,11 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 5) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                // TODO: do material for other primitives too, triangle...
                 Sphere sphere = *(new Sphere(r, cx, cy, cz));
+                if (currentMaterial) {
+                  sphere.setMaterial(currentMaterial);
+                }
                 numshapes++;
                 primitives.push_back(&sphere);
                 }
@@ -200,6 +205,7 @@ int main(int argc, char *argv[]) {
                 numlights ++;
               }
               else if (currentword.compare("mat") == 0) {
+                // TODO: Check if all of these properties are there, handle if not.
                 float kar = atof(words.at(1).c_str());
                 float kag = atof(words.at(2).c_str());
                 float kab = atof(words.at(3).c_str());
@@ -216,6 +222,12 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 14) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                Material mat = *(new Material());
+                mat.getBRDF().setAmbient(kar, kag, kab);
+                mat.getBRDF().setDiffuse(kdr, kdg, kdb);
+                mat.getBRDF().setSpecular(ksr, ksg, ksb, ksp);
+                mat.getBRDF().setReflection(krr, krg, krb);
+                currentMaterial = &mat;
               }
               else if (currentword.compare("xft") == 0) {
                 float tx = atof(words.at(1).c_str());

@@ -476,24 +476,97 @@ RayTracer::RayTracer() {
 
 void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light *> lights) {
 	if (!primitive.intersect(ray)) {
-		sample->setRColor(0.0);
-		sample->setGColor(0.0);
-		sample->setBColor(0.0);
+		// TODO: Change this to look for ambient
+		sample->setBlack();
+		if (lights.empty()) {
+			sample->setBlack();
+		}
 	} else {
-		//for (int i = 0; i < lights.size(); i++) {
-		//	if (lights[i].isALight()) {//check if ambient
-				if(lights[0]->isALight()) {
-					cout << lights[0]->isALight() << " it knows its ambient \n";
-				}
-				sample->setRColor(lights[0]->getRColor());
-				sample->setGColor(lights[0]->getGColor());
-				sample->setBColor(lights[0]->getBColor());
-				//cout << lights[i].r << "  \n";
-		//	}
-		//}
-		// sample->setRColor(2.0);
-		// sample->setGColor(0.0);
-		// sample->setBColor(0.0);
+		Vector3f RGB_result;
+
+		if(lights[0]->isALight()) {
+			// cout << lights[0]->isALight() << " it knows its ambient \n";
+			Vector3f ambient(3);
+			ambient(0) = lights[0]->getRColor();
+			ambient(1) = lights[0]->getGColor();
+			ambient(2) = lights[0]->getBColor();
+			RGB_result = RGB_result + ambient;
+		}
+
+		// TODO: change this to take into account material
+		sample->setRColor(RGB_result(0));
+		sample->setGColor(RGB_result(1));
+		sample->setBColor(RGB_result(2));
+
+		/*
+		// This is the front-facing Z coordinate
+        float z = sqrt(radius*radius-dist*dist);
+        Vectorz pos, normal;
+        pos.setValues(x,y,z);
+        normal = Vectorz::add(pos, pos);  
+        normal = normal.normalize();        
+
+        Vectorz result;
+        result.setValues(0,0,0);
+
+        // For each light source...
+        for (int k = 0; k < lightptr; k++) {
+          GLfloat r, g, b, x, y, z;
+          Vectorz lightpos, light;
+          lightpos.setValues(lights[k]->x, lights[k]->y, lights[k]->z);
+
+          Vectorz I_rgb;
+          I_rgb.setValues(lights[k]->r, lights[k]->g, lights[k]->b);
+
+          if (i == 200 && j == 200) {
+            cout << k << lights.size() << endl;
+            I_rgb.printV();
+            lightpos.printV();
+          }
+
+          if (lights[k]->isDLight()) {
+            light = lightpos.flip().normalize();
+          } else {        // Is point light
+            light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
+            light = light.normalize();
+          }
+
+          Vectorz kd, diffuse;
+          if (hasDiffuse) {
+            kd.setValues(kd_r, kd_g, kd_b);
+            diffuse = Vectorz::elementMult(kd, I_rgb);
+            diffuse = Vectorz::scale(diffuse, fmax(Vectorz::dot(light, normal), 0.0));
+          } else {
+            diffuse.setValues(0,0,0);
+          }
+
+          Vectorz ks, specular, reflection, viewer;
+          if (hasSpecular) {
+            ks.setValues(ks_r, ks_g, ks_b);
+            reflection = Vectorz::add(light.flip(), Vectorz::scale(Vectorz::scale(normal, Vectorz::dot(light, normal)), 2));
+            reflection = reflection.flip();
+            reflection = reflection.normalize();
+            viewer.setValues(0,0,-1);
+            specular = Vectorz::elementMult(ks, I_rgb);
+            specular = Vectorz::scale(specular, pow(fmax(Vectorz::dot(reflection, viewer), 0.0), sp_v));
+          } else {
+            specular.setValues(0,0,0);
+          }
+
+          Vectorz ka, ambient;
+          if (hasAmbient) {
+            ka.setValues(ka_r, ka_g, ka_b);
+            ambient = Vectorz::elementMult(ka, I_rgb);
+          } else {
+            ambient.setValues(0,0,0);
+          }
+          
+          Vectorz subtotal = Vectorz::add(Vectorz::add(diffuse, specular), ambient);
+          result = Vectorz::add(result, subtotal);
+      }
+
+        setPixel(i,j, result.getX(), result.getY(), result.getZ());
+        */
 	}
 }
 

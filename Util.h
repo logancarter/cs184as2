@@ -141,9 +141,10 @@ class AmbientLight: public Light {
       r = r2;
       g = g2;
       b = b2;
+      x = y = z = 0;
     }
     virtual void setValues(float r2, float g2, float b2) {
-      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;//x, y, z shouldn't get used
+      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;   //x, y, z shouldn't get used
     }
     virtual int isALight() {
       return 1;
@@ -234,16 +235,100 @@ public:
 
 
 //****************************************************
-// Primitive
+// BRDF
+//****************************************************
+
+class BRDF {
+  Vector3f ka, kd, ks, kr;
+  int ambient, diffuse, specular, reflection;
+  float ksp;
+public:
+  BRDF() { 
+    ambient = diffuse = specular = reflection = 0; 
+    ksp = 0.0;
+    ka << 0, 0, 0;
+    kd << 0, 0, 0;
+    ks << 0, 0, 0;
+    kr << 0, 0, 0;
+  }
+  void setAmbient(float r, float g, float b) {
+    if (r == g == b == 0.0) {
+      cout << "AMBIENT IS NOTHING!" << endl;
+      return;
+    }
+    ka(0) = r;
+    ka(1) = g;
+    ka(2) = b;
+    ambient = 1;
+  }
+  void setDiffuse(float r, float g, float b) {
+    if (r == g == b == 0.0) {
+      cout << "DIFFUSE IS NOTHING!" << endl;
+      return;
+    }
+    kd(0) = r;
+    kd(1) = g;
+    kd(2) = b;
+    diffuse = 1;
+  }
+  void setSpecular(float r, float g, float b, float sp) {
+    if (r == g == b == 0.0) {
+      cout << "SPECULAR IS NOTHING!" << endl;
+      return;
+    }
+    ks(0) = r;
+    ks(1) = g;
+    ks(2) = b;
+    ksp = sp;
+    specular = 1;
+  }
+  void setReflection(float r, float g, float b) {
+    if (r == g == b == 0.0) {
+      cout << "REFLECTION IS NOTHING!" << endl;
+      return;
+    }
+    kr(0) = r;
+    kr(1) = g;
+    kr(2) = b;
+    reflection = 1;
+  }
+  int hasAmbient() { return ambient; }
+  int hasDiffuse() { return diffuse; }
+  int hasSpecular() { return specular; }
+  int hasReflection() { return reflection; }
+  Vector3f getKA() { return ka; }
+  Vector3f getKD() { return kd; }
+  Vector3f getKS() { return ks; }
+  Vector3f getKR() { return kr; }
+};
+
+
+//****************************************************
+// MATERIAL
+//****************************************************
+
+class Material {
+  BRDF brdf;
+public:
+  Material() {  } // TODO-lookat: no new BRDF(), no viable oper=
+  BRDF getBRDF() { return brdf; }
+
+
+};
+
+//****************************************************
+// PRIMITIVE
 //****************************************************
 
 class Primitive {
-  Transformation o2w;
+  Transformation o2w, w2o;
+  Material* mat;
 public:
   Primitive();
   virtual void isPrimitive() { cout << "0" << endl; }
   Transformation getTransform() { return o2w; }
   virtual bool intersect(Ray ray);
+  void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
 };
 
 
@@ -341,6 +426,7 @@ public:
   float getBColor() { return b; }
 	void setX(float val) { x = val; }
 	void setY(float val) { y = val; }
+  void setBlack() { r = g = b = 0.0; }
 	void setRColor(float val) {r = val;}
   void setGColor(float val) {g = val;}
   void setBColor(float val) {b = val;}
