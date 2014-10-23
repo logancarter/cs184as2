@@ -289,13 +289,18 @@ void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 Sample::Sample() {
 	x = 0;
 	y = 0;
-	color = 0;//Color(0,0,0);
+	r = 0;
+	g = 0;
+	b = 0;
+	//color = null;
 }
 
-Sample::Sample(float xval, float yval, float default_color) {
+Sample::Sample(float xval, float yval, float r1, float g1, float b1) {
 	x = xval;
 	y = yval;
-	color = default_color;
+	r = r1;
+	g = g1;
+	b = b1;
 }
 
 
@@ -320,7 +325,9 @@ Sampler::Sampler(int w, int h) {
 void Sampler::getFirstSample(Sample *sample) {
 	sample->setX(0);
 	sample->setY(0);
-	sample->setColor(0.0);
+	sample->setRColor(0.0);
+	sample->setGColor(0.0);
+	sample->setBColor(0.0);
 }
 
 bool Sampler::getNextSample(Sample *sample) {
@@ -353,12 +360,12 @@ Film::Film() {
 	image.assign(1000, 500, 1, 3, 0); 
 }
 
-Film::Film(int w, int h, int z, int v, int default_color) {
+Film::Film(int w, int h, int z, int v, float default_color) {
 	image.assign(w, h, z, v, default_color); 
 }
 
 // TODO: CHANGE THIS SO WE CAN SET MULTIPLE COLORSSSSSSS NOT JSUT 1111111 FUCK
-void Film::setPixel(int x, int y, int z, int v, int color) {
+void Film::setPixel(int x, int y, int z, int v, float color) {
 	image(x, y, z, v) = color;
 }
 
@@ -450,14 +457,25 @@ RayTracer::RayTracer() {
 
 void RayTracer::trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights) {
 	if (!shape.intersect(ray)) {
-		sample->setColor(0.0);
+		sample->setRColor(0.0);
+		sample->setGColor(0.0);
+		sample->setBColor(0.0);
 	} else {
-		// for (int i = 0; i < lights.size(); i++) {
-		// 	if (lights[i].isALight()) {//check if ambient
-		// 		sample->setColor(lights[i].r);
-		// 	}
-		sample->setColor(2.0);
-		}
+		//for (int i = 0; i < lights.size(); i++) {
+		//	if (lights[i].isALight()) {//check if ambient
+				if(lights[0].isALight()) {
+					cout << lights[0].isALight() << "it knows its ambient \n";
+				}
+				sample->setRColor(lights[0].getRColor());
+				sample->setGColor(lights[0].getGColor());
+				sample->setBColor(lights[0].getBColor());
+				//cout << lights[i].r << "  \n";
+		//	}
+		//}
+		// sample->setRColor(2.0);
+		// sample->setGColor(0.0);
+		// sample->setBColor(0.0);
+	}
 }
 
 
@@ -482,7 +500,7 @@ void Scene::addLight(Light &light) {
 }
 
 void Scene::render() {
-	Sample sample;
+	Sample sample = *(new Sample());
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
 	while (notDone) {
@@ -492,7 +510,9 @@ void Scene::render() {
 	    // for (int i = 0; i < 3; i++) {
 	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
 	    // }
-    	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getColor());
+    	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getRColor());
+    	film.setPixel(sample.getX(), sample.getY(), 0, 1, sample.getGColor());
+    	film.setPixel(sample.getX(), sample.getY(), 0, 2, sample.getBColor());
 	    notDone = sampler.getNextSample(&sample);
   	}
   	film.displayToScreen();

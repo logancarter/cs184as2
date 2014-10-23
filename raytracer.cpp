@@ -194,8 +194,7 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-                AmbientLight alight = *(new AmbientLight());
-                alight.setValues(r, g, b);
+                AmbientLight alight = *(new AmbientLight(r, g, b));
                 lights.push_back(&alight);
                 numlights ++;
               }

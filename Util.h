@@ -125,33 +125,41 @@ class Matrixz {
 class Light {
   public:
     float r, g, b, x, y, z;
-    void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
+    virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
       x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
     }
     virtual int isDLight() { return 0; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
     virtual int isALight() { return 0; }
+    float getRColor() {return r;}
+    float getGColor() {return g;}
+    float getBColor() {return b;}
 };
 
 class AmbientLight: public Light {
   public:
-    void setValues(float r2, float g2, float b2) {
+    AmbientLight(float r2, float g2, float b2) {
+      r = r2;
+      g = g2;
+      b = b2;
+    }
+    virtual void setValues(float r2, float g2, float b2) {
       r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;//x, y, z shouldn't get used
     }
-    int isALight() {
+    virtual int isALight() {
       return 1;
     }
 };
 
 class PointLight: public Light {
   public:
-    int isDLight() {
+    virtual int isDLight() {
       return 0;
     }
 };
 
 class DirectionalLight: public Light {
 public:
-    int isDLight() {
+    virtual int isDLight() {
       return 1;
     }
 };
@@ -296,17 +304,21 @@ public:
 class Sample {
   // TODO: MAKE COLOR 3 CHANNEL!!!!!!!!!
 	float x, y;
-  float color;
+  float r, g, b;
 
 public:
   Sample();
-	Sample(float xval, float yval, float default_color);
+	Sample(float xval, float yval, float r1, float g1, float b1);
 	float getX() { return x; }
 	float getY() { return y; }
-  float getColor() { return color; }
+  float getRColor() { return r; }
+  float getGColor() { return g; }
+  float getBColor() { return b; }
 	void setX(float val) { x = val; }
 	void setY(float val) { y = val; }
-	void setColor(float val) { color = val; }
+	void setRColor(float val) {r = val;}
+  void setGColor(float val) {g = val;}
+  void setBColor(float val) {b = val;}
 };
 
 
@@ -336,8 +348,8 @@ class Film {
 public:
 	// v refers to the RGB (R=0, G=1, B=2)
   Film();
-	Film(int w, int h, int z, int v, int default_color);
-	void setPixel(int x, int y, int z, int v, int color);
+	Film(int w, int h, int z, int v, float default_color);
+	void setPixel(int x, int y, int z, int v, float color);
 	void displayToScreen();
 };
 
