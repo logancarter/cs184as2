@@ -474,7 +474,7 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights) {
+void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light *> lights) {
 	if (!primitive.intersect(ray)) {
 		sample->setRColor(0.0);
 		sample->setGColor(0.0);
@@ -482,12 +482,12 @@ void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector
 	} else {
 		//for (int i = 0; i < lights.size(); i++) {
 		//	if (lights[i].isALight()) {//check if ambient
-				if(lights[0].isALight()) {
-					cout << lights[0].isALight() << "it knows its ambient \n";
+				if(lights[0]->isALight()) {
+					cout << lights[0]->isALight() << " it knows its ambient \n";
 				}
-				sample->setRColor(lights[0].getRColor());
-				sample->setGColor(lights[0].getGColor());
-				sample->setBColor(lights[0].getBColor());
+				sample->setRColor(lights[0]->getRColor());
+				sample->setGColor(lights[0]->getGColor());
+				sample->setBColor(lights[0]->getBColor());
 				//cout << lights[i].r << "  \n";
 		//	}
 		//}
@@ -515,7 +515,7 @@ void Scene::addPrimitive(Primitive &primitive) {
 }
 
 void Scene::addLight(Light &light) {
-	lights.push_back(light);
+	lights.push_back(&light);
 }
 
 void Scene::render() {
@@ -525,10 +525,7 @@ void Scene::render() {
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
-		raytracer.trace(ray, &sample, *primitives[0], lights); 	// TODO: should be Color class instead of Sample, but hack it
-	    // for (int i = 0; i < 3; i++) {
-	    	// film.setPixel(sample.getX(), sample.getY(), 0, i, sample.getColor());
-	    // }
+		raytracer.trace(ray, &sample, *primitives[0], lights); 	// TODO: should be all primitves
     	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getRColor());
     	film.setPixel(sample.getX(), sample.getY(), 0, 1, sample.getGColor());
     	film.setPixel(sample.getX(), sample.getY(), 0, 2, sample.getBColor());

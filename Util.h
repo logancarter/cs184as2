@@ -128,7 +128,7 @@ class Light {
     virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
       x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
     }
-    virtual int isDLight() { return 0; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
+    virtual int isDLight() { return 30; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
     virtual int isALight() { return 0; }
     float getRColor() {return r;}
     float getGColor() {return g;}
@@ -414,7 +414,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights);  // Hacked method, deprecate this!
+  void trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light *> lights); 
 };
 
 
@@ -429,7 +429,7 @@ class Scene
   Film film;
   RayTracer raytracer;
   std::vector<Primitive *> primitives;
-  std::vector<Light> lights;
+  std::vector<Light *> lights;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
