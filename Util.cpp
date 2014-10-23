@@ -474,8 +474,8 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights) {
-	if (!shape.intersect(ray)) {
+void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights) {
+	if (!primitive.intersect(ray)) {
 		sample->setRColor(0.0);
 		sample->setGColor(0.0);
 		sample->setBColor(0.0);

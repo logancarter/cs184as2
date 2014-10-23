@@ -62,7 +62,7 @@ float height = 100.0;
 std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
-std::vector<Transformation *> transformations;
+std::vector<Matrix4f *> transformations;
 int numlights = 0;
 
 

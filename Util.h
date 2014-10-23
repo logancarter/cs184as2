@@ -166,6 +166,19 @@ public:
 
 
 //****************************************************
+// TRANSFORMATION
+//****************************************************
+
+class Transformation {
+  Matrix4f mat, inv; // transpose
+public:
+  Transformation();
+  void setMat(Matrix4f m);
+  Matrix4f getMat();
+  Matrix4f getInv();
+};
+
+//****************************************************
 // POINT
 //****************************************************
 
@@ -229,7 +242,7 @@ class Primitive {
 public:
   Primitive();
   virtual void isPrimitive() { cout << "0" << endl; }
-  Transformation getTransform() { return w2o; }
+  Transformation getTransform() { return o2w; }
   virtual bool intersect(Ray ray);
 };
 
@@ -308,19 +321,6 @@ public:
   Intersection(LocalGeo local, Primitive &s);
 };
 
-
-//****************************************************
-// TRANSFORMATION
-//****************************************************
-
-class Transformation {
-  Matrix4f mat, inv; // transpose
-public:
-  Transformation();
-  void setMat(Matrix4f m);
-  Matrix4f getMat();
-  Matrix4f getInv();
-};
 
 //****************************************************
 // SAMPLE
