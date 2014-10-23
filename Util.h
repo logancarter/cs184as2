@@ -171,18 +171,24 @@ public:
 
 class Point {
 	float x, y, z;
+  Vector4f coordinates;
   
     public:
-      Point() {x = y = z = 0;}
+      Point() { x = y = z = 0; }
       // virtual ~Vectorz(){}
       Point(float r, float g, float b) {
       	x = r; 
- 		y = g; 
- 		z = b;
+     		y = g; 
+     		z = b;
+        coordinates(0) = r;
+        coordinates(1) = g;
+        coordinates(2) = b;
+        coordinates(3) = 1;
       }
       float getX() {return x;}
       float getY() {return y;}
       float getZ() {return z;}
+      Vector4f getCoords() { return coordinates; }
       void setX(float val) {x = val;}
       void setY(float val) {y = val;}
       void setZ(float val) {z = val;}
@@ -215,31 +221,50 @@ public:
 
 
 //****************************************************
-// SHAPE
+// Primitive
 //****************************************************
 
-class Shape {
+class Primitive {
+  Transformation o2w;
 public:
-  Shape();
-  //virtual void isShape() { cout << "0" << endl; }
+  Primitive();
+  virtual void isPrimitive() { cout << "0" << endl; }
+  Transformation getTransform() { return w2o; }
   virtual bool intersect(Ray ray);
 };
 
 
 //****************************************************
-// SPHERE
+// SPHERE         
 //****************************************************
 
-class Sphere: public Shape {
+class Sphere: public Primitive {
   float radius, center_x, center_y, center_z;
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
-  //virtual void isShape() { cout << "1" << endl; }
+  virtual void isPrimitive() { cout << "1" << endl; }
   Vector4f getCenter();
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
   virtual bool intersect(Ray ray);
+};
+
+
+//****************************************************
+// TRIANGLE       
+//****************************************************
+
+class Triangle: public Primitive {
+  Point a, b, c;
+public:
+  Triangle();
+  Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
+  virtual void isPrimitive() { cout << "2" << endl; }
+
+  // TODO: triangle intersection
+  // bool testIntersect(float a, float b, float c, float &x1, float &x2);
+  // virtual bool intersect(Ray ray);
 };
 
 
@@ -277,10 +302,10 @@ public:
 
 class Intersection {
   LocalGeo lg;
-  Shape* shape;   // TODO: should be Primitive
+  Primitive* primitive;
 public:
   Intersection();
-  Intersection(LocalGeo local, Shape &s);
+  Intersection(LocalGeo local, Primitive &s);
 };
 
 
@@ -389,7 +414,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Shape &shape, std::vector<Light> lights);  // Hacked method, deprecate this!
+  void trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light> lights);  // Hacked method, deprecate this!
 };
 
 
@@ -403,12 +428,12 @@ class Scene
   Sampler sampler;
   Film film;
   RayTracer raytracer;
-  std::vector<Shape *> shapes;
+  std::vector<Primitive *> primitives;
   std::vector<Light> lights;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
-    void addShape(Shape &shape); // TODO: decide if this needs to be pointer or not
+    void addPrimitive(Primitive &primitive); // TODO: decide if this needs to be pointer or not
     void render();
     void addLight(Light &light);
 //     ...
