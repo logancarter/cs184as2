@@ -235,6 +235,34 @@ public:
 
 
 //****************************************************
+// LOCALGEO
+//****************************************************
+class LocalGeo {
+  float x, y, z;
+  Vector4f pos, normal; // normalize
+public:
+  LocalGeo();
+  LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
+  void setPos(Vector4f p) { pos = p; }
+  void setNormal(Vector4f n) { normal = n; }
+};
+
+class Primitive;
+
+//****************************************************
+// INTERSECTION
+//****************************************************
+
+class Intersection {
+  LocalGeo lg;
+  Primitive* primitive;
+public:
+  Intersection();
+  Intersection(LocalGeo local, Primitive &s);
+};
+
+
+//****************************************************
 // BRDF
 //****************************************************
 
@@ -325,9 +353,9 @@ class Primitive {
   Material* mat;
 public:
   Primitive();
-  virtual void isPrimitive() { cout << "0" << endl; }
+  virtual void isPrimitive() { cout << "primitive" << endl; }
   Transformation getTransform() { return o2w; }
-  virtual bool intersect(Ray ray);
+  virtual bool intersect(Ray& ray, float *thit, Intersection* in);
   void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
 };
 
@@ -341,11 +369,11 @@ class Sphere: public Primitive {
 public:
   Sphere();
   Sphere(float r, float x, float y, float z);
-  virtual void isPrimitive() { cout << "1" << endl; }
+  virtual void isPrimitive() { cout << "sphere" << endl; }
   Vector4f getCenter();
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
-  virtual bool intersect(Ray ray);
+  virtual bool intersect(Ray& ray, float *thit, Intersection* in);
 };
 
 
@@ -358,24 +386,14 @@ class Triangle: public Primitive {
 public:
   Triangle();
   Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
-  virtual void isPrimitive() { cout << "2" << endl; }
+  virtual void isPrimitive() { cout << "triangle" << endl; }
 
   // TODO: triangle intersection
   // bool testIntersect(float a, float b, float c, float &x1, float &x2);
-  // virtual bool intersect(Ray ray);
+  // virtual bool intersect(Ray& ray, float *thit, Intersection* in);
 };
 
 
-//****************************************************
-// LCAOLGEO
-//****************************************************
-class LocalGeo {
-  float x, y, z;
-  Vector4f pos, normal; // normalize
-public:
-  LocalGeo();
-  LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
-};
 
 
 //****************************************************
@@ -394,17 +412,6 @@ public:
 };
 
 
-//****************************************************
-// INTERSECTION
-//****************************************************
-
-class Intersection {
-  LocalGeo lg;
-  Primitive* primitive;
-public:
-  Intersection();
-  Intersection(LocalGeo local, Primitive &s);
-};
 
 
 //****************************************************
@@ -500,7 +507,7 @@ class RayTracer {
 public:
   RayTracer();
   // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light *> lights); 
+  void trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights); 
 };
 
 

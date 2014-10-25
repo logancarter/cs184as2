@@ -126,9 +126,40 @@ Vector4f Ray::getPos() {
 	return pos;
 }
 
-// Ray::Ray(float pos_x, float pos_y, float pos_z, float dir_x, float dir_y, float dir_z) {
-// 	pos = Vector4f
-// }
+
+//****************************************************
+// LCAOLGEO
+//****************************************************
+
+  LocalGeo::LocalGeo() {
+
+  }
+
+  LocalGeo::LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz) {
+  	pos(0) = x = x1;
+  	pos(1) = y = y1;
+  	pos(2) = z = z1;
+  	pos(3) = 1;
+  	normal(0) = nx;
+  	normal(1) = ny;
+  	normal(2) = nz;
+  	normal(3) = 0;
+  	normal.normalize();
+  }
+
+//****************************************************
+// INTERSECTION
+//****************************************************
+
+Intersection::Intersection() {
+
+}
+
+
+Intersection::Intersection(LocalGeo local, Primitive &s) {
+	lg = local;
+	primitive = &s;
+}
 
 
 //****************************************************
@@ -139,8 +170,10 @@ Primitive::Primitive() {
 
 }
 
-bool Primitive::intersect(Ray ray) {
-	//cout << "hi" << endl;
+bool Primitive::intersect(Ray& ray, float *thit, Intersection* in) {
+	cout << "primitive intersect" << endl;
+	/* Transform the ray w2o
+	LocalGEo */
 	return false;
 }
 
@@ -192,10 +225,10 @@ bool Sphere::testIntersect(float a, float b, float c, float &x0, float &x1) {
 }
 
 //algorithm credit goes to scratchapixel.com
-bool Sphere::intersect(Ray ray) {
+bool Sphere::intersect(Ray& ray, float *thit, Intersection* in) {
 	float t0;
 	float t1;
-	//cout << "hi2" << endl;
+	cout << "sphere intersect" << endl;
 	Vector4f difference = ray.getPos() - getCenter();
 	float a = ray.getDir().dot(ray.getDir());
 	float b = 2 * (ray.getDir()).dot(difference);
@@ -226,39 +259,7 @@ bool Sphere::intersect(Ray ray) {
   }
 
 
-//****************************************************
-// LCAOLGEO
-//****************************************************
 
-  LocalGeo::LocalGeo() {
-
-  }
-
-  LocalGeo::LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz) {
-  	pos(0) = x = x1;
-  	pos(1) = y = y1;
-  	pos(2) = z = z1;
-  	pos(3) = 1;
-  	normal(0) = nx;
-  	normal(1) = ny;
-  	normal(2) = nz;
-  	normal(3) = 0;
-  	normal.normalize();
-  }
-
-//****************************************************
-// INTERSECTION
-//****************************************************
-
-Intersection::Intersection() {
-
-}
-
-
-Intersection::Intersection(LocalGeo local, Primitive &s) {
-	lg = local;
-	primitive = &s;
-}
 
 
 //****************************************************
@@ -474,99 +475,108 @@ RayTracer::RayTracer() {
 
 // }
 
-void RayTracer::trace(Ray ray, Sample *sample, Primitive &primitive, std::vector<Light *> lights) {
-	if (!primitive.intersect(ray)) {
-		// TODO: Change this to look for ambient
-		sample->setBlack();
-		if (lights.empty()) {
+// TODO: Assume that object has coeffs, later handle if it doesn't.
+void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
+	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
+		Primitive* primitive = primitives[i];
+		primitive->isPrimitive();
+		float* thit = 0;
+		Intersection* in = new Intersection();
+		if (!primitive->intersect(ray, thit, in)) {
+			// TODO: Change this to look for ambient
 			sample->setBlack();
-		}
-	} else {
-		Vector3f RGB_result;
+			if (lights.empty()) {
+				sample->setBlack();
+			}
+		} else {
+			cout << "intersect" << endl;
+			Vector3f RGB_result;
+			for(std::vector<int>::size_type j = 0; j != lights.size(); j++) {
+				cout << "HI" << endl;
+				if(lights[j]->isALight()) {
+					cout << lights[0]->isALight() << " it knows its ambient \n";
+					Vector3f ambient(3);
+					ambient(0) = lights[j]->getRColor();
+					ambient(1) = lights[j]->getGColor();
+					ambient(2) = lights[j]->getBColor();
+					RGB_result = RGB_result + ambient;
+				}
 
-		if(lights[0]->isALight()) {
-			// cout << lights[0]->isALight() << " it knows its ambient \n";
-			Vector3f ambient(3);
-			ambient(0) = lights[0]->getRColor();
-			ambient(1) = lights[0]->getGColor();
-			ambient(2) = lights[0]->getBColor();
-			RGB_result = RGB_result + ambient;
-		}
+				// TODO: change this to take into account material
+				sample->setRColor(RGB_result(0));
+				sample->setGColor(RGB_result(1));
+				sample->setBColor(RGB_result(2));
 
-		// TODO: change this to take into account material
-		sample->setRColor(RGB_result(0));
-		sample->setGColor(RGB_result(1));
-		sample->setBColor(RGB_result(2));
+				/*
+				// This is the front-facing Z coordinate
+		        float z = sqrt(radius*radius-dist*dist);
+		        Vectorz pos, normal;
+		        pos.setValues(x,y,z);
+		        normal = Vectorz::add(pos, pos);  
+		        normal = normal.normalize();        
 
-		/*
-		// This is the front-facing Z coordinate
-        float z = sqrt(radius*radius-dist*dist);
-        Vectorz pos, normal;
-        pos.setValues(x,y,z);
-        normal = Vectorz::add(pos, pos);  
-        normal = normal.normalize();        
+		        Vectorz result;
+		        result.setValues(0,0,0);
 
-        Vectorz result;
-        result.setValues(0,0,0);
+		        // For each light source...
+		        for (int k = 0; k < lightptr; k++) {
+		          GLfloat r, g, b, x, y, z;
+		          Vectorz lightpos, light;
+		          lightpos.setValues(lights[k]->x, lights[k]->y, lights[k]->z);
 
-        // For each light source...
-        for (int k = 0; k < lightptr; k++) {
-          GLfloat r, g, b, x, y, z;
-          Vectorz lightpos, light;
-          lightpos.setValues(lights[k]->x, lights[k]->y, lights[k]->z);
+		          Vectorz I_rgb;
+		          I_rgb.setValues(lights[k]->r, lights[k]->g, lights[k]->b);
 
-          Vectorz I_rgb;
-          I_rgb.setValues(lights[k]->r, lights[k]->g, lights[k]->b);
+		          if (i == 200 && j == 200) {
+		            cout << k << lights.size() << endl;
+		            I_rgb.printV();
+		            lightpos.printV();
+		          }
 
-          if (i == 200 && j == 200) {
-            cout << k << lights.size() << endl;
-            I_rgb.printV();
-            lightpos.printV();
-          }
+		          if (lights[k]->isDLight()) {
+		            light = lightpos.flip().normalize();
+		          } else {        // Is point light
+		            light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
+		            light = light.normalize();
+		          }
 
-          if (lights[k]->isDLight()) {
-            light = lightpos.flip().normalize();
-          } else {        // Is point light
-            light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
-            light = light.normalize();
-          }
+		          Vectorz kd, diffuse;
+		          if (hasDiffuse) {
+		            kd.setValues(kd_r, kd_g, kd_b);
+		            diffuse = Vectorz::elementMult(kd, I_rgb);
+		            diffuse = Vectorz::scale(diffuse, fmax(Vectorz::dot(light, normal), 0.0));
+		          } else {
+		            diffuse.setValues(0,0,0);
+		          }
 
-          Vectorz kd, diffuse;
-          if (hasDiffuse) {
-            kd.setValues(kd_r, kd_g, kd_b);
-            diffuse = Vectorz::elementMult(kd, I_rgb);
-            diffuse = Vectorz::scale(diffuse, fmax(Vectorz::dot(light, normal), 0.0));
-          } else {
-            diffuse.setValues(0,0,0);
-          }
+		          Vectorz ks, specular, reflection, viewer;
+		          if (hasSpecular) {
+		            ks.setValues(ks_r, ks_g, ks_b);
+		            reflection = Vectorz::add(light.flip(), Vectorz::scale(Vectorz::scale(normal, Vectorz::dot(light, normal)), 2));
+		            reflection = reflection.flip();
+		            reflection = reflection.normalize();
+		            viewer.setValues(0,0,-1);
+		            specular = Vectorz::elementMult(ks, I_rgb);
+		            specular = Vectorz::scale(specular, pow(fmax(Vectorz::dot(reflection, viewer), 0.0), sp_v));
+		          } else {
+		            specular.setValues(0,0,0);
+		          }
 
-          Vectorz ks, specular, reflection, viewer;
-          if (hasSpecular) {
-            ks.setValues(ks_r, ks_g, ks_b);
-            reflection = Vectorz::add(light.flip(), Vectorz::scale(Vectorz::scale(normal, Vectorz::dot(light, normal)), 2));
-            reflection = reflection.flip();
-            reflection = reflection.normalize();
-            viewer.setValues(0,0,-1);
-            specular = Vectorz::elementMult(ks, I_rgb);
-            specular = Vectorz::scale(specular, pow(fmax(Vectorz::dot(reflection, viewer), 0.0), sp_v));
-          } else {
-            specular.setValues(0,0,0);
-          }
-
-          Vectorz ka, ambient;
-          if (hasAmbient) {
-            ka.setValues(ka_r, ka_g, ka_b);
-            ambient = Vectorz::elementMult(ka, I_rgb);
-          } else {
-            ambient.setValues(0,0,0);
-          }
-          
-          Vectorz subtotal = Vectorz::add(Vectorz::add(diffuse, specular), ambient);
-          result = Vectorz::add(result, subtotal);
-      }
-
-        setPixel(i,j, result.getX(), result.getY(), result.getZ());
-        */
+		          Vectorz ka, ambient;
+		          if (hasAmbient) {
+		            ka.setValues(ka_r, ka_g, ka_b);
+		            ambient = Vectorz::elementMult(ka, I_rgb);
+		          } else {
+		            ambient.setValues(0,0,0);
+		          }
+		          
+		          Vectorz subtotal = Vectorz::add(Vectorz::add(diffuse, specular), ambient);
+		          result = Vectorz::add(result, subtotal);
+		      }
+*/
+		      }
+	        // setPixel(i,j, result.getX(), result.getY(), result.getZ());
+	    }
 	}
 }
 
@@ -598,7 +608,7 @@ void Scene::render() {
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
-		raytracer.trace(ray, &sample, *primitives[0], lights); 	// TODO: should be all primitves
+		raytracer.trace(ray, &sample, primitives, lights); 	// TODO: should be all primitves
     	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getRColor());
     	film.setPixel(sample.getX(), sample.getY(), 0, 1, sample.getGColor());
     	film.setPixel(sample.getX(), sample.getY(), 0, 2, sample.getBColor());
