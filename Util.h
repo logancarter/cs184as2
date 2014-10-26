@@ -133,6 +133,9 @@ class Light {
     float getRColor() {return r;}
     float getGColor() {return g;}
     float getBColor() {return b;}
+    float getX() { return x; }
+    float getY() { return y; }
+    float getZ() { return z; }
 };
 
 class AmbientLight: public Light {
@@ -238,13 +241,15 @@ public:
 // LOCALGEO
 //****************************************************
 class LocalGeo {
-  float x, y, z;
+  // float x, y, z;
   Vector4f pos, normal; // normalize
 public:
   LocalGeo();
-  LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
+  // LocalGeo(float x1, float y1, float z1, float nx, float ny, float nz);
   void setPos(Vector4f p) { pos = p; }
   void setNormal(Vector4f n) { normal = n; }
+  Vector4f getPos() { return pos; }
+  Vector4f getNormal() { return normal; }
 };
 
 class Primitive;
@@ -259,6 +264,10 @@ class Intersection {
 public:
   Intersection();
   Intersection(LocalGeo local, Primitive &s);
+  void setPrimitive(Primitive *p) { primitive = p; }
+  void setLocalGeo(LocalGeo local) { lg = local; }
+  LocalGeo getLocalGeo() { return lg; }
+  Primitive* getPrimitive() { return primitive; }
 };
 
 
@@ -328,6 +337,7 @@ public:
   Vector3f getKD() { return kd; }
   Vector3f getKS() { return ks; }
   Vector3f getKR() { return kr; }
+  float getKSP() { return ksp; }
 };
 
 
@@ -355,8 +365,10 @@ public:
   Primitive();
   virtual void isPrimitive() { cout << "primitive" << endl; }
   Transformation getTransform() { return o2w; }
-  virtual bool intersect(Ray& ray, float *thit, Intersection* in);
+  virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
+  float posMin(float t0, float t1) { return std::min(std::abs(t0), std::abs(t1)); }
+  Material* getMaterial() { return mat; }
 };
 
 
@@ -373,7 +385,7 @@ public:
   Vector4f getCenter();
   float getRadius();
   bool testIntersect(float a, float b, float c, float &x1, float &x2);
-  virtual bool intersect(Ray& ray, float *thit, Intersection* in);
+  virtual bool intersect(Ray &ray, float *thit, Intersection* in);
 };
 
 
@@ -420,7 +432,7 @@ public:
 
 class Sample {
   // TODO: MAKE COLOR 3 CHANNEL!!!!!!!!!
-	float x, y;
+	float x, y, z;
   float r, g, b;
 
 public:
@@ -428,11 +440,13 @@ public:
 	Sample(float xval, float yval, float r1, float g1, float b1);
 	float getX() { return x; }
 	float getY() { return y; }
+  float getZ() { return z; }
   float getRColor() { return r; }
   float getGColor() { return g; }
   float getBColor() { return b; }
 	void setX(float val) { x = val; }
 	void setY(float val) { y = val; }
+  void setZ(float val) { z = val; }
   void setBlack() { r = g = b = 0.0; }
 	void setRColor(float val) {r = val;}
   void setGColor(float val) {g = val;}
