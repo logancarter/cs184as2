@@ -288,18 +288,26 @@ public:
     ks << 0, 0, 0;
     kr << 0, 0, 0;
   }
+  int hasAmbient() { return ambient; }
+  int hasDiffuse() { return diffuse; }
+  int hasSpecular() { return specular; }
+  int hasReflection() { return reflection; }
+  Vector3f getKA() { 
+    return ka; }
+  Vector3f getKD() { return kd; }
+  Vector3f getKS() { return ks; }
+  Vector3f getKR() { return kr; }
+  float getKSP() { return ksp; }
   void setAmbient(float r, float g, float b) {
-    if (r == g == b == 0.0) {
+    if ((r == 0.0) && r == g && g == b) {
       cout << "AMBIENT IS NOTHING!" << endl;
       return;
     }
-    ka(0) = r;
-    ka(1) = g;
-    ka(2) = b;
+    ka << r, g, b;
     ambient = 1;
   }
   void setDiffuse(float r, float g, float b) {
-    if (r == g == b == 0.0) {
+    if ((r == 0.0) && r == g && g == b) {
       cout << "DIFFUSE IS NOTHING!" << endl;
       return;
     }
@@ -309,7 +317,7 @@ public:
     diffuse = 1;
   }
   void setSpecular(float r, float g, float b, float sp) {
-    if (r == g == b == 0.0) {
+    if ((r == 0.0) && r == g && g == b) {
       cout << "SPECULAR IS NOTHING!" << endl;
       return;
     }
@@ -320,7 +328,7 @@ public:
     specular = 1;
   }
   void setReflection(float r, float g, float b) {
-    if (r == g == b == 0.0) {
+    if ((r == 0.0) && r == g && g == b) {
       cout << "REFLECTION IS NOTHING!" << endl;
       return;
     }
@@ -329,15 +337,6 @@ public:
     kr(2) = b;
     reflection = 1;
   }
-  int hasAmbient() { return ambient; }
-  int hasDiffuse() { return diffuse; }
-  int hasSpecular() { return specular; }
-  int hasReflection() { return reflection; }
-  Vector3f getKA() { return ka; }
-  Vector3f getKD() { return kd; }
-  Vector3f getKS() { return ks; }
-  Vector3f getKR() { return kr; }
-  float getKSP() { return ksp; }
 };
 
 
@@ -346,10 +345,10 @@ public:
 //****************************************************
 
 class Material {
-  BRDF brdf;
+  BRDF* brdf;
 public:
-  Material() {  } // TODO-lookat: no new BRDF(), no viable oper=
-  BRDF getBRDF() { return brdf; }
+  Material() { brdf = new BRDF(); } // TODO-lookat: no new BRDF(), no viable oper=
+  BRDF* getBRDF() { return brdf; }
 
 
 };
@@ -421,6 +420,7 @@ public:
   float getG();
   float getB();
   void setRGB(float rv, float gv, float bv);
+  void appendRGB(float rv, float gv, float bv) { r += rv; g+= gv; b+= bv; }
 };
 
 
@@ -526,6 +526,7 @@ public:
   void addPrimitive(Primitive &primitive);
   void addLight(Light &light);
   void trace(Ray& ray, int depth, Color* color);
+  std::vector<Primitive *> getPrims() { return primitives; }
   // void trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights); 
 };
 
@@ -540,6 +541,7 @@ class Scene
   Sampler sampler;
   Film film;
   RayTracer raytracer;
+  Color color;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);

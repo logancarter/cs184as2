@@ -223,10 +223,10 @@ int main(int argc, char *argv[]) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
                 Material mat = *(new Material());
-                mat.getBRDF().setAmbient(kar, kag, kab);
-                mat.getBRDF().setDiffuse(kdr, kdg, kdb);
-                mat.getBRDF().setSpecular(ksr, ksg, ksb, ksp);
-                mat.getBRDF().setReflection(krr, krg, krb);
+                mat.getBRDF()->setAmbient(kar, kag, kab);
+                mat.getBRDF()->setDiffuse(kdr, kdg, kdb);
+                mat.getBRDF()->setSpecular(ksr, ksg, ksb, ksp);
+                mat.getBRDF()->setReflection(krr, krg, krb);
                 currentMaterial = &mat;
               }
               else if (currentword.compare("xft") == 0) {
@@ -295,7 +295,6 @@ int main(int argc, char *argv[]) {
   Film film = *(new Film(width, height, 1, 3, 0));
   Sampler sampler = *(new Sampler(width, height));
   RayTracer raytracer = *(new RayTracer());
-  Scene scene = *(new Scene(sampler, film, camera, raytracer));
   //make a list of shapes and add them!
   //scene.addShape(sphere);
   for (int i = 0; i < numshapes; i++) {
@@ -304,6 +303,8 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < numlights; i++) {
     raytracer.addLight(*lights[i]);
   }
+  cout << "size of ray's prims " << raytracer.getPrims().size() << endl;
+  Scene scene = *(new Scene(sampler, film, camera, raytracer));
   scene.render();
   return 0;
 }

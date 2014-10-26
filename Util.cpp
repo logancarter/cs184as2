@@ -310,7 +310,7 @@ Matrix4f Transformation::getInv() {
 
 
 Color::Color() {
-
+	r = g = b = 0.0;
 }
 
 Color::Color(float rv, float gv, float bv) {
@@ -499,6 +499,7 @@ RayTracer::RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls) {
 
 void RayTracer::addPrimitive(Primitive &primitive) {
 	primitives.push_back(&primitive);
+	cout << primitives.size() << endl;
 }
 
 void RayTracer::addLight(Light &light) {
@@ -506,17 +507,19 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-
+	color->setRGB(0.0, 0.0, 0.0);
 //}
-
+	cout << "trace! " << primitives.size() << endl;
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
 //void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
+		cout << "HI" << endl;
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
 		Intersection* in = new Intersection();
+		cout << "huh " << primitive->getMaterial()->getBRDF()->getKA() << endl;
 		// cout << "do we make it " << *thit << endl;
 		if (!primitive->intersect(ray, &thit, in)) {		// No hit
 			cout << "no hit" << endl;
@@ -566,10 +569,10 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          }
 	          light.normalize();
 
-	          BRDF brdf = primitive->getMaterial()->getBRDF();
+	          BRDF* brdf = primitive->getMaterial()->getBRDF();
 	          Vector3f kd, diffuse;
-	          if (brdf.hasDiffuse()) {
-	            kd = brdf.getKD();
+	          if (brdf->hasDiffuse()) {
+	            kd = brdf->getKD();
 	            diffuse = kd.cwiseProduct(I_rgb);
 	            // diffuse = Vectorz::scale(diffuse, fmax(Vectorz::dot(light, normal), 0.0));
 	            diffuse = diffuse * fmax(light.dot(normal), 0.0);
@@ -578,8 +581,8 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          }
 
 	          Vector3f ks, specular, reflection, viewer;
-	          if (brdf.hasSpecular()) {
-	            ks = brdf.getKS();
+	          if (brdf->hasSpecular()) {
+	            ks = brdf->getKS();
 	            // reflection = Vectorz::add(light.flip(), Vectorz::scale(Vectorz::scale(normal, Vectorz::dot(light, normal)), 2));
 	            reflection = (light * -1) + (normal * light.dot(normal) * 2);
 	            // reflection *= -1; 	// TODO: check why i did this
@@ -590,14 +593,14 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            ray_pos << ray.getPos()(0), ray.getPos()(1), ray.getPos()(2);
 	            viewer = ray_pos - pos;
 	            specular = ks.cwiseProduct(I_rgb);
-	            specular = specular * pow(fmax(reflection.dot(viewer), 0.0), brdf.getKSP());
+	            specular = specular * pow(fmax(reflection.dot(viewer), 0.0), brdf->getKSP());
 	          } else {
 	            specular << 0,0,0;
 	          }
 
 	          Vector3f ka, ambient;
-	          if (brdf.hasAmbient()) {
-	            ka = brdf.getKA();
+	          if (brdf->hasAmbient()) {
+	            ka = brdf->getKA();
 	            ambient = ka.cwiseProduct(I_rgb);
 	          } else {
 	            ambient << 0,0,0;
@@ -639,7 +642,6 @@ void Scene::render() {
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
 	int depth = 1;
-	Color color;
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
