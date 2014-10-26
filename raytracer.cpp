@@ -303,7 +303,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < numlights; i++) {
     raytracer.addLight(*lights[i]);
   }
-  cout << "size of ray's prims " << raytracer.getPrims().size() << endl;
+  //cout << "size of ray's prims " << raytracer.getPrims().size() << endl;
   Scene scene = *(new Scene(sampler, film, camera, raytracer));
   scene.render();
   return 0;

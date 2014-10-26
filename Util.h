@@ -383,7 +383,7 @@ public:
   virtual void isPrimitive() { cout << "sphere" << endl; }
   Vector4f getCenter();
   float getRadius();
-  bool testIntersect(float a, float b, float c, float &x1, float &x2);
+  bool testIntersect(float &a, float &b, float &c, float &x1, float &x2);
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
 };
 

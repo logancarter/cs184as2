@@ -64,7 +64,7 @@ Vectorz Vectorz::normalize() {
       }
 
 void Vectorz::printV() {
-	cout << this->getX() << " " << this->getY() << " " << this->getZ() << endl;
+	//cout << this->getX() << " " << this->getY() << " " << this->getZ() << endl;
 }
 
 
@@ -175,7 +175,7 @@ Primitive::Primitive() {
 }
 
 bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
-	cout << "primitive intersect" << endl;
+	//cout << "primitive intersect" << endl;
 	/* Transform the ray w2o
 	LocalGEo */
 	return false;
@@ -205,13 +205,13 @@ float Sphere::getRadius() {
 	return radius;
 }
 
-bool Sphere::testIntersect(float a, float b, float c, float &x0, float &x1) {
-	float d = (b*b) - (4 * a * c);
+bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
+	float d = (b * b) - (4 * a * c);
 	if (d < 0) {
 		// cout << "testIntersect  " << d << endl;
 		return false;
 	} else if (d == 0) {
-		x0 = x1 = -0.5 * b/a;
+		x0 = x1 = - 0.5 * b / a;
 	} else {
 		float q = (b > 0) ? 
 		-0.5 * (b + sqrt(d)) :
@@ -219,10 +219,9 @@ bool Sphere::testIntersect(float a, float b, float c, float &x0, float &x1) {
 		x0 = q/a;
 		x1 = c/q;
 	}
-	// if (x0 > x1) {
-	// 	std::swap(x0, x1);
-	// }
-
+	if (x0 > x1) {
+		std::swap(x0, x1);
+	}
 	return true;
 }
 
@@ -235,20 +234,21 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	Vector4f difference = ray.getPos() - getCenter();
 	float a = ray.getDir().dot(ray.getDir());
 	float b = 2 * (ray.getDir()).dot(difference);
-	float c = difference.dot(difference) - getRadius();
+	float c = difference.dot(difference) - (getRadius() * getRadius());
+	//cout << getRadius() << " is Radius\n";
 	if (!testIntersect(a, b, c, t0, t1)) {
 		return false;
 	}
 	// cout << t0 << " " << t1 << endl;
 
-	// if (t0 > ray.tmax) {
+	// if (t0 > ray.max) {
 	// 	return false;
 	// } else {
-	// 	ray.tmax = 0;
+	// 	ray.max = 0;
 	// }
 
 	*thit = posMin(t0, t1);
-	cout << *thit << endl;
+	//cout << *thit << endl;
 	float t_hit = *thit;
 	in->setPrimitive(this);
 	Vector4f intersectionPoint;
@@ -451,8 +451,8 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 	ur(3) = 1;
 	plane_width = lrx - llx;
 	plane_height = uly - lly;
-	scale_w = plane_width / width;
-	scale_h = plane_height / height;
+	scale_w = width / plane_width;
+	scale_h = height / plane_height;
 }
 
 // TODO
@@ -464,8 +464,8 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	//x = x * scale_w + ll[0];
 	//y = y * scale_h + ll[1];
 
-	float u = x /width;
-	float v = y /height;
+	float u = x / width;
+	float v = y / height;
 
 	Vector4f pixel_vec = u * ((v * ll) + ((1 - v) * ul)) + (1 - u) * ((v * lr) + ((1 - v) * ur));
 	// x = x * scale_w + ll[0];
@@ -475,8 +475,11 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
 	//Vector4f pixel_vec(x, y, z, 1);
-	ray->setEye(eye);	// TODO: fix - redundant
-	ray->setDir(pixel_vec);
+
+	//ray->setEye(eye);	// TODO: fix - redundant
+	//ray->setDir(pixel_vec);
+	ray->setDir(eye);
+	ray->setEye(pixel_vec);
 }
 
 
@@ -499,7 +502,7 @@ RayTracer::RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls) {
 
 void RayTracer::addPrimitive(Primitive &primitive) {
 	primitives.push_back(&primitive);
-	cout << primitives.size() << endl;
+	//cout << primitives.size() << endl;
 }
 
 void RayTracer::addLight(Light &light) {
@@ -509,20 +512,22 @@ void RayTracer::addLight(Light &light) {
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
 //}
-	cout << "trace! " << primitives.size() << endl;
+	//cout << "trace! " << primitives.size() << endl;
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
 //void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		cout << "HI" << endl;
+		//cout << "HI" << endl;
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
 		Intersection* in = new Intersection();
-		cout << "huh " << primitive->getMaterial()->getBRDF()->getKA() << endl;
+		//cout << "huh " << primitive->getMaterial()->getBRDF()->getKA() << endl;
 		// cout << "do we make it " << *thit << endl;
 		if (!primitive->intersect(ray, &thit, in)) {		// No hit
-			cout << "no hit" << endl;
+			//cout << ray.getPos() << " raypos\n";
+			//cout << ray.getDir() << " raydir\n";
+			//cout << "no hit" << endl;
 			// TODO: Change this to look for ambient
 			// sample->setBlack();
 			color->setRGB(0.0, 0.0, 0.0);
