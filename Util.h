@@ -518,10 +518,15 @@ public:
 //****************************************************
 
 class RayTracer {
+  std::vector<Primitive *> primitives;
+  std::vector<Light *> lights;
 public:
   RayTracer();
-  // void trace(Ray& ray, int depth, Color* color);
-  void trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights); 
+  RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls);
+  void addPrimitive(Primitive &primitive);
+  void addLight(Light &light);
+  void trace(Ray& ray, int depth, Color* color);
+  // void trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights); 
 };
 
 
@@ -535,14 +540,10 @@ class Scene
   Sampler sampler;
   Film film;
   RayTracer raytracer;
-  std::vector<Primitive *> primitives;
-  std::vector<Light *> lights;
 
   public:
     Scene(Sampler &s, Film &f, Camera &c, RayTracer &rt);
-    void addPrimitive(Primitive &primitive); // TODO: decide if this needs to be pointer or not
     void render();
-    void addLight(Light &light);
 //     ...
 //     bool intersect(Ray &r, double &closest_t, GeometryProperties &geom_prop, MaterialProperties &mat_prop);
     // void calculateAcceleration();

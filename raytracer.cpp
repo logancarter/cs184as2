@@ -299,10 +299,10 @@ int main(int argc, char *argv[]) {
   //make a list of shapes and add them!
   //scene.addShape(sphere);
   for (int i = 0; i < numshapes; i++) {
-    scene.addPrimitive(*primitives[i]);
+    raytracer.addPrimitive(*primitives[i]);
   }
   for (int i = 0; i < numlights; i++) {
-    scene.addLight(*lights[i]);
+    raytracer.addLight(*lights[i]);
   }
   scene.render();
   return 0;

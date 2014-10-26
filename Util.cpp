@@ -116,6 +116,7 @@ void Ray::setEye(Vector4f eye) {
 
 void Ray::setDir(Vector4f pixel) {
 	dir = pixel - pos;
+	dir.normalize();
 }
 
 Vector4f Ray::getDir() {
@@ -254,6 +255,9 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	intersectionPoint = ray.getPos() + t_hit * ray.getDir();
 	LocalGeo lg = *(new LocalGeo());
 	lg.setPos(intersectionPoint);
+	Vector4f normal = intersectionPoint - getCenter();
+	normal.normalize();
+	lg.setNormal(normal);
 	in->setLocalGeo(lg);
 	return true;
 }
@@ -487,33 +491,50 @@ RayTracer::RayTracer() {
 
 }
 
-// void RayTracer::trace(Ray& ray, int depth, Color* color) {
 
-// }
+RayTracer::RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls) {
+	primitives = ps;
+	lights = ls;
+}
+
+void RayTracer::addPrimitive(Primitive &primitive) {
+	primitives.push_back(&primitive);
+}
+
+void RayTracer::addLight(Light &light) {
+	lights.push_back(&light);
+}
+
+void RayTracer::trace(Ray& ray, int depth, Color* color) {
+
+//}
 
 // TODO: Assume that object has coeffs, later handle if it doesn't.
-void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
+
+//void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
 		Intersection* in = new Intersection();
 		// cout << "do we make it " << *thit << endl;
-		if (!primitive->intersect(ray, &thit, in)) {
+		if (!primitive->intersect(ray, &thit, in)) {		// No hit
+			cout << "no hit" << endl;
 			// TODO: Change this to look for ambient
-			sample->setBlack();
+			// sample->setBlack();
+			color->setRGB(0.0, 0.0, 0.0);
 			if (lights.empty()) {
-				sample->setBlack();
+				// sample->setBlack();
+				color->setRGB(0.0, 0.0, 0.0);
 			}
-		} else {
+		} else {			// Hit
 			Vector3f RGB_result;
 			RGB_result(0) = RGB_result(1) = RGB_result(2) = 0.0;
 	        Vector3f pos, normal;
 	        Vector4f posh = in->getLocalGeo().getPos();
 	        pos << posh(0), posh(1), posh(2);
-	        // TODO: Where the fuck did I get this???
-	        normal = pos + pos;  
-	        normal.normalize();
+	        posh = in->getLocalGeo().getNormal();
+	        normal << posh(0), posh(1), posh(2);
 
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 
@@ -534,24 +555,16 @@ void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitiv
 
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
 
-	          // if (i == 200 && j == 200) {
-	          //   cout << k << lights.size() << endl;
-	          //   I_rgb.printV();
-	          //   lightpos.printV();
-	          // }
-
 	          if (lights[k]->isDLight()) {
 	            // light = lightpos.flip().normalize();
-	            flipped_lightpos(0) = - lightpos(0);
-	            flipped_lightpos(1) = - lightpos(1);
-	            flipped_lightpos(2) = - lightpos(2);
+	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
 	            light = flipped_lightpos;
-	            light.normalize();
 	          } else {        // Is point light
 	            // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
-	            light = lightpos - pos + pos;
-	            light.normalize();
+	            // light = lightpos - pos + pos;
+	            light = lightpos - pos;
 	          }
+	          light.normalize();
 
 	          BRDF brdf = primitive->getMaterial()->getBRDF();
 	          Vector3f kd, diffuse;
@@ -569,7 +582,7 @@ void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitiv
 	            ks = brdf.getKS();
 	            // reflection = Vectorz::add(light.flip(), Vectorz::scale(Vectorz::scale(normal, Vectorz::dot(light, normal)), 2));
 	            reflection = (light * -1) + (normal * light.dot(normal) * 2);
-	            reflection *= -1;
+	            // reflection *= -1; 	// TODO: check why i did this
 	            reflection.normalize();
 	            // viewer.setValues(0,0,-1);
 	            // TODO: double check on this viewer direction...
@@ -595,9 +608,10 @@ void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitiv
 	      } 	// end For over lights
 
 			// TODO: change this to take into account material
-			sample->setRColor(RGB_result(0));
-			sample->setGColor(RGB_result(1));
-			sample->setBColor(RGB_result(2));
+			// sample->setRColor(RGB_result(0));
+			// sample->setGColor(RGB_result(1));
+			// sample->setBColor(RGB_result(2));
+	      color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
 	      }		// end else
         
 	    } //emd for over primitives
@@ -618,26 +632,22 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 	raytracer = rt;
 }
 
-void Scene::addPrimitive(Primitive &primitive) {
-	primitives.push_back(&primitive);
-}
 
-void Scene::addLight(Light &light) {
-	lights.push_back(&light);
-}
 
 void Scene::render() {
-	std::cout << std::unitbuf;
 	Sample sample = *(new Sample());
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
+	int depth = 1;
+	Color color;
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
-		raytracer.trace(ray, &sample, primitives, lights);
-    	film.setPixel(sample.getX(), sample.getY(), 0, 0, sample.getRColor());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 1, sample.getGColor());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 2, sample.getBColor());
+		// raytracer.trace(ray, &sample, primitives, lights);
+		raytracer.trace(ray, depth, &color);
+    	film.setPixel(sample.getX(), sample.getY(), 0, 0, color.getR());
+    	film.setPixel(sample.getX(), sample.getY(), 0, 1, color.getG());
+    	film.setPixel(sample.getX(), sample.getY(), 0, 2, color.getB());
 	    notDone = sampler.getNextSample(&sample);
   	}
   	film.displayToScreen();
