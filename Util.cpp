@@ -415,7 +415,8 @@ void Film::setPixel(int x, int y, Color& color) {
 }
 
 void Film::displayToScreen() {
-	image.mirror('y');
+	// image.mirror('y');
+	// TODO: to flip or not to fliP?!??!?!?!??!!!??!?!??!?!?!?!???!
 	image.mirror('x');
 	image.display();
 }
@@ -551,7 +552,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
 
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-
+				if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
 				if(lights[k]->isALight()) {
 					// cout << lights[k]->isALight() << " it knows its ambient \n";
 					Vector3f ambient(3);
@@ -567,14 +568,13 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			// TODO: make these 4f???
 	          Vector3f lightpos, light, I_rgb, flipped_lightpos;
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
-
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
-	          cout << lights[k]->isDLight() << endl;
+
 	          if (lights[k]->isDLight()) {
 	            // light = lightpos.flip().normalize();
 	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
 	            light = flipped_lightpos;
-	          } else {        // Is point light
+	          } else {        														// Is point light
 	            // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
 	            // TODO: do I have to add pos back?
 	            // light = lightpos - pos + pos;
