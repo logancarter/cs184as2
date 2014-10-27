@@ -404,9 +404,10 @@ Film::Film(int w, int h, int z, int v, float default_color) {
 	image.assign(w, h, z, v, default_color); 
 }
 
-// TODO: CHANGE THIS SO WE CAN SET MULTIPLE COLORSSSSSSS NOT JSUT 1111111 FUCK
-void Film::setPixel(int x, int y, int z, int v, float color) {
-	image(x, y, z, v) = color;
+
+void Film::setPixel(int x, int y, Color& color) {
+	float rgb[] = {color.getR(), color.getG(), color.getB()};
+	image.draw_point(x, y, rgb);
 }
 
 void Film::displayToScreen() {
@@ -646,15 +647,19 @@ void Scene::render() {
 	Sample sample = *(new Sample());
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
-	int depth = 1;
+	int depth = 0;
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
-    	film.setPixel(sample.getX(), sample.getY(), 0, 0, color.getR());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 1, color.getG());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 2, color.getB());
+		if (sample.getX() == 200.0 && sample.getY() == 200.0) {
+			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
+		}
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 1, 0.0);
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 2, 0.0);
+    	film.setPixel(sample.getX(), sample.getY(), color);
 	    notDone = sampler.getNextSample(&sample);
   	}
   	film.displayToScreen();

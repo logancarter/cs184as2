@@ -481,7 +481,7 @@ public:
 	// v refers to the RGB (R=0, G=1, B=2)
   Film();
 	Film(int w, int h, int z, int v, float default_color);
-	void setPixel(int x, int y, int z, int v, float color);
+	void setPixel(int x, int y, Color& color);
 	void displayToScreen();
 };
 
