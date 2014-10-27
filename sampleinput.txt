@@ -2,4 +2,4 @@ cam 0 0 0 -1 -1 -1 1 -1 -1 -1 1 -1 1 1 -1
 mat 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0 0.0
 sph 0 0 -2 1
 lta 1 1 0
-obj "scene1.txt"
+obj "sampleobject.txt"

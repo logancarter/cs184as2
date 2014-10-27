@@ -89,9 +89,61 @@ vector<string> split(const string &s, char delim, char delim2)
   return elems;
 }
 
+vector<string> split(const string &s, char delim)
+{
+  vector<string> elems; 
+  stringstream ss(s);
+  string item;
+  while (getline(ss, item, delim)) {
+    elems.push_back(item);
+  }
+  return elems;
+}
+
 void handle_obj(vector<string> words, string file) {
   ifstream newfile;
   newfile.open(file);
+  string curr_line;
+  std::vector<Vector3f *> allvertices;
+  while (!newfile.eof()) {
+    getline(newfile,curr_line);
+    cout << curr_line << " \n";
+    vector<string> currentwords = split(curr_line, ' ', '\t');
+    string currentword = currentwords.at(0);
+    cout << currentword << "CURRWORD" << "\n";
+    if (currentword.compare("v") == 0) {
+      float xval = atof(currentwords.at(1).c_str());
+      float yval = atof(currentwords.at(2).c_str());
+      float zval = atof(currentwords.at(3).c_str());
+      Vector3f vertex;
+      vertex(0) = xval;
+      vertex(1) = yval;
+      vertex(2) = zval;
+      allvertices.push_back(&vertex);
+    } else if (currentword.compare("f") == 0) {
+        if (currentwords.at(1).find("//") != std::string::npos) {
+          cout << "its f with normal\n";
+          vector<string> firstpart;
+          //firstpart = split(currentwords.at(1), "//");
+          float first = atof(currentwords.at(1).c_str());
+        } else {
+          float first = atof(currentwords.at(1).c_str());
+          float second = atof(currentwords.at(2).c_str());
+          float third = atof(currentwords.at(3).c_str());
+          //Vector3f vertexone = *(allvertices[first - 1]);
+          //Vector3f vertextwo = *(allvertices[second - 1]);
+          //Vector3f vertexthree = *(allvertices[third - 1]);
+          cout << "ITS f\n";
+        }
+    } else if (currentword.compare("vn") == 0) {
+        float ival = atof(currentwords.at(1).c_str());
+        float jval = atof(currentwords.at(2).c_str());
+        float kval = atof(currentwords.at(3).c_str());
+        cout << "ITS vn\n";
+    } else {
+      fprintf(stderr, "Warning: Unsupported feature ignored.\n");
+    }
+  }
   newfile.close();
 }
 
@@ -161,14 +213,10 @@ int main(int argc, char *argv[]) {
               }
               else if (currentword.compare("obj") == 0) {
                 string filename = words.at(1);
-                cout << filename << "BEFORE \n";
                 filename.erase(0, 1);
-                //filename.erase(filename.length - 2, filename.length - 1);
-                cout << filename.c_str() << " HERE IT IS\n";
-                handle_obj(words, words.at(1));
-                //ifstream newfile;
-                //newfile.open(words.at(1));
-                //newfile.close();
+                int length = filename.size() / sizeof(char);
+                filename.pop_back();
+                handle_obj(words, filename);
                 if (words.size() > 2) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
