@@ -407,6 +407,10 @@ Film::Film(int w, int h, int z, int v, float default_color) {
 
 void Film::setPixel(int x, int y, Color& color) {
 	float rgb[] = {color.getR(), color.getG(), color.getB()};
+	// cout << rgb[0] << rgb[1] << rgb[2] << endl;
+	// rgb[0] = 0.6;
+	// rgb[1] = 0.6;
+	// rgb[2] = 0.9;
 	image.draw_point(x, y, rgb);
 }
 
@@ -544,6 +548,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	        pos << posh(0), posh(1), posh(2);
 	        posh = in->getLocalGeo().getNormal();
 	        normal << posh(0), posh(1), posh(2);
+			BRDF* brdf = primitive->getMaterial()->getBRDF();
 
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 
@@ -553,6 +558,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 					ambient(0) = lights[k]->getRColor();
 					ambient(1) = lights[k]->getGColor();
 					ambient(2) = lights[k]->getBColor();
+					ambient = ambient.cwiseProduct(brdf->getKA());
 					RGB_result += ambient;
 					continue;
 				}
@@ -563,19 +569,19 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
 
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
-
+	          cout << lights[k]->isDLight() << endl;
 	          if (lights[k]->isDLight()) {
 	            // light = lightpos.flip().normalize();
 	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
 	            light = flipped_lightpos;
 	          } else {        // Is point light
 	            // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
+	            // TODO: do I have to add pos back?
 	            // light = lightpos - pos + pos;
 	            light = lightpos - pos;
 	          }
 	          light.normalize();
 
-	          BRDF* brdf = primitive->getMaterial()->getBRDF();
 	          Vector3f kd, diffuse;
 	          if (brdf->hasDiffuse()) {
 	            kd = brdf->getKD();
@@ -598,6 +604,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            Vector3f ray_pos;
 	            ray_pos << ray.getPos()(0), ray.getPos()(1), ray.getPos()(2);
 	            viewer = ray_pos - pos;
+	            viewer.normalize();
 	            specular = ks.cwiseProduct(I_rgb);
 	            specular = specular * pow(fmax(reflection.dot(viewer), 0.0), brdf->getKSP());
 	          } else {
@@ -613,6 +620,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          }
 	          
 	          Vector3f subtotal = diffuse + specular + ambient;
+	          // cout << k << " subtotal " << subtotal << endl;
 	          RGB_result = RGB_result + subtotal;
 	      } 	// end For over lights
 
