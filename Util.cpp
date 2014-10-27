@@ -211,7 +211,7 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 		// cout << "testIntersect  " << d << endl;
 		return false;
 	} else if (d == 0) {
-		x0 = x1 = - 0.5 * b / a;
+		x0 = x1 = -0.5 * b/a;
 	} else {
 		float q = (b > 0) ? 
 		-0.5 * (b + sqrt(d)) :
@@ -451,8 +451,8 @@ Camera::Camera(float x, float y, float z, int w, int h, float llx, float lly, fl
 	ur(3) = 1;
 	plane_width = lrx - llx;
 	plane_height = uly - lly;
-	scale_w = width / plane_width;
-	scale_h = height / plane_height;
+	scale_w = plane_width / width;
+	scale_h = plane_height / height;
 }
 
 // TODO
@@ -476,10 +476,10 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	// Vector4f eye_vec(eye_x, eye_y, eye_z, 1);	// See if we can abstract this out to class var to avoid reconstructing everytime. (Done!)
 	//Vector4f pixel_vec(x, y, z, 1);
 
-	//ray->setEye(eye);	// TODO: fix - redundant
-	//ray->setDir(pixel_vec);
-	ray->setDir(eye);
-	ray->setEye(pixel_vec);
+	ray->setEye(eye);	// TODO: fix - redundant
+	ray->setDir(pixel_vec);
+	//ray->setDir(eye);
+	//ray->setEye(pixel_vec);
 }
 
 
