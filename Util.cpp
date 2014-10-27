@@ -404,13 +404,19 @@ Film::Film(int w, int h, int z, int v, float default_color) {
 	image.assign(w, h, z, v, default_color); 
 }
 
-// TODO: CHANGE THIS SO WE CAN SET MULTIPLE COLORSSSSSSS NOT JSUT 1111111 FUCK
-void Film::setPixel(int x, int y, int z, int v, float color) {
-	image(x, y, z, v) = color;
+
+void Film::setPixel(int x, int y, Color& color) {
+	float rgb[] = {color.getR(), color.getG(), color.getB()};
+	// cout << rgb[0] << rgb[1] << rgb[2] << endl;
+	// rgb[0] = 0.6;
+	// rgb[1] = 0.6;
+	// rgb[2] = 0.9;
+	image.draw_point(x, y, rgb);
 }
 
 void Film::displayToScreen() {
-	image.mirror('y');
+	// image.mirror('y');
+	// TODO: to flip or not to fliP?!??!?!?!??!!!??!?!??!?!?!?!???!
 	image.mirror('x');
 	image.display();
 }
@@ -543,15 +549,17 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	        pos << posh(0), posh(1), posh(2);
 	        posh = in->getLocalGeo().getNormal();
 	        normal << posh(0), posh(1), posh(2);
+			BRDF* brdf = primitive->getMaterial()->getBRDF();
 
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-
+				if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
 				if(lights[k]->isALight()) {
 					// cout << lights[k]->isALight() << " it knows its ambient \n";
 					Vector3f ambient(3);
 					ambient(0) = lights[k]->getRColor();
 					ambient(1) = lights[k]->getGColor();
 					ambient(2) = lights[k]->getBColor();
+					ambient = ambient.cwiseProduct(brdf->getKA());
 					RGB_result += ambient;
 					continue;
 				}
@@ -560,21 +568,20 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			// TODO: make these 4f???
 	          Vector3f lightpos, light, I_rgb, flipped_lightpos;
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
-
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
 
 	          if (lights[k]->isDLight()) {
 	            // light = lightpos.flip().normalize();
 	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
 	            light = flipped_lightpos;
-	          } else {        // Is point light
+	          } else {        														// Is point light
 	            // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
+	            // TODO: do I have to add pos back?
 	            // light = lightpos - pos + pos;
 	            light = lightpos - pos;
 	          }
 	          light.normalize();
 
-	          BRDF* brdf = primitive->getMaterial()->getBRDF();
 	          Vector3f kd, diffuse;
 	          if (brdf->hasDiffuse()) {
 	            kd = brdf->getKD();
@@ -597,6 +604,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            Vector3f ray_pos;
 	            ray_pos << ray.getPos()(0), ray.getPos()(1), ray.getPos()(2);
 	            viewer = ray_pos - pos;
+	            viewer.normalize();
 	            specular = ks.cwiseProduct(I_rgb);
 	            specular = specular * pow(fmax(reflection.dot(viewer), 0.0), brdf->getKSP());
 	          } else {
@@ -612,6 +620,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          }
 	          
 	          Vector3f subtotal = diffuse + specular + ambient;
+	          // cout << k << " subtotal " << subtotal << endl;
 	          RGB_result = RGB_result + subtotal;
 	      } 	// end For over lights
 
@@ -646,15 +655,19 @@ void Scene::render() {
 	Sample sample = *(new Sample());
 	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
-	int depth = 1;
+	int depth = 0;
 	while (notDone) {
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
-    	film.setPixel(sample.getX(), sample.getY(), 0, 0, color.getR());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 1, color.getG());
-    	film.setPixel(sample.getX(), sample.getY(), 0, 2, color.getB());
+		if (sample.getX() == 200.0 && sample.getY() == 200.0) {
+			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
+		}
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 1, 0.0);
+    	// film.setPixel(sample.getX(), sample.getY(), 0, 2, 0.0);
+    	film.setPixel(sample.getX(), sample.getY(), color);
 	    notDone = sampler.getNextSample(&sample);
   	}
   	film.displayToScreen();

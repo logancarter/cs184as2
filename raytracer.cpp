@@ -57,8 +57,8 @@ Viewport  viewport;
 //   int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
   // std::vector<Light *> lights;
 Camera camera;
-float width = 300.0;
-float height = 300.0;
+float width = 400.0;
+float height = 400.0;
 std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
@@ -235,7 +235,10 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 8) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-
+                PointLight plight = *(new PointLight());
+                plight.setValues(px, py, pz, r, g, b);
+                lights.push_back(&plight);
+                numlights++;
               }
               else if (currentword.compare("ltd") == 0) {
                 float dx = atof(words.at(1).c_str());
@@ -250,7 +253,7 @@ int main(int argc, char *argv[]) {
                 DirectionalLight dlight = *(new DirectionalLight());
                 dlight.setValues(dx, dy, dz, r, g, b);
                 lights.push_back(&dlight);
-                numlights ++;
+                numlights++;
               }
               else if (currentword.compare("lta") == 0) {
                 float r = atof(words.at(1).c_str());
@@ -261,7 +264,7 @@ int main(int argc, char *argv[]) {
                 }
                 AmbientLight alight = *(new AmbientLight(r, g, b));
                 lights.push_back(&alight);
-                numlights ++;
+                numlights++;
               }
               else if (currentword.compare("mat") == 0) {
                 // TODO: Check if all of these properties are there, handle if not.
