@@ -104,13 +104,12 @@ void handle_obj(vector<string> words, string file) {
   ifstream newfile;
   newfile.open(file);
   string curr_line;
-  std::vector<Vector3f *> allvertices;
+  std::vector<Vector3f *> vertices;
+  std::vector<Vector3f *> normalvertices;
   while (!newfile.eof()) {
     getline(newfile,curr_line);
-    cout << curr_line << " \n";
     vector<string> currentwords = split(curr_line, ' ', '\t');
     string currentword = currentwords.at(0);
-    cout << currentword << "CURRWORD" << "\n";
     if (currentword.compare("v") == 0) {
       float xval = atof(currentwords.at(1).c_str());
       float yval = atof(currentwords.at(2).c_str());
@@ -119,27 +118,46 @@ void handle_obj(vector<string> words, string file) {
       vertex(0) = xval;
       vertex(1) = yval;
       vertex(2) = zval;
-      allvertices.push_back(&vertex);
+      vertices.push_back(&vertex);
     } else if (currentword.compare("f") == 0) {
         if (currentwords.at(1).find("//") != std::string::npos) {
-          cout << "its f with normal\n";
-          vector<string> firstpart;
-          //firstpart = split(currentwords.at(1), "//");
-          float first = atof(currentwords.at(1).c_str());
+          string tosplit = currentwords.at(1);
+          vector<string> currentpart = split(tosplit, '/');
+          float vnum1 = atof(currentpart[0].c_str());
+          float surfacenum1 = atof(currentpart[2].c_str());
+          tosplit = currentwords.at(2);
+          currentpart = split(tosplit, '/');
+          float vnum2 = atof(currentpart[0].c_str());
+          float surfacenum2 = atof(currentpart[2].c_str());
+          tosplit = currentwords.at(3);
+          currentpart = split(tosplit, '/');
+          float vnum3 = atof(currentpart[0].c_str());
+          float surfacenum3 = atof(currentpart[2].c_str());
+
+          Vector3f vertexone = *(vertices[vnum1 - 1]);
+          Vector3f vertextwo = *(vertices[vnum2 - 1]);
+          Vector3f vertexthree = *(vertices[vnum3 - 1]);
+          Vector3f normalone =  *(normalvertices[surfacenum1 - 1]);
+          Vector3f normaltwo =  *(normalvertices[surfacenum2 - 1]);
+          Vector3f normalthree =  *(normalvertices[surfacenum3 - 1]);
         } else {
           float first = atof(currentwords.at(1).c_str());
           float second = atof(currentwords.at(2).c_str());
           float third = atof(currentwords.at(3).c_str());
-          //Vector3f vertexone = *(allvertices[first - 1]);
-          //Vector3f vertextwo = *(allvertices[second - 1]);
-          //Vector3f vertexthree = *(allvertices[third - 1]);
-          cout << "ITS f\n";
+
+          Vector3f vertexone = *(vertices[first - 1]);
+          Vector3f vertextwo = *(vertices[second - 1]);
+          Vector3f vertexthree = *(vertices[third - 1]);
         }
     } else if (currentword.compare("vn") == 0) {
         float ival = atof(currentwords.at(1).c_str());
         float jval = atof(currentwords.at(2).c_str());
         float kval = atof(currentwords.at(3).c_str());
-        cout << "ITS vn\n";
+        Vector3f normalvertex;
+        normalvertex(0) = ival;
+        normalvertex(1) = jval;
+        normalvertex(2) = kval;
+        normalvertices.push_back(&normalvertex);
     } else {
       fprintf(stderr, "Warning: Unsupported feature ignored.\n");
     }

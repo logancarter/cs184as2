@@ -552,7 +552,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
 
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-				if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
+				//if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
 				if(lights[k]->isALight()) {
 					// cout << lights[k]->isALight() << " it knows its ambient \n";
 					Vector3f ambient(3);
@@ -662,7 +662,7 @@ void Scene::render() {
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
 		if (sample.getX() == 200.0 && sample.getY() == 200.0) {
-			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
+			//cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
 		}
     	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
     	// film.setPixel(sample.getX(), sample.getY(), 0, 1, 0.0);
