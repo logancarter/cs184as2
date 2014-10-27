@@ -81,13 +81,18 @@ void myKeyboard(unsigned char key, int x, int y) {
 vector<string> split(const string &s, char delim, char delim2)
 {
   vector<string> elems; 
-
   stringstream ss(s);
   string item;
   while (getline(ss, item, delim) || getline(ss, item, delim2)) {
     elems.push_back(item);
   }
   return elems;
+}
+
+void handle_obj(vector<string> words, string file) {
+  ifstream newfile;
+  newfile.open(file);
+  newfile.close();
 }
 
 int main(int argc, char *argv[]) {
@@ -155,9 +160,15 @@ int main(int argc, char *argv[]) {
                 }
               }
               else if (currentword.compare("obj") == 0) {
-                ifstream newfile;
-                newfile.open(words.at(1));
-                newfile.close();
+                string filename = words.at(1);
+                cout << filename << "BEFORE \n";
+                filename.erase(0, 1);
+                //filename.erase(filename.length - 2, filename.length - 1);
+                cout << filename.c_str() << " HERE IT IS\n";
+                handle_obj(words, words.at(1));
+                //ifstream newfile;
+                //newfile.open(words.at(1));
+                //newfile.close();
                 if (words.size() > 2) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
