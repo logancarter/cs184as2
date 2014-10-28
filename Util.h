@@ -393,12 +393,13 @@ public:
 //****************************************************
 
 class Triangle: public Primitive {
-  Point a, b, c;
+  //Point a, b, c;
+  Vector3f a, b, c;
 public:
   Triangle();
   Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
   virtual void isPrimitive() { cout << "triangle" << endl; }
-
+  virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   // TODO: triangle intersection
   // bool testIntersect(float a, float b, float c, float &x1, float &x2);
   // virtual bool intersect(Ray& ray, float *thit, Intersection* in);
