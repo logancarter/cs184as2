@@ -118,55 +118,7 @@ class Matrixz {
 		// Matrix SVD();
 };
 
-//****************************************************
-// LIGHT
-//****************************************************
 
-class Light {
-  public:
-    float r, g, b, x, y, z;
-    virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
-      x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
-    }
-    virtual int isDLight() { return 30; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
-    virtual int isALight() { return 0; }
-    float getRColor() {return r;}
-    float getGColor() {return g;}
-    float getBColor() {return b;}
-    float getX() { return x; }
-    float getY() { return y; }
-    float getZ() { return z; }
-};
-
-class AmbientLight: public Light {
-  public:
-    AmbientLight(float r2, float g2, float b2) {
-      r = r2;
-      g = g2;
-      b = b2;
-      x = y = z = 0;
-    }
-    virtual void setValues(float r2, float g2, float b2) {
-      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;   //x, y, z shouldn't get used
-    }
-    virtual int isALight() {
-      return 1;
-    }
-};
-
-class PointLight: public Light {
-  public:
-    virtual int isDLight() {
-      return 0;
-    }
-};
-
-class DirectionalLight: public Light {
-public:
-    virtual int isDLight() {
-      return 1;
-    }
-};
 
 
 //****************************************************
@@ -214,6 +166,23 @@ class Point {
 
 
 //****************************************************
+// COLOR
+//****************************************************
+
+class Color {
+  float r, g, b;
+public:
+  Color();
+  Color(float rv, float gv, float bv);
+  float getR();
+  float getG();
+  float getB();
+  void setRGB(float rv, float gv, float bv);
+  void appendRGB(float rv, float gv, float bv) { r += rv; g+= gv; b+= bv; }
+};
+
+
+//****************************************************
 // RAY
 //****************************************************
 
@@ -232,6 +201,7 @@ public:
   Ray(Vector4f eye, Vector4f pixel);
   void setEye(Vector4f eye);
   void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
+  void flipDir() { dir = dir * -1; }
   Vector4f getPos();
   Vector4f getDir();
 };
@@ -268,6 +238,77 @@ public:
   void setLocalGeo(LocalGeo local) { lg = local; }
   LocalGeo getLocalGeo() { return lg; }
   Primitive* getPrimitive() { return primitive; }
+};
+
+
+//****************************************************
+// LIGHT
+//****************************************************
+
+class Light {
+  public:
+    float r, g, b, x, y, z;
+    Vector4f pos;
+    Vector3f color;
+    virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
+      x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
+      pos << x, y, z, 1;
+    }
+    virtual int isDLight() { return 30; } // This is a test result -- if you see this you know that something errored (should always be 0 or 1).
+    virtual int isALight() { return 0; }
+    float getRColor() {return r;}
+    float getGColor() {return g;}
+    float getBColor() {return b;}
+    Vector4f getPos() { return pos; }
+    float getX() { return x; }
+    float getY() { return y; }
+    float getZ() { return z; }
+    Vector3f getColor() { return color; }
+    virtual void getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) = 0;
+};
+
+class AmbientLight: public Light {
+  public:
+    AmbientLight(float r2, float g2, float b2) {
+      r = r2;
+      g = g2;
+      b = b2;
+      x = y = z = 0;
+    }
+    virtual void setValues(float r2, float g2, float b2) {
+      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;   //x, y, z shouldn't get used
+      color << r2, g2, b2;
+    }
+    virtual int isALight() {
+      return 1;
+    }
+    virtual void getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) {} ;
+};
+
+class PointLight: public Light {
+  public:
+    virtual int isDLight() {
+      return 0;
+    }    
+    virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
+      x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
+      pos << x, y, z, 0;
+      color << r, g, b;
+    }
+    virtual void getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg);
+};
+
+class DirectionalLight: public Light {
+public:
+    virtual int isDLight() {
+      return 1;
+    }    
+    virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
+      x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
+      pos << x1, y1, z1, 0;
+      color << r1, g1, b1;
+    }
+    virtual void getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg);
 };
 
 
@@ -408,21 +449,7 @@ public:
 
 
 
-//****************************************************
-// COLOR
-//****************************************************
 
-class Color {
-  float r, g, b;
-public:
-  Color();
-  Color(float rv, float gv, float bv);
-  float getR();
-  float getG();
-  float getB();
-  void setRGB(float rv, float gv, float bv);
-  void appendRGB(float rv, float gv, float bv) { r += rv; g+= gv; b+= bv; }
-};
 
 
 

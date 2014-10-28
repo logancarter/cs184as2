@@ -97,6 +97,26 @@ void Point::setValues(float x1, float y1, float z1) {
     coordinates(3) = 1;
 }
 
+
+//****************************************************
+// COLOR
+//****************************************************
+
+
+Color::Color() {
+	r = g = b = 0.0;
+}
+
+Color::Color(float rv, float gv, float bv) {
+	r = rv; g = gv; b = bv;
+}
+float Color::getR() { return r; }
+float Color::getG() { return g; }
+float Color::getB() { return b; }
+void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
+
+
+
 //****************************************************
 // RAY
 //****************************************************
@@ -150,6 +170,9 @@ Vector4f Ray::getPos() {
   // 	normal.normalize();
   // }
 
+
+
+
 //****************************************************
 // INTERSECTION
 //****************************************************
@@ -165,6 +188,24 @@ Intersection::Intersection(LocalGeo local, Primitive &s) {
 	primitive = &s;
 }
 
+
+//****************************************************
+// LIGHT
+//****************************************************
+
+void PointLight::getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) {
+	light_ray->setEye(lg.getPos());
+	light_ray->setDir(getPos());
+	light_color->setRGB(getRColor(), getGColor(), getBColor());
+}
+
+// TODO: fix this
+void DirectionalLight::getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) {
+	light_ray->setEye(lg.getPos());
+	light_ray->setDir(getPos());
+	light_ray->flipDir();
+	light_color->setRGB(getRColor(), getGColor(), getBColor());
+}
 
 //****************************************************
 // Primitive
@@ -365,22 +406,7 @@ Matrix4f Transformation::getInv() {
 }
 
 
-//****************************************************
-// COLOR
-//****************************************************
 
-
-Color::Color() {
-	r = g = b = 0.0;
-}
-
-Color::Color(float rv, float gv, float bv) {
-	r = rv; g = gv; b = bv;
-}
-float Color::getR() { return r; }
-float Color::getG() { return g; }
-float Color::getB() { return b; }
-void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 
 
 //**************************************************** 
@@ -479,7 +505,9 @@ void Film::displayToScreen() {
 	// image.mirror('y');
 	// TODO: to flip or not to fliP?!??!?!?!??!!!??!?!??!?!?!?!???!
 	image.mirror('x');
+	image.normalize(0, 255);
 	image.display();
+	image.save("file.bmp");
 }
 
 
@@ -578,32 +606,29 @@ void RayTracer::addLight(Light &light) {
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
-//}
-	//cout << "trace! " << primitives.size() << endl;
+
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
-//void RayTracer::trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights) {
+	/***********************
+	** FOR PRIMITIVES **
+	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		//cout << "HI" << endl;
-		//cout << "ONE PRIMITIVE" << endl;
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
 		Intersection* in = new Intersection();
-		//cout << "huh " << primitive->getMaterial()->getBRDF()->getKA() << endl;
-		// cout << "do we make it " << *thit << endl;
-		if (!primitive->intersect(ray, &thit, in)) {		// No hit
-			//cout << ray.getPos() << " raypos\n";
-			//cout << ray.getDir() << " raydir\n";
-			//cout << "no hit" << endl;
+
+		/* DOES NOT INTERSECT */
+		if (!primitive->intersect(ray, &thit, in)) {
 			// TODO: Change this to look for ambient
-			// sample->setBlack();
 			color->setRGB(0.0, 0.0, 0.0);
 			if (lights.empty()) {
 				// sample->setBlack();
 				color->setRGB(0.0, 0.0, 0.0);
 			}
-		} else {			// Hit
+		} 
+		/* DOES INTERSECT */
+		else {
 			Vector3f RGB_result;
 			RGB_result(0) = RGB_result(1) = RGB_result(2) = 0.0;
 	        Vector3f pos, normal;
@@ -613,8 +638,11 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	        normal << posh(0), posh(1), posh(2);
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
 
+			/***********************
+			** FOR LIGHTS **
+			***********************/
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-				//if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
+				// if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
 				if(lights[k]->isALight()) {
 					// cout << lights[k]->isALight() << " it knows its ambient \n";
 					Vector3f ambient(3);
@@ -632,6 +660,16 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
 
+	          /*
+	          Ray* light_ray = new Ray();
+	          Color* light_color = new Color();
+	          light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
+	          lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
+	          light << light_ray->getDir()(0), light_ray->getDir()(1), light_ray->getDir()(2);
+	          light.normalize();
+	          */
+
+	          
 	          if (lights[k]->isDLight()) {
 	            // light = lightpos.flip().normalize();
 	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
@@ -643,6 +681,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            light = lightpos - pos;
 	          }
 	          light.normalize();
+	          
 
 	          Vector3f kd, diffuse;
 	          if (brdf->hasDiffuse()) {
@@ -664,7 +703,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            // viewer.setValues(0,0,-1);
 	            // TODO: double check on this viewer direction...
 	            Vector3f ray_pos;
+	            // TODO: this...
 	            ray_pos << ray.getPos()(0), ray.getPos()(1), ray.getPos()(2);
+	            // ray_pos << light_ray->getPos()(0), light_ray->getPos()(1), light_ray->getPos()(2);
 	            viewer = ray_pos - pos;
 	            viewer.normalize();
 	            specular = ks.cwiseProduct(I_rgb);
