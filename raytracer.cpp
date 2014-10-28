@@ -57,8 +57,8 @@ Viewport  viewport;
 //   int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
   // std::vector<Light *> lights;
 Camera camera;
-float width = 400.0;
-float height = 400.0;
+float width = 500.0;
+float height = 500.0;
 std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
@@ -228,6 +228,12 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 10) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                Triangle triangle = *(new Triangle(ax, ay, az, bx, by, bz, cx, cy, cz));
+                if (currentMaterial) {
+                  triangle.setMaterial(currentMaterial);
+                }
+                numshapes++;
+                primitives.push_back(&triangle);
               }
               else if (currentword.compare("obj") == 0) {
                 string filename = words.at(1);
