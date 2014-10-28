@@ -659,7 +659,6 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          Vector3f lightpos, light, I_rgb, flipped_lightpos;
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
-
 	          /*
 	          Ray* light_ray = new Ray();
 	          Color* light_color = new Color();
@@ -764,8 +763,8 @@ void Scene::render() {
 		//Primitives[0]->isPrimitive();
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
-		if (sample.getX() == 200.0 && sample.getY() == 200.0) {
-			//cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
+		if (sample.getX() == 173.0 && sample.getY() == 238.0) {
+			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
 		}
     	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
     	// film.setPixel(sample.getX(), sample.getY(), 0, 1, 0.0);

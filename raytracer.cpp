@@ -259,9 +259,9 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 8) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-                PointLight plight = *(new PointLight());
-                plight.setValues(px, py, pz, r, g, b);
-                lights.push_back(&plight);
+                PointLight* plight = new PointLight();
+                plight->setValues(px, py, pz, r, g, b);
+                lights.push_back(plight);
                 numlights++;
               }
               else if (currentword.compare("ltd") == 0) {
@@ -274,9 +274,9 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 7) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-                DirectionalLight dlight = *(new DirectionalLight());
-                dlight.setValues(dx, dy, dz, r, g, b);
-                lights.push_back(&dlight);
+                DirectionalLight* dlight = new DirectionalLight();
+                dlight->setValues(dx, dy, dz, r, g, b);
+                lights.push_back(dlight);
                 numlights++;
               }
               else if (currentword.compare("lta") == 0) {
@@ -286,8 +286,8 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-                AmbientLight alight = *(new AmbientLight(r, g, b));
-                lights.push_back(&alight);
+                AmbientLight* alight = new AmbientLight(r, g, b);
+                lights.push_back(alight);
                 numlights++;
               }
               else if (currentword.compare("mat") == 0) {
