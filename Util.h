@@ -204,6 +204,10 @@ public:
   void flipDir() { dir = dir * -1; }
   Vector4f getPos();
   Vector4f getDir();
+  float getTmin() {return t_min;}
+  float getTmax() {return t_max;}
+  void setTmax(float number) {t_max = number;}
+  void setTmin(float number) {t_min = number;}
 };
 
 
@@ -408,6 +412,7 @@ public:
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
   float posMin(float t0, float t1) { return std::min(std::abs(t0), std::abs(t1)); }
+  //float posMin(float t0, float t1);
   Material* getMaterial() { return mat; }
 };
 
