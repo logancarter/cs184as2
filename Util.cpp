@@ -127,15 +127,16 @@ Ray::Ray() {
 
 Ray::Ray(Vector4f eye, Vector4f pixel) {
 	pos = eye;
-	dir = pixel - eye;
+	dir = pixel;
+	dir.normalize();
 }
 
 void Ray::setEye(Vector4f eye) {
 	pos = eye;
 }
 
-void Ray::setDir(Vector4f pixel) {
-	dir = pixel - pos;
+void Ray::setDir(Vector4f pminuse) {
+	dir = pminuse;
 	dir.normalize();
 }
 
@@ -195,7 +196,7 @@ Intersection::Intersection(LocalGeo local, Primitive &s) {
 
 void PointLight::getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) {
 	light_ray->setEye(lg.getPos());
-	light_ray->setDir(getPos());
+	light_ray->setDir(getPos() - lg.getPos());
 	light_color->setRGB(getRColor(), getGColor(), getBColor());
 }
 
@@ -290,12 +291,14 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 
 	*thit = posMin(t0, t1);
 	//cout << *thit << endl;
+	// TODO: do this only if its the cloest
 	float t_hit = *thit;
 	in->setPrimitive(this);
 	Vector4f intersectionPoint;
 	intersectionPoint = ray.getPos() + t_hit * ray.getDir();
 	LocalGeo lg = *(new LocalGeo());
 	lg.setPos(intersectionPoint);
+	// cout << getCenter() << endl;
 	Vector4f normal = intersectionPoint - getCenter();
 	normal.normalize();
 	lg.setNormal(normal);
@@ -553,9 +556,7 @@ void Camera::generateRay(Sample sample, Ray *ray) {
 	//Vector4f pixel_vec(x, y, z, 1);
 
 	ray->setEye(eye);	// TODO: fix - redundant
-	ray->setDir(pixel_vec);
-	//ray->setDir(eye);
-	//ray->setEye(pixel_vec);
+	ray->setDir(pixel_vec - eye);
 }
 
 
@@ -628,7 +629,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 				// if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
 				if(lights[k]->isALight()) {
-					// cout << lights[k]->isALight() << " it knows its ambient \n";
+					// cout << k << " is ambient" << endl;
 					Vector3f ambient(3);
 					ambient(0) = lights[k]->getRColor();
 					ambient(1) = lights[k]->getGColor();
@@ -643,27 +644,33 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          Vector3f lightpos, light, I_rgb, flipped_lightpos;
 	          lightpos << lights[k]->getX(), lights[k]->getY(), lights[k]->getZ();
 	          I_rgb << lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor();
-	          /*
+	          
 	          Ray* light_ray = new Ray();
 	          Color* light_color = new Color();
 	          light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
 	          lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
 	          light << light_ray->getDir()(0), light_ray->getDir()(1), light_ray->getDir()(2);
+	          // cout << "what is the light" << endl << light << endl;
 	          light.normalize();
-	          */
+	          
+	          //TODO figure out why this difference affecs scene 3
+	          // Vector3f test = lightpos - pos;
+	          // test.normalize();
+	          // cout << "light " << k << endl << light << endl;
+	          // cout << "test" << endl << test << endl;
 
 	          
-	          if (lights[k]->isDLight()) {
-	            // light = lightpos.flip().normalize();
-	            flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
-	            light = flipped_lightpos;
-	          } else {        														// Is point light
-	            // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
-	            // TODO: do I have to add pos back?
-	            // light = lightpos - pos + pos;
-	            light = lightpos - pos;
-	          }
-	          light.normalize();
+	          // if (lights[k]->isDLight()) {
+	          //   // light = lightpos.flip().normalize();
+	          //   flipped_lightpos << - lightpos(0), - lightpos(1), - lightpos(2);
+	          //   light = flipped_lightpos;
+	          // } else {        														// Is point light
+	          //   // light = Vectorz::add(Vectorz::subtract(lightpos, pos), pos);
+	          //   // TODO: do I have to add pos back?
+	          //   // light = lightpos - pos + pos;
+	          //   light = lightpos - pos;
+	          // }
+	          // light.normalize();
 	          
 
 	          Vector3f kd, diffuse;
