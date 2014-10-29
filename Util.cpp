@@ -586,7 +586,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	//color->setRGB(0.0, 0.0, 0.0);
+	color->setRGB(0.0, 0.0, 0.0);
 
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
