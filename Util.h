@@ -200,7 +200,7 @@ public:
   // Ray(float pos_x, float pos_y, float pos_z, float dir_x, float dir_y, float dir_z);
   Ray(Vector4f eye, Vector4f pixel);
   void setEye(Vector4f eye);
-  void setDir(Vector4f pixel);  // Takes in the pixel, will generate the vector (P - E) inside!
+  void setDir(Vector4f pminuse);  // Please pass in (P - E)
   void flipDir() { dir = dir * -1; }
   Vector4f getPos();
   Vector4f getDir();
