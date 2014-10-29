@@ -100,7 +100,7 @@ vector<string> split(const string &s, char delim)
   return elems;
 }
 
-void handle_obj(vector<string> words, string file) {
+void handle_obj(vector<string> words, char* file) {
   ifstream newfile;
   newfile.open(file);
   string curr_line;
@@ -108,17 +108,17 @@ void handle_obj(vector<string> words, string file) {
   std::vector<Vector3f *> normalvertices;
   while (!newfile.eof()) {
     getline(newfile,curr_line);
+    if (curr_line.compare("") == 0) {
+      continue;
+    }
     vector<string> currentwords = split(curr_line, ' ', '\t');
     string currentword = currentwords.at(0);
     if (currentword.compare("v") == 0) {
       float xval = atof(currentwords.at(1).c_str());
       float yval = atof(currentwords.at(2).c_str());
       float zval = atof(currentwords.at(3).c_str());
-      Vector3f vertex;
-      vertex(0) = xval;
-      vertex(1) = yval;
-      vertex(2) = zval;
-      vertices.push_back(&vertex);
+      Vector3f *vertex = new Vector3f(xval, yval, zval);
+      vertices.push_back(vertex);
     } else if (currentword.compare("f") == 0) {
         if (currentwords.at(1).find("//") != std::string::npos) {
           string tosplit = currentwords.at(1);
@@ -141,13 +141,18 @@ void handle_obj(vector<string> words, string file) {
           Vector3f normaltwo =  *(normalvertices[surfacenum2 - 1]);
           Vector3f normalthree =  *(normalvertices[surfacenum3 - 1]);
         } else {
-          float first = atof(currentwords.at(1).c_str());
-          float second = atof(currentwords.at(2).c_str());
-          float third = atof(currentwords.at(3).c_str());
-
-          Vector3f vertexone = *(vertices[first - 1]);
-          Vector3f vertextwo = *(vertices[second - 1]);
-          Vector3f vertexthree = *(vertices[third - 1]);
+          int first = atoi(currentwords.at(1).c_str());
+          int second = atoi(currentwords.at(2).c_str());
+          int third = atoi(currentwords.at(3).c_str());
+          Vector3f vertexone = *vertices[first - 1];
+          Vector3f vertextwo = *vertices.at(second - 1);
+          Vector3f vertexthree = *vertices.at(third - 1);
+          Triangle *triangle = new Triangle(vertexone[0], vertexone[1], vertexone[2], vertextwo[0], vertextwo[1], vertextwo[2], vertexthree[0], vertexthree[1], vertexthree[2]);
+          if (currentMaterial) {
+            triangle->setMaterial(currentMaterial);
+          }
+          numshapes++;
+          primitives.push_back(triangle);
         }
     } else if (currentword.compare("vn") == 0) {
         float ival = atof(currentwords.at(1).c_str());
@@ -208,12 +213,12 @@ int main(int argc, char *argv[]) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
                 // TODO: do material for other primitives too, triangle...
-                Sphere sphere = *(new Sphere(r, cx, cy, cz));
+                Sphere *sphere = new Sphere(r, cx, cy, cz);
                 if (currentMaterial) {
-                  sphere.setMaterial(currentMaterial);
+                  sphere->setMaterial(currentMaterial);
                 }
                 numshapes++;
-                primitives.push_back(&sphere);
+                primitives.push_back(sphere);
                 }
               else if (currentword.compare("tri") == 0) {
                 float ax = atof(words.at(1).c_str());
@@ -228,19 +233,20 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 10) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
-                Triangle triangle = *(new Triangle(ax, ay, az, bx, by, bz, cx, cy, cz));
+                Triangle *triangle = new Triangle(ax, ay, az, bx, by, bz, cx, cy, cz);
                 if (currentMaterial) {
-                  triangle.setMaterial(currentMaterial);
+                  triangle->setMaterial(currentMaterial);
                 }
                 numshapes++;
-                primitives.push_back(&triangle);
+                primitives.push_back(triangle);
               }
               else if (currentword.compare("obj") == 0) {
                 string filename = words.at(1);
-                filename.erase(0, 1);
-                int length = filename.size() / sizeof(char);
-                filename.pop_back();
-                handle_obj(words, filename);
+                //filename.erase(0, 1);
+                //int length = filename.size() / sizeof(char);
+                //filename.pop_back();
+                char *cstr = &filename[0];
+                handle_obj(words, cstr);
                 if (words.size() > 2) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
@@ -370,8 +376,6 @@ int main(int argc, char *argv[]) {
   // DEV: Hardcode this if you want to override inputs
 
 
-
-
   // Hardcode camera to be at origin, with the image place from (-1,-1,-1) to (1,1,-1)
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-1,1,-1,-1,-1,1,-1,1,1,-1));
   //Camera camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
@@ -386,6 +390,7 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < numshapes; i++) {
     raytracer.addPrimitive(*primitives[i]);
   }
+
   for (int i = 0; i < numlights; i++) {
     raytracer.addLight(*lights[i]);
   }
