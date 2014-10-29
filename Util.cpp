@@ -318,69 +318,6 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
   	b(0) = bx; b(1) = by; b(2) = bz; //b(3) = 1;
   	c(0) = cx; c(1) = cy; c(2) = cz; //b(3) = 1;
   }
-	// bool Triangle::intersect(Ray &ray, float *thit, Intersection* in) {
-	// 	Vector3f rayposition;
-	// 	Vector3f raydir;
-	// 	rayposition(0) = ray.getPos()[0]; rayposition(1) = ray.getPos()[1]; rayposition(2) = ray.getPos()[2];
-	// 	raydir(0) = ray.getDir()[0]; raydir(1) = ray.getDir()[1]; raydir(2) = ray.getDir()[2];
-	// 	Vector3f v0v1 = b - a;
-	// 	Vector3f v0v2 = c - a;
-	// 	Vector3f N = cross(v0v1, v0v2);
-	// 	float nDotRay = N.dot(raydir);
-	// 	if (nDotRay == 0) {
-	// 		return false;
-	// 	}
-	// 	float d = N.dot(a);
-	// 	float t = -(N.dot(rayposition) + d) / nDotRay;
-
-	// }
-
-  //credit for algorithm goes to scratchapixel.com
-  // bool Triangle::intersect(Ray &ray, float *thit, Intersection* in) {
-  // 	Vector3f rayposition;
-  // 	Vector3f raydir;
-  // 	rayposition(0) = ray.getPos()[0]; rayposition(1) = ray.getPos()[1]; rayposition(2) = ray.getPos()[2];
-  // 	raydir(0) = ray.getDir()[0]; raydir(1) = ray.getDir()[1]; raydir(2) = ray.getDir()[2];
-  // 	Vector3f A;
-  // 	Vector3f B;
-  // 	A = b - a;
-  // 	B = c - a;
-  // 	Vector3f N = A.cross(B);
-  // 	float NdotRayDir = N.dot(raydir);
-  // 	if (NdotRayDir == 0) {
-  // 		return false; //they're parallel
-  // 	}
-  // 	float d = N.dot(a);
-  // 	float t = -(N.dot(rayposition) + d) / NdotRayDir;
-  // 	if (t < 0) {
-  // 		return false;
-  // 	}
-  // 	Vector3f P = rayposition + t * raydir;
-  // 	Vector3f C;
-  // 	Vector3f edge0 = b - a;
-  // 	Vector3f VP0 = P - a;
-  // 	C = edge0.cross(VP0);
-  // 	if (N.dot(C) < 0) {
-  // 		return false;
-  // 	}
-
-  // 	Vector3f edge1 = c - b;
-  // 	Vector3f VP1 = P - b;
-  // 	C = edge0.cross(VP1);
-  // 	if (N.dot(C) < 0) {
-  // 		return false;
-  // 	}
-
-  // 	Vector3f edge2 = a - c;
-  // 	Vector3f VP2 = P - c;
-  // 	C = edge2.cross(VP2);//is this right?
-  // 	if (N.dot(C) < 0) {
-  // 		return false;
-  // 	}
-  // 	return true;
-  // }
-
-
 
   bool Triangle::intersect(Ray &ray, float *thit, Intersection* in) {
   	Vector3f rayposition;
@@ -649,7 +586,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	color->setRGB(0.0, 0.0, 0.0);
+	//color->setRGB(0.0, 0.0, 0.0);
 
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
