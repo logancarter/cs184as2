@@ -586,7 +586,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	color->setRGB(0.0, 0.0, 0.0);
+	//color->setRGB(0.0, 0.0, 0.0);
 
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
@@ -594,6 +594,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
+		if (i == 0) {
+			color->setRGB(0.0, 0.0, 0.0);
+		}
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
@@ -602,10 +605,10 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		/* DOES NOT INTERSECT */
 		if (!primitive->intersect(ray, &thit, in)) {
 			// TODO: Change this to look for ambient
-			color->setRGB(0.0, 0.0, 0.0);
+			//color->setRGB(0.0, 0.0, 0.0);
 			if (lights.empty()) {
 				// sample->setBlack();
-				color->setRGB(0.0, 0.0, 0.0);
+				//color->setRGB(0.0, 0.0, 0.0);
 			}
 		} 
 		/* DOES INTERSECT */
