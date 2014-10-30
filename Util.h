@@ -407,6 +407,7 @@ public:
 class Primitive {
   Transformation o2w, w2o;
   Material* mat;
+  string name;
 public:
   Primitive();
   virtual void isPrimitive() { cout << "primitive" << endl; }
@@ -427,8 +428,11 @@ public:
     //w2o = trans.inv();
     //w2o is just o2w->getInv()
   }
+  void setName(string val) { name = val; }
+  string getName() { return name; }
   //float posMin(float t0, float t1);
   Material* getMaterial() { return mat; }
+  virtual Vector4f getCenter() = 0;
 };
 
 
@@ -442,7 +446,7 @@ public:
   Sphere();
   Sphere(float r, float x, float y, float z);
   virtual void isPrimitive() { cout << "sphere" << endl; }
-  Vector4f getCenter();
+  virtual Vector4f getCenter();
   float getRadius();
   bool testIntersect(float &a, float &b, float &c, float &x1, float &x2);
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
@@ -463,6 +467,8 @@ public:
   virtual void isPrimitive() { cout << "triangle" << endl; }
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   virtual bool intersectP(Ray &lray);
+  // TODO: do this vvv
+  virtual Vector4f getCenter() { Vector4f v; return v; }
   // TODO: triangle intersection
   // bool testIntersect(float a, float b, float c, float &x1, float &x2);
   // virtual bool intersect(Ray& ray, float *thit, Intersection* in);
@@ -481,7 +487,6 @@ public:
 //****************************************************
 
 class Sample {
-  // TODO: MAKE COLOR 3 CHANNEL!!!!!!!!!
 	float x, y, z;
   float r, g, b;
 

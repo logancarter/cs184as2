@@ -221,7 +221,16 @@ int main(int argc, char *argv[]) {
                 if (currentMaterial) {
                   sphere->setMaterial(currentMaterial);
                 }
+                char numshapesstr[10];
+                char sphstr[20];
+                strcpy(sphstr, "sphere");
+                sphstr[6] = '\0';
+                sprintf(numshapesstr, "%d", numshapes);
+                strcat(sphstr, numshapesstr);
+                string str(sphstr);
+                sphere->setName(sphstr);
                 numshapes++;
+
                 primitives.push_back(sphere);
                 }
               else if (currentword.compare("tri") == 0) {
@@ -241,6 +250,14 @@ int main(int argc, char *argv[]) {
                 if (currentMaterial) {
                   triangle->setMaterial(currentMaterial);
                 }
+                char numshapesstr[10];
+                char tristr[20];
+                strcpy(tristr, "triangle");
+                tristr[8] = '\0';
+                sprintf(numshapesstr, "%d", numshapes);
+                strcat(tristr, numshapesstr);
+                string str(tristr);
+                triangle->setName(str);
                 numshapes++;
                 primitives.push_back(triangle);
               }
