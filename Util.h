@@ -414,7 +414,14 @@ public:
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   virtual bool intersectP(Ray &lray);
   void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
-  float posMin(float t0, float t1) { return std::min(std::abs(t0), std::abs(t1)); }
+  // TODO: posMin needs to be checked outside the function for negative
+  float posMin(float t0, float t1) { 
+    if (t0 < 0 && t1 > 0) return t1;
+    if (t1 < 0 && t0 > 0) return t0;
+    // return std::min(std::abs(t0), std::abs(t1)); 
+    cout << t0 << " " << t1 << endl;
+    return std::min(t0, t1);
+  }
   //float posMin(float t0, float t1);
   Material* getMaterial() { return mat; }
 };

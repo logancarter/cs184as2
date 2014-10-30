@@ -231,11 +231,11 @@ bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
 	return false;
 }
 
-<<<<<<< HEAD
+
 bool Primitive::intersectP(Ray &lray) {
 	return false;
 }
-=======
+
 // float Primitive::posMin(float t0, float t1) {
 // 	if (std::abs(t0) > std::abs(t1)) {
 // 		return t1;
@@ -243,7 +243,7 @@ bool Primitive::intersectP(Ray &lray) {
 // 		return t0;
 // 	}
 // }
->>>>>>> 976654a2736ec4536cb88030acf60c3ba951c0c0
+
 
 //****************************************************
 // SPHERE
@@ -275,7 +275,7 @@ float Sphere::getRadius() {
 bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 	float d = (b * b) - (4.0 * a * c);
 	if (d < 0) {
-		// cout << "testIntersect  " << d << endl;
+		cout << "d < 0  " << d << endl;
 		return false;
 	} else if (d == 0) {
 		x0 = x1 = -0.5 * b/a;
@@ -287,8 +287,18 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 		x1 = c/q;
 	}
 	// TODO-Check: hackde up some fixes
-	if (x0 != x0 || x1 != x1) return false;
-	if (posMin(x0,x1) < 0.1) return false;
+	if (x0 != x0 || x1 != x1) {
+		cout << "nan " << x0 << " " << x1 << endl;
+		// cout << "nans in da hosue" << endl;
+		// cout << posMin(x0,x1) << endl;
+		return false;
+	}
+	if (posMin(x0,x1) < 0.0) {	// TODO: make this slightly bigger than 0?
+		cout << "neg " << x0 << " " << x1 << endl;
+		// cout << "negative's in da house!" << endl;
+		// cout << posMin(x0,x1) << endl;
+		return false;
+	}
 	if (x0 > x1) {
 		std::swap(x0, x1);
 	}
@@ -644,7 +654,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	//color->setRGB(0.0, 0.0, 0.0);
+	color->setRGB(0.0, 0.0, 0.0);
 
 	// TODO: Assume that object has coeffs, later handle if it doesn't.
 
@@ -652,13 +662,8 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-<<<<<<< HEAD
 		// cout << primitives.size() << endl;
-=======
-		if (i == 0) {
-			color->setRGB(0.0, 0.0, 0.0);
-		}
->>>>>>> 976654a2736ec4536cb88030acf60c3ba951c0c0
+
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
@@ -693,10 +698,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
 					isBlocked = primitives[j]->intersectP(*light_ray);
 					if (isBlocked) {
-					cout << "is blocked" << endl;
-					// cout << ray.getDir() << endl;
-					// cout << light_ray->getDir() << endl;
-						// cout << "we should not even be fucking coming in here";
+						cout << "is blocked" << endl;
 						break;
 					}
 				}
@@ -716,6 +718,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			          Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
 			          color->addColor(temp);
 			      	}
+
 		        }
 
 	     	} 	// end For over lights
