@@ -698,7 +698,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
 		cout << primitives[i]->getName() << endl;
-		cout << primitives[i]->getMaterial()->getBRDF()->getKA() << endl;
+		cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
 
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
@@ -724,7 +724,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			// cout << "hit " << i << endl;
 			//cout << "thit" << thit << endl;
 			// TODO: make this in->primitive (should give oyu the closest)
-			BRDF* brdf = primitive->getMaterial()->getBRDF();
+			BRDF* brdf = primitive->getMaterial().getBRDF();
 			Ray* light_ray = new Ray();
 	        Color* light_color = new Color();
 
