@@ -153,7 +153,7 @@ void handle_obj(vector<string> words, char* file) {
           Vector4f vertexthree = *vertices.at(third - 1);
           Triangle *triangle = new Triangle(vertexone[0], vertexone[1], vertexone[2], vertextwo[0], vertextwo[1], vertextwo[2], vertexthree[0], vertexthree[1], vertexthree[2]);
           if (currentMaterial) {
-            triangle->setMaterial(currentMaterial);
+            triangle->setMaterial(*currentMaterial);
           }
           numshapes++;
           primitives.push_back(triangle);
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
                 // TODO: do material for other primitives too, triangle...
                 Sphere *sphere = new Sphere(r, cx, cy, cz);
                 if (currentMaterial) {
-                  sphere->setMaterial(currentMaterial);
+                  sphere->setMaterial(*currentMaterial);
                 }
                 char numshapesstr[10];
                 char sphstr[20];
@@ -248,7 +248,7 @@ int main(int argc, char *argv[]) {
                 }
                 Triangle *triangle = new Triangle(ax, ay, az, bx, by, bz, cx, cy, cz);
                 if (currentMaterial) {
-                  triangle->setMaterial(currentMaterial);
+                  triangle->setMaterial(*currentMaterial);
                 }
                 char numshapesstr[10];
                 char tristr[20];

@@ -406,7 +406,7 @@ public:
 
 class Primitive {
   Transformation o2w, w2o;
-  Material* mat;
+  Material mat;
   string name;
 public:
   Primitive();
@@ -414,7 +414,7 @@ public:
   Transformation getTransform() { return o2w; }
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
   virtual bool intersectP(Ray &lray);
-  void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
+  void setMaterial(Material m) { mat = m; } 
   // TODO: posMin needs to be checked outside the function for negative
   float posMin(float t0, float t1) { 
     if (t0 < 0 && t1 > 0) return t1;
@@ -426,7 +426,7 @@ public:
   void setName(string val) { name = val; }
   string getName() { return name; }
   //float posMin(float t0, float t1);
-  Material* getMaterial() { return mat; }
+  Material getMaterial() { return mat; }
   virtual Vector4f getCenter() = 0;
 };
 
