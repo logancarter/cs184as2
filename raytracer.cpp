@@ -64,7 +64,7 @@ int numshapes = 0;
 std::vector<Light *> lights;
 std::vector<Matrix4f *> transformations;
 int numlights = 0;
-Material* currentMaterial = NULL;
+Material* currentMaterial = new Material();
 
 
 //****************************************************

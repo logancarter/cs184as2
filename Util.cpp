@@ -324,7 +324,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 		return false;
 	} else {
 		ray.setTmax(t0);
-		in->setPrimitive(this);
+		//in->setPrimitive(this);
 	}
 	if (t0 < 0.0) {
 		return false;
@@ -694,6 +694,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		} 
 		/* DOES INTERSECT */
 		else {
+			if (thit > ray.getTmax()) {
+				in->setPrimitive(primitive);
+			}
 			//cout << "thit" << thit << endl;
 			// TODO: make this in->primitive (should give oyu the closest)
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
@@ -709,7 +712,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	          	bool isBlocked = false;
 				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
 
-				// TODO: Check if light is blocked, shadow ray
+				//TODO: Check if light is blocked, shadow ray
 				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
 					if (j == i) {
 						continue;
@@ -720,6 +723,8 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 						break;
 					}
 				}
+				//Primitive* closest = in->getPrimitive();
+				//isBlocked = closest->intersectP(*light_ray);
 				if (!isBlocked) {
 
 			        if(lights[k]->isALight()) {
@@ -735,8 +740,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			          Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
 			          color->addColor(temp);
 			      	}
-
-		        }
+				}
 
 	     	} 	// end For over lights
 

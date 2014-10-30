@@ -422,6 +422,11 @@ public:
     //cout << t0 << " " << t1 << endl;
     return std::min(t0, t1);
   }
+  void setO2w(Transformation trans) {
+    o2w = trans;
+    //w2o = trans.inv();
+    //w2o is just o2w->getInv()
+  }
   //float posMin(float t0, float t1);
   Material* getMaterial() { return mat; }
 };
