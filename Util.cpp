@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <float.h>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -123,7 +124,7 @@ void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 
 Ray::Ray() {
 	t_min = 0.0;
-	t_max = 100000.0;
+	t_max = FLT_MAX;
 }
 
 Ray::Ray(Vector4f eye, Vector4f pixel) {
@@ -132,7 +133,7 @@ Ray::Ray(Vector4f eye, Vector4f pixel) {
 	dir = pixel;
 	dir.normalize();
 	t_min = 0.0;
-	t_max = 1000000.0;
+	t_max = FLT_MAX;
 }
 
 void Ray::setEye(Vector4f eye) {
@@ -324,7 +325,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 		ray.setTmax(t0);
 		//in->setPrimitive(this);
 	}
-	if (t0 < 0.0) {
+	if (t0 < 0.01) {
 		return false;
 	}
 
@@ -375,7 +376,7 @@ bool Sphere::intersectP(Ray &lray) {
 	} else {
 		lray.setTmax(t0);
 	}
-	if (t0 < 0.0) {
+	if (t0 < 0.01) {
 		return false;
 	}
 	return true;
@@ -442,7 +443,10 @@ bool Sphere::intersectP(Ray &lray) {
   		return false;
   	} else {
   		ray.setTmax(t);
-  		in->setPrimitive(this);
+  		//in->setPrimitive(this);
+  	}
+  	if (t <= 0.01) {
+  		return false;
   	}
   	*thit = t;
 
@@ -697,8 +701,8 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		cout << primitives[i]->getName() << endl;
-		cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
+		//cout << primitives[i]->getName() << endl;
+		//cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
 
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
@@ -718,9 +722,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		} 
 		/* DOES INTERSECT */
 		else {
-			if (thit > ray.getTmax()) {
+			if (thit >= ray.getTmax()) {
 				in->setPrimitive(primitive);
-			}
+			} 
 			// cout << "hit " << i << endl;
 			//cout << "thit" << thit << endl;
 			// TODO: make this in->primitive (should give oyu the closest)
@@ -751,36 +755,18 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 				}
 
 				// TODO: Check if light is blocked, shadow ray
-				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
-					if (j == i) { continue; }
-					isBlocked = primitives[j]->intersectP(*light_ray);
-					if (isBlocked) {
-						// cout << "is blocked by " << primitives[j]->getName() << endl;
-						break;
-					}
+				// for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+				// 	if (j == i) { continue; }
+				// 	isBlocked = primitives[j]->intersectP(*light_ray);
+				// 	if (isBlocked) {
+				// 		// cout << "is blocked by " << primitives[j]->getName() << endl;
+				// 		break;
+				// 	}
 
-				}
-				//Primitive* closest = in->getPrimitive();
-				//isBlocked = closest->intersectP(*light_ray);
+				// }
+				Primitive* closest = in->getPrimitive();
+				isBlocked = closest->intersectP(*light_ray) && (primitive == closest);
 				if (!isBlocked) {
-
-			        if(lights[k]->isALight()) {
-						// cout << k << " is ambient" << endl;
-						Vector3f ambient(3);
-						ambient(0) = lights[k]->getRColor();
-						ambient(1) = lights[k]->getGColor();
-						ambient(2) = lights[k]->getBColor();
-						ambient = ambient.cwiseProduct(brdf->getKA());
-						// RGB_result += ambient;
-						color->appendRGB(ambient(0), ambient(1), ambient(2));
-					} else {
-			          Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
-			          color->addColor(temp);
-			      	}
-				}
-
-				if (!isBlocked) {
-
 			   //      if(lights[k]->isALight()) {
 						// // cout << k << " is ambient" << endl;
 						// Vector3f ambient(3);
@@ -794,7 +780,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 					// cout << "light " << k << " at " << lights[k]->getPos() << endl;
 					// cout << "light_pos " << light_ray->getPos() << endl;
 					// cout << "light_dir " << light_ray->getDir() << endl;
-					// cout << "primitive " << i << " at " << primitives[i]->getCenter() << endl;					
+					// cout << "primitive " << i << " at " << primitives[i]->getCenter() << endl;	
+
+
 					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
 					color->addColor(temp);
 			      	// }
