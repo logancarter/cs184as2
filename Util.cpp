@@ -187,7 +187,7 @@ Vector4f Ray::getPos() {
 
 Intersection::Intersection() {
 	lg = *(new LocalGeo());
-	primitive = new Primitive();
+	// primitive = new Primitive();
 }
 
 
@@ -259,8 +259,6 @@ Sphere::Sphere(float r, float x, float y, float z) {
 	center_y = y;
 	center_z = z;
 }
-
-
 
 
 Vector4f Sphere::getCenter() {
@@ -336,6 +334,8 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	// 	ray.setTmin(t1);
 	// }
 	*thit = posMin(t0, t1);
+	// TODO: need this check?
+	if (*thit < 0) return false;
 	*thit = t0;
 	//cout << *thit << endl;
 	// TODO: do this only if its the cloest
@@ -349,7 +349,11 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	// cout << getCenter() << endl;
 	// TODO: change the normal
 	Vector4f normal = intersectionPoint - getCenter();
-	normal.normalize();
+	Vector3f temp;
+	temp << normal(0), normal(1), normal(2);
+	temp.normalize();
+	// normal.normalize();
+	normal << temp(0), temp(1), temp(2), 0;
 	lg.setNormal(normal);
 	in->setLocalGeo(lg);
 	return true;
@@ -401,6 +405,8 @@ bool Sphere::intersectP(Ray &lray) {
   	A = b - a;
   	B = c - a;
   	Vector3f N = A.cross(B);
+  	// Im going to normalize this...
+  	// N.normalize();
   	float NdotRayDir = N.dot(raydir);
   	if (NdotRayDir == 0) {
   		return false; //they're parallel
@@ -439,6 +445,21 @@ bool Sphere::intersectP(Ray &lray) {
   		in->setPrimitive(this);
   	}
   	*thit = t;
+
+///////////////
+	// Vector4f intersectionPoint;
+	// intersectionPoint = ray.getPos() + t_hit * ray.getDir();
+	// LocalGeo lg = *(new LocalGeo());
+	// lg.setPos(intersectionPoint);
+	// Vector4f normal = intersectionPoint - getCenter();
+	// Vector3f temp;
+	// temp << normal(0), normal(1), normal(2);
+	// temp.normalize();
+	// // normal.normalize();
+	// normal << temp(0), temp(1), temp(2), 0;
+	// lg.setNormal(normal);
+	// in->setLocalGeo(lg);
+	//////////////////
   	return true;
   }
 
@@ -668,6 +689,7 @@ void RayTracer::addLight(Light &light) {
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
+		// cout << primitives.size() << endl;
 
 	// TODO: Assume that object has coeffs, later handle if it doesn't.
 
@@ -675,7 +697,8 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		// cout << primitives.size() << endl;
+		cout << primitives[i]->getName() << endl;
+		cout << primitives[i]->getMaterial()->getBRDF()->getKA() << endl;
 
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
@@ -684,9 +707,10 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 
 		/* DOES NOT INTERSECT */
 		if (!primitive->intersect(ray, &thit, in)) {
+			// cout << "no hit " << i << endl;
 			//cout << "THIT" << thit << endl;
 			// TODO: Change this to look for ambient
-			//color->setRGB(0.0, 0.0, 0.0);
+			//color->setRGB(0.0, 0.0, 0.0); 
 			if (lights.empty()) {
 				// sample->setBlack();
 				//color->setRGB(0.0, 0.0, 0.0);
@@ -694,6 +718,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		} 
 		/* DOES INTERSECT */
 		else {
+			// cout << "hit " << i << endl;
 			//cout << "thit" << thit << endl;
 			// TODO: make this in->primitive (should give oyu the closest)
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
@@ -704,40 +729,64 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			** FOR LIGHTS **
 			***********************/
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-
+				// cout << k << "th light and color is "; color->printV();
 	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
 	          	bool isBlocked = false;
 				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
 
-				// TODO: Check if light is blocked, shadow ray
-				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
-					if (j == i) {
-						continue;
-					}
-					isBlocked = primitives[j]->intersectP(*light_ray);
-					if (isBlocked) {
-						//cout << "is blocked" << endl;
-						break;
-					}
-				}
-				if (!isBlocked) {
-
-			        if(lights[k]->isALight()) {
+				if(lights[k]->isALight()) {
 						// cout << k << " is ambient" << endl;
 						Vector3f ambient(3);
 						ambient(0) = lights[k]->getRColor();
 						ambient(1) = lights[k]->getGColor();
 						ambient(2) = lights[k]->getBColor();
 						ambient = ambient.cwiseProduct(brdf->getKA());
-						// RGB_result += ambient;
 						color->appendRGB(ambient(0), ambient(1), ambient(2));
-					} else {
-			          Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
-			          color->addColor(temp);
-			      	}
+						// cout << "hi "; color->printV();
+						// cout << "add to color 1: ambient" << endl;
+						continue;
+				}
 
+				// TODO: Check if light is blocked, shadow ray
+				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+					if (j == i) { continue; }
+					isBlocked = primitives[j]->intersectP(*light_ray);
+					if (isBlocked) {
+						// cout << "is blocked by " << primitives[j]->getName() << endl;
+						break;
+					}
+
+				}
+
+				if (!isBlocked) {
+
+			   //      if(lights[k]->isALight()) {
+						// // cout << k << " is ambient" << endl;
+						// Vector3f ambient(3);
+						// ambient(0) = lights[k]->getRColor();
+						// ambient(1) = lights[k]->getGColor();
+						// ambient(2) = lights[k]->getBColor();
+						// ambient = ambient.cwiseProduct(brdf->getKA());
+						// // RGB_result += ambient;
+						// color->appendRGB(ambient(0), ambient(1), ambient(2));
+					// } else {
+					// cout << "light " << k << " at " << lights[k]->getPos() << endl;
+					// cout << "light_pos " << light_ray->getPos() << endl;
+					// cout << "light_dir " << light_ray->getDir() << endl;
+					// cout << "primitive " << i << " at " << primitives[i]->getCenter() << endl;					
+					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
+					color->addColor(temp);
+			      	// }
+
+		        } else {
+		        	Vector3f ambient, I_rgb;
+		        	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+					ambient = I_rgb.cwiseProduct(brdf->getKA());
+					color->appendRGB(ambient(0), ambient(1), ambient(2));
+					// cout << "add to color 2: shading" << endl;
 		        }
 
+				// cout << "is block? " << isBlocked << " "; color->printV();
 	     	} 	// end For over lights
 
 	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
@@ -763,6 +812,7 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
 	Vector3f light, I_rgb;
 	I_rgb << light_color->getR(), light_color->getG(), light_color->getB();
 	light << light_ray->getDir()(0), light_ray->getDir()(1), light_ray->getDir()(2);
+	// TODO...why normalize
 	light.normalize();
 
 	Vector3f kd, diffuse;
@@ -818,7 +868,7 @@ void Scene::render() {
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
 		// if (sample.getX() == 107.0 && sample.getY() == 200.0) {
-		if (sample.getX() == 279.0 && sample.getY() == 203.0) {
+		if (sample.getX() == 357.0 && sample.getY() == 253.0) {
 			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
 		}
     	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
