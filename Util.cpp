@@ -287,18 +287,18 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 		x1 = c/q;
 	}
 	// TODO-Check: hackde up some fixes
-	if (x0 != x0 || x1 != x1) {
-		//cout << "nan " << x0 << " " << x1 << endl;
-		// cout << "nans in da hosue" << endl;
-		// cout << posMin(x0,x1) << endl;
-		return false;
-	}
-	if (posMin(x0,x1) < 0.0) {	// TODO: make this slightly bigger than 0?
-		//cout << "neg " << x0 << " " << x1 << endl;
-		// cout << "negative's in da house!" << endl;
-		// cout << posMin(x0,x1) << endl;
-		return false;
-	}
+	// if (x0 != x0 || x1 != x1) {
+	// 	//cout << "nan " << x0 << " " << x1 << endl;
+	// 	// cout << "nans in da hosue" << endl;
+	// 	// cout << posMin(x0,x1) << endl;
+	// 	return false;
+	// }
+	// if (posMin(x0,x1) < 0.0) {	// TODO: make this slightly bigger than 0?
+	// 	//cout << "neg " << x0 << " " << x1 << endl;
+	// 	// cout << "negative's in da house!" << endl;
+	// 	// cout << posMin(x0,x1) << endl;
+	// 	return false;
+	// }
 	if (x0 > x1) {
 		std::swap(x0, x1);
 	}
@@ -336,7 +336,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	// 	ray.setTmin(t1);
 	// }
 	*thit = posMin(t0, t1);
-	//*thit = t0;
+	*thit = t0;
 	//cout << *thit << endl;
 	// TODO: do this only if its the cloest
 	float t_hit = *thit;
@@ -364,6 +364,14 @@ bool Sphere::intersectP(Ray &lray) {
 	float b = 2 * (lray.getDir()).dot(difference);
 	float c = difference.dot(difference) - (getRadius() * getRadius());
 	if (!testIntersect(a, b, c, t0, t1)) {
+		return false;
+	}
+	if (t0 > lray.getTmax()) {
+		return false;
+	} else {
+		lray.setTmax(t0);
+	}
+	if (t0 < 0.0) {
 		return false;
 	}
 	return true;
@@ -698,18 +706,20 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 
 	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
+	          	bool isBlocked = false;
 				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
 
 				// TODO: Check if light is blocked, shadow ray
-				bool isBlocked = false;
 				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+					if (j == i) {
+						continue;
+					}
 					isBlocked = primitives[j]->intersectP(*light_ray);
 					if (isBlocked) {
 						//cout << "is blocked" << endl;
 						break;
 					}
 				}
-
 				if (!isBlocked) {
 
 			        if(lights[k]->isALight()) {
@@ -778,7 +788,7 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
 
 	Vector3f subtotal = diffuse + specular + ambient;
 	RGB_result = RGB_result + subtotal;
- 	curr.setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
+ 	curr.setRGB(RGB_result[0], RGB_result[1], RGB_result[2]);
     return curr;
   }
 
