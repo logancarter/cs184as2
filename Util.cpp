@@ -128,6 +128,7 @@ Ray::Ray() {
 
 Ray::Ray(Vector4f eye, Vector4f pixel) {
 	pos = eye;
+	// TODO FIX NORMAL
 	dir = pixel;
 	dir.normalize();
 	t_min = 0.0;
@@ -139,8 +140,11 @@ void Ray::setEye(Vector4f eye) {
 }
 
 void Ray::setDir(Vector4f pminuse) {
-	dir = pminuse;
-	dir.normalize();
+	Vector3f temp;
+	temp << pminuse(0), pminuse(1), pminuse(2);
+	temp.normalize();
+	dir << temp(0), temp(1), temp(2), 0;
+	// dir.normalize();
 }
 
 Vector4f Ray::getDir() {
@@ -200,6 +204,7 @@ Intersection::Intersection(LocalGeo local, Primitive &s) {
 void PointLight::getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg) {
 	light_ray->setEye(lg.getPos());
 	light_ray->setDir(getPos() - lg.getPos());
+	// cout << "light_ray" << endl << light_ray->getDir() << endl;
 	light_color->setRGB(getRColor(), getGColor(), getBColor());
 }
 
@@ -226,6 +231,11 @@ bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
 	return false;
 }
 
+
+bool Primitive::intersectP(Ray &lray) {
+	return false;
+}
+
 // float Primitive::posMin(float t0, float t1) {
 // 	if (std::abs(t0) > std::abs(t1)) {
 // 		return t1;
@@ -233,6 +243,7 @@ bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
 // 		return t0;
 // 	}
 // }
+
 
 //****************************************************
 // SPHERE
@@ -264,7 +275,7 @@ float Sphere::getRadius() {
 bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 	float d = (b * b) - (4.0 * a * c);
 	if (d < 0) {
-		// cout << "testIntersect  " << d << endl;
+		cout << "d < 0  " << d << endl;
 		return false;
 	} else if (d == 0) {
 		x0 = x1 = -0.5 * b/a;
@@ -274,6 +285,19 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 		-0.5 * (b - sqrt(d));
 		x0 = q/a;
 		x1 = c/q;
+	}
+	// TODO-Check: hackde up some fixes
+	if (x0 != x0 || x1 != x1) {
+		cout << "nan " << x0 << " " << x1 << endl;
+		// cout << "nans in da hosue" << endl;
+		// cout << posMin(x0,x1) << endl;
+		return false;
+	}
+	if (posMin(x0,x1) < 0.0) {	// TODO: make this slightly bigger than 0?
+		cout << "neg " << x0 << " " << x1 << endl;
+		// cout << "negative's in da house!" << endl;
+		// cout << posMin(x0,x1) << endl;
+		return false;
 	}
 	if (x0 > x1) {
 		std::swap(x0, x1);
@@ -321,6 +345,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	LocalGeo lg = *(new LocalGeo());
 	lg.setPos(intersectionPoint);
 	// cout << getCenter() << endl;
+	// TODO: change the normal
 	Vector4f normal = intersectionPoint - getCenter();
 	normal.normalize();
 	lg.setNormal(normal);
@@ -328,7 +353,19 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	return true;
 }
 
-
+bool Sphere::intersectP(Ray &lray) {
+	float t0 = 0;
+	float t1 = 0;
+	// cout << "sphere intersect" << endl;
+	Vector4f difference = lray.getPos() - getCenter();
+	float a = lray.getDir().dot(lray.getDir());
+	float b = 2 * (lray.getDir()).dot(difference);
+	float c = difference.dot(difference) - (getRadius() * getRadius());
+	if (!testIntersect(a, b, c, t0, t1)) {
+		return false;
+	}
+	return true;
+}
 
 //****************************************************
 // TRIANGLE       
@@ -395,7 +432,11 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
   	return true;
   }
 
-
+  bool Triangle::intersectP(Ray &lray) {
+  	float notUsed = 0; // unused garbage
+  	Intersection* in = new Intersection();
+  	return this->intersect(lray, &notUsed, in);
+  }
 
 //****************************************************
 // TRANSFORMATION
@@ -618,16 +659,12 @@ void RayTracer::addLight(Light &light) {
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
 
-// TODO: Assume that object has coeffs, later handle if it doesn't.
+	// TODO: Assume that object has coeffs, later handle if it doesn't.
 
 	/***********************
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		// if (i == 0) {
-		// 	color->setRGB(0.0, 0.0, 0.0);
-		// }
-		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
 		Intersection* in = new Intersection();
@@ -643,31 +680,30 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		} 
 		/* DOES INTERSECT */
 		else {
-			Vector3f RGB_result;
-			RGB_result(0) = RGB_result(1) = RGB_result(2) = 0.0;
-	        Vector3f pos, normal;
-	        Vector4f posh = in->getLocalGeo().getPos();
-	        pos << posh(0), posh(1), posh(2);
-	        posh = in->getLocalGeo().getNormal();
-	        normal << posh(0), posh(1), posh(2);
+			// TODO: make this in->primitive (should give oyu the closest)
 			BRDF* brdf = primitive->getMaterial()->getBRDF();
+			Ray* light_ray = new Ray();
+	        Color* light_color = new Color();
 
 			/***********************
 			** FOR LIGHTS **
 			***********************/
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-				// if (k == 1) cout << lights[k]->getX() << lights[k]->getY() << lights[k]->getZ() << endl;
-				if(lights[k]->isALight()) {
-					// cout << k << " is ambient" << endl;
-					Vector3f ambient(3);
-					ambient(0) = lights[k]->getRColor();
-					ambient(1) = lights[k]->getGColor();
-					ambient(2) = lights[k]->getBColor();
-					ambient = ambient.cwiseProduct(brdf->getKA());
-					RGB_result += ambient;
-					continue;
+
+	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
+				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
+
+				// TODO: Check if light is blocked, shadow ray
+				bool isBlocked = false;
+				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+					isBlocked = primitives[j]->intersectP(*light_ray);
+					if (isBlocked) {
+						cout << "is blocked" << endl;
+						break;
+					}
 				}
 
+				if (!isBlocked) {
 
 			// TODO: make these 4f???
 	          Vector3f lightpos, light, I_rgb, flipped_lightpos;
@@ -758,7 +794,74 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	    //TODO now do for each other primitive? or should I have already decided which primitive is the front?
 	}
 
+			        if(lights[k]->isALight()) {
+						// cout << k << " is ambient" << endl;
+						Vector3f ambient(3);
+						ambient(0) = lights[k]->getRColor();
+						ambient(1) = lights[k]->getGColor();
+						ambient(2) = lights[k]->getBColor();
+						ambient = ambient.cwiseProduct(brdf->getKA());
+						// RGB_result += ambient;
+						color->appendRGB(ambient(0), ambient(1), ambient(2));
+					} else {
+			          Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
+			          color->addColor(temp);
+			      	}
 
+		        }
+
+	     	} 	// end For over lights
+
+	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
+	    }		// end else
+        
+    } //emd for over primitives
+	    //TODO now do for each other primitive? or should I have already decided which primitive is the front?
+	    // color->printV();
+}
+
+Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_color) {
+	Color curr = *(new Color());
+	Vector3f RGB_result;
+	RGB_result(0) = RGB_result(1) = RGB_result(2) = 0.0;
+    Vector3f pos, normal;
+    Vector4f posh = lg.getPos();
+    // Pos is the point on the shape.
+    pos << posh(0), posh(1), posh(2);
+    posh = lg.getNormal();
+    normal << posh(0), posh(1), posh(2);
+
+	Vector3f light, I_rgb;
+	I_rgb << light_color->getR(), light_color->getG(), light_color->getB();
+	light << light_ray->getDir()(0), light_ray->getDir()(1), light_ray->getDir()(2);
+	light.normalize();
+
+	Vector3f kd, diffuse;
+	kd = brdf->getKD();
+	diffuse = kd.cwiseProduct(I_rgb);
+	diffuse = diffuse * fmax(light.dot(normal), 0.0);
+
+	Vector3f ks, specular, reflection, viewer;
+	ks = brdf->getKS();
+	reflection = (light * -1) + (normal * light.dot(normal) * 2);
+	reflection.normalize();
+	// TODO: double check on this viewer direction...
+	Vector3f ray_pos;
+	ray_pos << getEye()(0), getEye()(1), getEye()(2);
+	viewer = ray_pos - pos;
+	viewer.normalize();
+	specular = ks.cwiseProduct(I_rgb);
+	specular = specular * pow(fmax(reflection.dot(viewer), 0.0), brdf->getKSP());
+
+	Vector3f ka, ambient;
+	ka = brdf->getKA();
+	ambient = ka.cwiseProduct(I_rgb);
+
+	Vector3f subtotal = diffuse + specular + ambient;
+	RGB_result = RGB_result + subtotal;
+ 	curr.setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
+    return curr;
+  }
 
 
 //****************************************************
@@ -770,6 +873,7 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 	film = f;
 	camera = c;
 	raytracer = rt;
+	raytracer.setEye(camera.get_eye());
 }
 
 
@@ -784,7 +888,8 @@ void Scene::render() {
 		//Primitives[0]->isPrimitive();
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
-		if (sample.getX() == 173.0 && sample.getY() == 238.0) {
+		// if (sample.getX() == 107.0 && sample.getY() == 200.0) {
+		if (sample.getX() == 279.0 && sample.getY() == 203.0) {
 			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
 		}
     	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);

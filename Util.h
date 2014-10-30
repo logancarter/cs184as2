@@ -179,6 +179,8 @@ public:
   float getB();
   void setRGB(float rv, float gv, float bv);
   void appendRGB(float rv, float gv, float bv) { r += rv; g+= gv; b+= bv; }
+  void addColor(Color color) { r += color.getR(); g+= color.getG(); b+= color.getB(); }
+  void printV() { cout << r << " " << g << " " << b << endl; }
 };
 
 
@@ -410,8 +412,16 @@ public:
   virtual void isPrimitive() { cout << "primitive" << endl; }
   Transformation getTransform() { return o2w; }
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
+  virtual bool intersectP(Ray &lray);
   void setMaterial(Material *m) { mat = m; } /* TODO!!!!!!: Need to check before each use of getMaterial() that it exists, cuz may be NULL */
-  float posMin(float t0, float t1) { return std::min(std::abs(t0), std::abs(t1)); }
+  // TODO: posMin needs to be checked outside the function for negative
+  float posMin(float t0, float t1) { 
+    if (t0 < 0 && t1 > 0) return t1;
+    if (t1 < 0 && t0 > 0) return t0;
+    // return std::min(std::abs(t0), std::abs(t1)); 
+    cout << t0 << " " << t1 << endl;
+    return std::min(t0, t1);
+  }
   //float posMin(float t0, float t1);
   Material* getMaterial() { return mat; }
 };
@@ -431,6 +441,7 @@ public:
   float getRadius();
   bool testIntersect(float &a, float &b, float &c, float &x1, float &x2);
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
+  virtual bool intersectP(Ray &lray);
 };
 
 
@@ -446,6 +457,7 @@ public:
   Triangle(float ax, float ay, float az, float bx, float by, float bz, float cx, float cy, float cz);
   virtual void isPrimitive() { cout << "triangle" << endl; }
   virtual bool intersect(Ray &ray, float *thit, Intersection* in);
+  virtual bool intersectP(Ray &lray);
   // TODO: triangle intersection
   // bool testIntersect(float a, float b, float c, float &x1, float &x2);
   // virtual bool intersect(Ray& ray, float *thit, Intersection* in);
@@ -553,6 +565,7 @@ public:
 class RayTracer {
   std::vector<Primitive *> primitives;
   std::vector<Light *> lights;
+  Vector4f eye; 
 public:
   RayTracer();
   RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls);
@@ -561,6 +574,9 @@ public:
   void trace(Ray& ray, int depth, Color* color);
   std::vector<Primitive *> getPrims() { return primitives; }
   // void trace(Ray ray, Sample *sample, std::vector<Primitive *> primitives, std::vector<Light *> lights); 
+  Color shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_color);
+  void setEye(Vector4f ai) { eye = ai; }
+  Vector4f getEye() { return eye; }
 };
 
 
