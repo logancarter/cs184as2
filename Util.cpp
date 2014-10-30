@@ -302,6 +302,9 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 		ray.setTmax(t0);
 		in->setPrimitive(this);
 	}
+	if (t0 < 0.0) {
+		return false;
+	}
 
 	// if (posMin(t0, t1) < ray.getTmin()) {
 	// 	//return false;
@@ -613,7 +616,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	//color->setRGB(0.0, 0.0, 0.0);
+	color->setRGB(0.0, 0.0, 0.0);
 
 // TODO: Assume that object has coeffs, later handle if it doesn't.
 
@@ -621,9 +624,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		if (i == 0) {
-			color->setRGB(0.0, 0.0, 0.0);
-		}
+		// if (i == 0) {
+		// 	color->setRGB(0.0, 0.0, 0.0);
+		// }
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
@@ -705,6 +708,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            diffuse = kd.cwiseProduct(I_rgb);
 	            // diffuse = Vectorz::scale(diffuse, fmax(Vectorz::dot(light, normal), 0.0));
 	            diffuse = diffuse * fmax(light.dot(normal), 0.0);
+	           // diffuse = fmax((diffuse * light.dot(normal)), 0.0);
 	          } else {
 	            diffuse << 0.0, 0.0, 0.0;
 	          }
@@ -738,7 +742,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	            ambient << 0,0,0;
 	          }
 	          
-	          Vector3f subtotal = diffuse + specular + ambient;
+	          Vector3f subtotal = diffuse + specular;// + ambient;
 	          // cout << k << " subtotal " << subtotal << endl;
 	          RGB_result = RGB_result + subtotal;
 	      } 	// end For over lights

@@ -104,8 +104,8 @@ void handle_obj(vector<string> words, char* file) {
   ifstream newfile;
   newfile.open(file);
   string curr_line;
-  std::vector<Vector3f *> vertices;
-  std::vector<Vector3f *> normalvertices;
+  std::vector<Vector4f *> vertices;
+  std::vector<Vector4f *> normalvertices;
   while (!newfile.eof()) {
     getline(newfile,curr_line);
     if (curr_line.compare("") == 0 || curr_line.compare("\n") == 0) {
@@ -117,7 +117,7 @@ void handle_obj(vector<string> words, char* file) {
       float xval = atof(currentwords.at(1).c_str());
       float yval = atof(currentwords.at(2).c_str());
       float zval = atof(currentwords.at(3).c_str());
-      Vector3f *vertex = new Vector3f(xval, yval, zval);
+      Vector4f *vertex = new Vector4f(xval, yval, zval, 1);
       vertices.push_back(vertex);
     } else if (currentword.compare("f") == 0) {
         if (currentwords.at(1).find("//") != std::string::npos) {
@@ -134,19 +134,23 @@ void handle_obj(vector<string> words, char* file) {
           float vnum3 = atof(currentpart[0].c_str());
           float surfacenum3 = atof(currentpart[2].c_str());
 
-          Vector3f vertexone = *(vertices[vnum1 - 1]);
-          Vector3f vertextwo = *(vertices[vnum2 - 1]);
-          Vector3f vertexthree = *(vertices[vnum3 - 1]);
-          Vector3f normalone =  *(normalvertices[surfacenum1 - 1]);
-          Vector3f normaltwo =  *(normalvertices[surfacenum2 - 1]);
-          Vector3f normalthree =  *(normalvertices[surfacenum3 - 1]);
+          Vector4f vertexone = *vertices[vnum1 - 1];
+          Vector4f vertextwo = *vertices[vnum2 - 1];
+          Vector4f vertexthree = *vertices[vnum3 - 1];
+          Vector4f normalone =  *normalvertices[surfacenum1 - 1];
+          Vector4f normaltwo =  *normalvertices[surfacenum2 - 1];
+          Vector4f normalthree =  *normalvertices[surfacenum3 - 1];
+          LocalGeo *one = new LocalGeo();
+          LocalGeo *two = new LocalGeo();
+          LocalGeo *three = new LocalGeo();
+          //one->set(vertexone)
         } else {
           int first = atoi(currentwords.at(1).c_str());
           int second = atoi(currentwords.at(2).c_str());
           int third = atoi(currentwords.at(3).c_str());
-          Vector3f vertexone = *vertices[first - 1];
-          Vector3f vertextwo = *vertices.at(second - 1);
-          Vector3f vertexthree = *vertices.at(third - 1);
+          Vector4f vertexone = *vertices[first - 1];
+          Vector4f vertextwo = *vertices.at(second - 1);
+          Vector4f vertexthree = *vertices.at(third - 1);
           Triangle *triangle = new Triangle(vertexone[0], vertexone[1], vertexone[2], vertextwo[0], vertextwo[1], vertextwo[2], vertexthree[0], vertexthree[1], vertexthree[2]);
           if (currentMaterial) {
             triangle->setMaterial(currentMaterial);
@@ -158,11 +162,8 @@ void handle_obj(vector<string> words, char* file) {
         float ival = atof(currentwords.at(1).c_str());
         float jval = atof(currentwords.at(2).c_str());
         float kval = atof(currentwords.at(3).c_str());
-        Vector3f normalvertex;
-        normalvertex(0) = ival;
-        normalvertex(1) = jval;
-        normalvertex(2) = kval;
-        normalvertices.push_back(&normalvertex);
+        Vector4f *normalvertex = new Vector4f(ival, jval, kval, 1);
+        normalvertices.push_back(normalvertex);
     } else {
       fprintf(stderr, "Warning: Unsupported feature ignored.\n");
     }
