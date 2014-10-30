@@ -300,6 +300,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 		return false;
 	} else {
 		ray.setTmax(t0);
+		in->setPrimitive(this);
 	}
 
 	// if (posMin(t0, t1) < ray.getTmin()) {
@@ -311,7 +312,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	//cout << *thit << endl;
 	// TODO: do this only if its the cloest
 	float t_hit = *thit;
-	in->setPrimitive(this);
+	//in->setPrimitive(this);
 	Vector4f intersectionPoint;
 	intersectionPoint = ray.getPos() + t_hit * ray.getDir();
 	LocalGeo lg = *(new LocalGeo());
@@ -385,6 +386,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
   		return false;
   	} else {
   		ray.setTmax(t);
+  		in->setPrimitive(this);
   	}
   	*thit = t;
   	return true;

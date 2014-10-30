@@ -108,7 +108,7 @@ void handle_obj(vector<string> words, char* file) {
   std::vector<Vector3f *> normalvertices;
   while (!newfile.eof()) {
     getline(newfile,curr_line);
-    if (curr_line.compare("") == 0) {
+    if (curr_line.compare("") == 0 || curr_line.compare("\n") == 0) {
       continue;
     }
     vector<string> currentwords = split(curr_line, ' ', '\t');
@@ -182,6 +182,9 @@ int main(int argc, char *argv[]) {
             while(!infile.eof()) { // To get you all the lines.
               getline(infile,STRING); // Current line saved in String
               vector<string> words = split(STRING, ' ', '\t');
+              if (STRING.compare("") == 0 || STRING.compare("\n") == 0 || words.size() == 0) {
+                continue;
+              }
               string currentword = words.at(0);
               if (currentword.compare("cam") == 0) {
                 float ex = atof(words.at(1).c_str());
