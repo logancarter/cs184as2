@@ -419,7 +419,7 @@ public:
     if (t0 < 0 && t1 > 0) return t1;
     if (t1 < 0 && t0 > 0) return t0;
     // return std::min(std::abs(t0), std::abs(t1)); 
-    cout << t0 << " " << t1 << endl;
+    //cout << t0 << " " << t1 << endl;
     return std::min(t0, t1);
   }
   //float posMin(float t0, float t1);
