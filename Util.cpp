@@ -122,7 +122,8 @@ void Color::setRGB(float rv, float gv, float bv) { r = rv; g = gv; b = bv; }
 //****************************************************
 
 Ray::Ray() {
-
+	t_min = 0.0;
+	t_max = 100000.0;
 }
 
 Ray::Ray(Vector4f eye, Vector4f pixel) {
@@ -130,6 +131,8 @@ Ray::Ray(Vector4f eye, Vector4f pixel) {
 	// TODO FIX NORMAL
 	dir = pixel;
 	dir.normalize();
+	t_min = 0.0;
+	t_max = 1000000.0;
 }
 
 void Ray::setEye(Vector4f eye) {
@@ -228,9 +231,19 @@ bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
 	return false;
 }
 
+<<<<<<< HEAD
 bool Primitive::intersectP(Ray &lray) {
 	return false;
 }
+=======
+// float Primitive::posMin(float t0, float t1) {
+// 	if (std::abs(t0) > std::abs(t1)) {
+// 		return t1;
+// 	} else {
+// 		return t0;
+// 	}
+// }
+>>>>>>> 976654a2736ec4536cb88030acf60c3ba951c0c0
 
 //****************************************************
 // SPHERE
@@ -247,6 +260,9 @@ Sphere::Sphere(float r, float x, float y, float z) {
 	center_z = z;
 }
 
+
+
+
 Vector4f Sphere::getCenter() {
 	Vector4f v(center_x, center_y, center_z, 1);
 	return v;
@@ -257,7 +273,7 @@ float Sphere::getRadius() {
 }
 
 bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
-	float d = (b * b) - (4 * a * c);
+	float d = (b * b) - (4.0 * a * c);
 	if (d < 0) {
 		// cout << "testIntersect  " << d << endl;
 		return false;
@@ -282,30 +298,35 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 
 //algorithm credit goes to scratchapixel.com
 bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
-	float t0 = 0;
-	float t1 = 0;
+	float t0 = 0.0;
+	float t1 = 0.0;
 	// cout << "sphere intersect" << endl;
 	Vector4f difference = ray.getPos() - getCenter();
 	float a = ray.getDir().dot(ray.getDir());
-	float b = 2 * (ray.getDir()).dot(difference);
+	float b = 2.0 * (ray.getDir()).dot(difference);
 	float c = difference.dot(difference) - (getRadius() * getRadius());
 	//cout << getRadius() << " is Radius\n";
 	if (!testIntersect(a, b, c, t0, t1)) {
 		return false;
 	}
-	// cout << t0 << " " << t1 << endl;
 
-	// if (t0 > ray.max) {
-	// 	return false;
+	if (t0 > ray.getTmax()) {
+		return false;
+	} else {
+		ray.setTmax(t0);
+		in->setPrimitive(this);
+	}
+
+	// if (posMin(t0, t1) < ray.getTmin()) {
+	// 	//return false;
 	// } else {
-	// 	ray.max = 0;
+	// 	ray.setTmin(t1);
 	// }
-
 	*thit = posMin(t0, t1);
 	//cout << *thit << endl;
 	// TODO: do this only if its the cloest
 	float t_hit = *thit;
-	in->setPrimitive(this);
+	//in->setPrimitive(this);
 	Vector4f intersectionPoint;
 	intersectionPoint = ray.getPos() + t_hit * ray.getDir();
 	LocalGeo lg = *(new LocalGeo());
@@ -388,6 +409,13 @@ bool Sphere::intersectP(Ray &lray) {
   	if (N.dot(C) < 0) {
   		return false;
   	}
+  	if (t > ray.getTmax()) {
+  		return false;
+  	} else {
+  		ray.setTmax(t);
+  		in->setPrimitive(this);
+  	}
+  	*thit = t;
   	return true;
   }
 
@@ -616,7 +644,7 @@ void RayTracer::addLight(Light &light) {
 }
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	color->setRGB(0.0, 0.0, 0.0);
+	//color->setRGB(0.0, 0.0, 0.0);
 
 	// TODO: Assume that object has coeffs, later handle if it doesn't.
 
@@ -624,7 +652,13 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
+<<<<<<< HEAD
 		// cout << primitives.size() << endl;
+=======
+		if (i == 0) {
+			color->setRGB(0.0, 0.0, 0.0);
+		}
+>>>>>>> 976654a2736ec4536cb88030acf60c3ba951c0c0
 		Primitive* primitive = primitives[i];
 		// primitive->isPrimitive();
 		float thit = 0.0;
@@ -633,10 +667,10 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		/* DOES NOT INTERSECT */
 		if (!primitive->intersect(ray, &thit, in)) {
 			// TODO: Change this to look for ambient
-			color->setRGB(0.0, 0.0, 0.0);
+			//color->setRGB(0.0, 0.0, 0.0);
 			if (lights.empty()) {
 				// sample->setBlack();
-				color->setRGB(0.0, 0.0, 0.0);
+				//color->setRGB(0.0, 0.0, 0.0);
 			}
 		} 
 		/* DOES INTERSECT */
@@ -754,10 +788,10 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 
 void Scene::render() {
 	Sample sample = *(new Sample());
-	Ray ray;
 	bool notDone = sampler.getNextSample(&sample);
 	int depth = 0;
 	while (notDone) {
+		Ray ray = *(new Ray());
 		camera.generateRay(sample, &ray);
 		//Primitives[0]->isPrimitive();
 		// raytracer.trace(ray, &sample, primitives, lights);
