@@ -188,7 +188,7 @@ Vector4f Ray::getPos() {
 
 Intersection::Intersection() {
 	lg = *(new LocalGeo());
-	// primitive = new Primitive();
+	//primitive = new Primitive();
 }
 
 
@@ -274,7 +274,6 @@ float Sphere::getRadius() {
 bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 	float d = (b * b) - (4.0 * a * c);
 	if (d < 0) {
-		//cout << "d < 0  " << d << endl;
 		return false;
 	} else if (d == 0) {
 		x0 = x1 = -0.5 * b/a;
@@ -328,7 +327,6 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	if (t0 < 0.01) {
 		return false;
 	}
-
 	// if (posMin(t0, t1) < ray.getTmin()) {
 	// 	//return false;
 	// } else {
@@ -336,7 +334,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	// }
 	*thit = posMin(t0, t1);
 	// TODO: need this check?
-	if (*thit < 0) return false;
+	//if (*thit < 0) return false;
 	*thit = t0;
 	//cout << *thit << endl;
 	// TODO: do this only if its the cloest
@@ -379,6 +377,7 @@ bool Sphere::intersectP(Ray &lray) {
 	if (t0 < 0.01) {
 		return false;
 	}
+	//cout << t0 << "intersects here" << endl;
 	return true;
 }
 
@@ -471,7 +470,20 @@ bool Sphere::intersectP(Ray &lray) {
   bool Triangle::intersectP(Ray &lray) {
   	float notUsed = 0; // unused garbage
   	Intersection* in = new Intersection();
-  	return this->intersect(lray, &notUsed, in);
+  	if (!this->intersect(lray, &notUsed, in)) {
+  		return false;
+  	}
+  	 if (notUsed > lray.getTmax()) {
+  		return false;
+  	} else {
+  		lray.setTmax(notUsed);
+  		//in->setPrimitive(this);
+  	}
+  	if (notUsed <= 0.01) {
+  		return false;
+  	}
+  	//cout << notUsed << "where tri intersects" << endl;
+  	return true;
   }
 
 //****************************************************
@@ -692,121 +704,205 @@ void RayTracer::addLight(Light &light) {
 	lights.push_back(&light);
 }
 
+// void RayTracer::trace(Ray& ray, int depth, Color* color) {
+// 	color->setRGB(0.0, 0.0, 0.0);
+// 		// cout << primitives.size() << endl;
+
+// 	// TODO: Assume that object has coeffs, later handle if it doesn't.
+
+// 	/***********************
+// 	** FOR PRIMITIVES **
+// 	***********************/
+// 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
+// 		//cout << primitives[i]->getName() << endl;
+// 		//cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
+
+// 		Primitive* primitive = primitives[i];
+// 		// primitive->isPrimitive();
+// 		float thit = 0.0;
+// 		Intersection* in = new Intersection();
+
+// 		/* DOES NOT INTERSECT */
+// 		if (!primitive->intersect(ray, &thit, in)) {
+// 			// cout << "no hit " << i << endl;
+// 			//cout << "THIT" << thit << endl;
+// 			// TODO: Change this to look for ambient
+// 			//color->setRGB(0.0, 0.0, 0.0); 
+// 			if (lights.empty()) {
+// 				// sample->setBlack();
+// 				//color->setRGB(0.0, 0.0, 0.0);
+// 			}
+// 		} 
+// 		/* DOES INTERSECT */
+// 		else {
+// 			if (thit >= ray.getTmax()) {
+// 				in->setPrimitive(primitive);
+// 				cout << primitive->getName() << " set to closest" << endl;
+// 			} 
+// 			// cout << "hit " << i << endl;
+// 			//cout << "thit" << thit << endl;
+// 			// TODO: make this in->primitive (should give oyu the closest)
+// 			BRDF* brdf = primitive->getMaterial().getBRDF();
+// 			Ray* light_ray = new Ray();
+// 	        Color* light_color = new Color();
+
+// 			/***********************
+// 			** FOR LIGHTS **
+// 			***********************/
+// 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
+// 				// cout << k << "th light and color is "; color->printV();
+// 	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
+// 	          	bool isBlocked = false;
+// 				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
+
+// 				if(lights[k]->isALight()) {
+// 						// cout << k << " is ambient" << endl;
+// 						Vector3f ambient(3);
+// 						ambient(0) = lights[k]->getRColor();
+// 						ambient(1) = lights[k]->getGColor();
+// 						ambient(2) = lights[k]->getBColor();
+// 						ambient = ambient.cwiseProduct(brdf->getKA());
+// 						color->appendRGB(ambient(0), ambient(1), ambient(2));
+// 						// cout << "hi "; color->printV();
+// 						// cout << "add to color 1: ambient" << endl;
+// 						continue;
+// 				}
+
+// 				// TODO: Check if light is blocked, shadow ray
+// 				// for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+// 				// 	if (j == i) { continue; }
+// 				// 	isBlocked = primitives[j]->intersectP(*light_ray);
+// 				// 	if (isBlocked) {
+// 				// 		// cout << "is blocked by " << primitives[j]->getName() << endl;
+// 				// 		break;
+// 				// 	}
+
+// 				// }
+// 				Ray* shadow_ray = new Ray();
+// 				Vector4f lightpos(4);
+// 				lightpos(0) = lights[k]->getX();
+// 				lightpos(1) = lights[k]->getY();
+// 				lightpos(2) = lights[k]->getZ();
+// 				lightpos(3) = 0;//or 1?
+// 				if (lights[k]->isDLight()) {
+// 				shadow_ray->setDir(lightpos);
+// 			} else {
+// 				shadow_ray->setDir((lightpos - in->getLocalGeo().getPos()));
+
+// 			}
+// 				shadow_ray->setEye(in->getLocalGeo().getPos());
+// 				for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
+// 					if (primitives[j]->intersectP(*shadow_ray) && primitives[j] != primitive) {
+// 						isBlocked = true;
+// 						break;
+// 					}
+// 				}
+// 				//Primitive* closest = in->getPrimitive();
+// 				//isBlocked = closest->intersectP(*light_ray) && (primitive == closest);
+// 				if (!isBlocked) {
+// 			   //      if(lights[k]->isALight()) {
+// 						// // cout << k << " is ambient" << endl;
+// 						// Vector3f ambient(3);
+// 						// ambient(0) = lights[k]->getRColor();
+// 						// ambient(1) = lights[k]->getGColor();
+// 						// ambient(2) = lights[k]->getBColor();
+// 						// ambient = ambient.cwiseProduct(brdf->getKA());
+// 						// // RGB_result += ambient;
+// 						// color->appendRGB(ambient(0), ambient(1), ambient(2));
+// 					// } else {
+// 					// cout << "light " << k << " at " << lights[k]->getPos() << endl;
+// 					// cout << "light_pos " << light_ray->getPos() << endl;
+// 					// cout << "light_dir " << light_ray->getDir() << endl;
+// 					// cout << "primitive " << i << " at " << primitives[i]->getCenter() << endl;	
+
+
+// 					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
+// 					color->addColor(temp);
+// 			      	// }
+
+// 		        } else {
+// 		        	//cout << closest->getName() << " IS blocked by something" << endl;
+// 		        	Vector3f ambient, I_rgb;
+// 		        	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+// 					ambient = I_rgb.cwiseProduct(brdf->getKA());
+// 					color->appendRGB(ambient(0), ambient(1), ambient(2));
+// 					// cout << "add to color 2: shading" << endl;
+// 		        }
+
+// 				// cout << "is block? " << isBlocked << " "; color->printV();
+// 	     	} 	// end For over lights
+
+// 	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
+// 	    }		// end else
+        
+//     } //emd for over primitives
+// 	    //TODO now do for each other primitive? or should I have already decided which primitive is the front?
+// 	    // color->printV();
+// }
+
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
-		// cout << primitives.size() << endl;
-
-	// TODO: Assume that object has coeffs, later handle if it doesn't.
-
 	/***********************
 	** FOR PRIMITIVES **
 	***********************/
+	float minDist = FLT_MAX;
+   	Primitive* prim;
+   	bool primitiveex = false;
+	float thit = 0.0;
+	float distance = 0.0;
+	Primitive* current;
+	Intersection* in = new Intersection();
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		//cout << primitives[i]->getName() << endl;
-		//cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
-
-		Primitive* primitive = primitives[i];
-		// primitive->isPrimitive();
-		float thit = 0.0;
-		Intersection* in = new Intersection();
-
-		/* DOES NOT INTERSECT */
-		if (!primitive->intersect(ray, &thit, in)) {
-			// cout << "no hit " << i << endl;
-			//cout << "THIT" << thit << endl;
-			// TODO: Change this to look for ambient
-			//color->setRGB(0.0, 0.0, 0.0); 
-			if (lights.empty()) {
-				// sample->setBlack();
-				//color->setRGB(0.0, 0.0, 0.0);
+    	//Normal nHit;
+    	current = primitives[i];
+		if (current->intersect(ray, &thit, in)) {
+			Vector4f dv = in->getLocalGeo().getPos() - getEye();//distance between eye and phit
+			distance = std::sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
+			if (distance < minDist) {
+				//cout << "got here" << endl;
+				prim = current;
+				in->setPrimitive(prim);
+				primitiveex = true;
+				minDist = distance;
 			}
-		} 
-		/* DOES INTERSECT */
-		else {
-			if (thit >= ray.getTmax()) {
-				in->setPrimitive(primitive);
-			} 
-			// cout << "hit " << i << endl;
-			//cout << "thit" << thit << endl;
-			// TODO: make this in->primitive (should give oyu the closest)
-			BRDF* brdf = primitive->getMaterial().getBRDF();
-			Ray* light_ray = new Ray();
-	        Color* light_color = new Color();
-
-			/***********************
-			** FOR LIGHTS **
-			***********************/
-			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
-				// cout << k << "th light and color is "; color->printV();
-	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
-	          	bool isBlocked = false;
-				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
-
-				if(lights[k]->isALight()) {
-						// cout << k << " is ambient" << endl;
-						Vector3f ambient(3);
-						ambient(0) = lights[k]->getRColor();
-						ambient(1) = lights[k]->getGColor();
-						ambient(2) = lights[k]->getBColor();
-						ambient = ambient.cwiseProduct(brdf->getKA());
-						color->appendRGB(ambient(0), ambient(1), ambient(2));
-						// cout << "hi "; color->printV();
-						// cout << "add to color 1: ambient" << endl;
-						continue;
-				}
-
-				// TODO: Check if light is blocked, shadow ray
-				// for(std::vector<int>::size_type j = 0; j != primitives.size(); j++) {
-				// 	if (j == i) { continue; }
-				// 	isBlocked = primitives[j]->intersectP(*light_ray);
-				// 	if (isBlocked) {
-				// 		// cout << "is blocked by " << primitives[j]->getName() << endl;
-				// 		break;
-				// 	}
-
-				// }
-				Primitive* closest = in->getPrimitive();
-				isBlocked = closest->intersectP(*light_ray) && (primitive == closest);
-				if (!isBlocked) {
-			   //      if(lights[k]->isALight()) {
-						// // cout << k << " is ambient" << endl;
-						// Vector3f ambient(3);
-						// ambient(0) = lights[k]->getRColor();
-						// ambient(1) = lights[k]->getGColor();
-						// ambient(2) = lights[k]->getBColor();
-						// ambient = ambient.cwiseProduct(brdf->getKA());
-						// // RGB_result += ambient;
-						// color->appendRGB(ambient(0), ambient(1), ambient(2));
-					// } else {
-					// cout << "light " << k << " at " << lights[k]->getPos() << endl;
-					// cout << "light_pos " << light_ray->getPos() << endl;
-					// cout << "light_dir " << light_ray->getDir() << endl;
-					// cout << "primitive " << i << " at " << primitives[i]->getCenter() << endl;	
-
-
-					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);
-					color->addColor(temp);
-			      	// }
-
-		        } else {
-		        	Vector3f ambient, I_rgb;
-		        	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+		}
+	}
+	BRDF* brdf;
+	bool isInShadow = false;//is it okay to set it here?
+	Color* light_color = new Color();
+	Ray* shadow_ray = new Ray();
+	Ray* light_ray = new Ray();
+	if (primitiveex) {
+		brdf = prim->getMaterial().getBRDF();
+		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
+			lights[p]->getLightRay(light_ray, light_color, in->getLocalGeo());
+			for (int k = 0; k != primitives.size(); k++) {
+				if (primitives[k]->intersectP(*light_ray)) {
+					isInShadow = true;
+					Vector3f ambient, I_rgb;
+    				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 					ambient = I_rgb.cwiseProduct(brdf->getKA());
 					color->appendRGB(ambient(0), ambient(1), ambient(2));
-					// cout << "add to color 2: shading" << endl;
-		        }
+					break;//no?
+				} else {
+					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
+					color->addColor(temp);
+				}
+			}
+		}
+	}
 
-				// cout << "is block? " << isBlocked << " "; color->printV();
-	     	} 	// end For over lights
+	if (!isInShadow) {
+		Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
+		color->addColor(temp);
+	} else {
+	    Vector3f ambient, I_rgb;
+    	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+		ambient = I_rgb.cwiseProduct(brdf->getKA());
+		color->appendRGB(ambient(0), ambient(1), ambient(2));
+	}
 
-	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
-	    }		// end else
-        
-    } //emd for over primitives
-	    //TODO now do for each other primitive? or should I have already decided which primitive is the front?
-	    // color->printV();
 }
-
 
 Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_color) {
 	Color curr = *(new Color());
@@ -848,7 +944,7 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
 
 	Vector3f subtotal = diffuse + specular + ambient;
 	RGB_result = RGB_result + subtotal;
- 	curr.setRGB(RGB_result[0], RGB_result[1], RGB_result[2]);
+ 	curr.appendRGB(RGB_result[0], RGB_result[1], RGB_result[2]);
     return curr;
   }
 
@@ -874,17 +970,7 @@ void Scene::render() {
 	while (notDone) {
 		Ray ray = *(new Ray());
 		camera.generateRay(sample, &ray);
-		//Primitives[0]->isPrimitive();
-		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
-		// if (sample.getX() == 107.0 && sample.getY() == 200.0) {
-		// if (sample.getX() == 357.0 && sample.getY() == 253.0) {
-		if (sample.getX() == 250.0 && sample.getY() == 253.0) {
-			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
-		}
-    	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
-    	// film.setPixel(sample.getX(), sample.getY(), 0, 1, 0.0);
-    	// film.setPixel(sample.getX(), sample.getY(), 0, 2, 0.0);
     	film.setPixel(sample.getX(), sample.getY(), color);
 	    notDone = sampler.getNextSample(&sample);
   	}
