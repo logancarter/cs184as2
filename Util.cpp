@@ -333,8 +333,10 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 		oray.setTmax(t0);
 		//in->setPrimitive(this);
 	}
-	if (t0 < 0.01) {
+	if (t0 < oray.getTmin()) {
 		return false;
+	} else {
+		//oray.setTmin(t0);
 	}
 	// if (posMin(t0, t1) < ray.getTmin()) {
 	// 	//return false;
@@ -460,8 +462,10 @@ bool Sphere::intersectP(Ray &lray) {
   		ray.setTmax(t);
   		//in->setPrimitive(this);
   	}
-  	if (t <= 0.01) {
+  	if (t  < ray.getTmin()) {
   		return false;
+  	} else {
+  		//ray.setTmin(t);
   	}
   	*thit = t;
 
@@ -978,6 +982,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	float distance = 0.0;
 	Primitive* current;
 	Intersection* in = new Intersection();
+	Intersection* best = new Intersection();
+	//finds the closest shape to the ray
+
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
     	//Normal nHit;
     	current = primitives[i];
@@ -988,34 +995,54 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			if (distance < minDist) {
 				//cout << "got here" << endl;
 				prim = current;
-				in->setPrimitive(prim);
+				best->setPrimitive(prim);
+				best->setLocalGeo(in->getLocalGeo());
 				primitiveex = true;
 				minDist = distance;
 			}
 		}
 	}
+
+	//The last in->getLocalGeo() that we use could be different from the closest??????
+
 	BRDF* brdf;
 	bool isInShadow = false;			//is it okay to set it here?
 	Color* light_color = new Color();
 	Ray* shadow_ray = new Ray();
 	Ray* light_ray = new Ray();
+				//cout << "hello" << endl;
+	//brdf = prim->getMaterial().getBRDF();
+
 	if (primitiveex) {
+					//cout << "hello" << endl;
 		brdf = prim->getMaterial().getBRDF();
 		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
-			lights[p]->getLightRay(light_ray, light_color, in->getLocalGeo());
+			if (lights[p]->isALight()) {
+				continue;
+			}
+			lights[p]->getLightRay(light_ray, light_color, best->getLocalGeo());
 			for (int k = 0; k != primitives.size(); k++) {
 				if (primitives[k]->intersectP(*light_ray) && primitives[k] != prim) {
 					isInShadow = true;
-					Vector3f ambient, I_rgb;
-    				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
-					ambient = I_rgb.cwiseProduct(brdf->getKA());
-					color->appendRGB(ambient(0), ambient(1), ambient(2));
+					//Vector3f ambient, I_rgb;
+    				//I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+					//ambient = I_rgb.cwiseProduct(brdf->getKA());
+					//color->appendRGB(ambient(0), ambient(1), ambient(2));
 					break; // TODO: check to see if we do or not no?
-				} else {
-					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
-					color->addColor(temp);
 				}
 			}
+			if (!isInShadow) {//adds ambient light
+				Color temp = shade(best->getLocalGeo(), brdf, light_ray, light_color);//check this
+				color->addColor(temp);
+					//cout << "hello" << endl;
+			} 
+			else {
+			    Vector3f ambient, I_rgb;
+				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+				ambient = I_rgb.cwiseProduct(brdf->getKA());
+				color->appendRGB(ambient(0), ambient(1), ambient(2));
+			}
+
 		}
 
 
@@ -1024,7 +1051,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	     	// *********************
 	     	Color reflectColor;
 	     	if (brdf->hasReflection()) {
-	     		Ray rray = createReflectRay(in->getLocalGeo(), ray);
+	     		Ray rray = createReflectRay(best->getLocalGeo(), ray);
 	     		// cout << rray.getDir() << endl;
 	     		trace(rray, depth - 1, &reflectColor);
 	     		// cout << depth - 1 << endl;
@@ -1035,13 +1062,17 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	     		color->appendRGB(rcolor(0), rcolor(1), rcolor(2));
 	     	}
 
-
 	}
+			//cout << "hello" << endl;
 
-	// if (!isInShadow) {
-	// 	Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
+	// if (!isInShadow && primitiveex) {//adds ambient light
+	// 	Color temp = shade(best->getLocalGeo(), brdf, light_ray, light_color);//check this
 	// 	color->addColor(temp);
-	// } else {
+	// 				//cout << "hello" << endl;
+
+	// } 
+	// if (isInShadow && primitiveex) {
+	// 				//cout << "hello" << endl;
 	//     Vector3f ambient, I_rgb;
  //    	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 	// 	ambient = I_rgb.cwiseProduct(brdf->getKA());
