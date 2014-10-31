@@ -678,9 +678,15 @@ RayTracer::RayTracer() {
 }
 
 
-RayTracer::RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls) {
+RayTracer::RayTracer(Vector4f eyez) {
+	camera = eyez;
+	eye = eyez;
+}
+
+RayTracer::RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls, Vector4f cameraPos) {
 	primitives = ps;
 	lights = ls;
+	camera = cameraPos;
 }
 
 void RayTracer::addPrimitive(Primitive &primitive) {
@@ -694,6 +700,10 @@ void RayTracer::addLight(Light &light) {
 
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
+	if (depth < 2) {
+		cout << depth << " " << ray.getPos() << endl << ray.getDir() << endl;
+	}
+	if (depth == 0) return;
 		// cout << primitives.size() << endl;
 
 	// TODO: Assume that object has coeffs, later handle if it doesn't.
@@ -702,7 +712,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	** FOR PRIMITIVES **
 	***********************/
 	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		//cout << primitives[i]->getName() << endl;
+		// cout << primitives[i]->getName() << endl;	
 		//cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
 
 		Primitive* primitive = primitives[i];
@@ -712,6 +722,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 
 		/* DOES NOT INTERSECT */
 		if (!primitive->intersect(ray, &thit, in)) {
+			// if (depth < 2) cout << "no hit " << depth << endl;
 			// cout << "no hit " << i << endl;
 			//cout << "THIT" << thit << endl;
 			// TODO: Change this to look for ambient
@@ -738,6 +749,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			***********************/
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 				// cout << k << "th light and color is "; color->printV();
+				cout << k << "th light" << endl;
 	          	// light_color->setRGB(lights[k]->getRColor(), lights[k]->getGColor(), lights[k]->getBColor());
 	          	bool isBlocked = false;
 				lights[k]->getLightRay(light_ray, light_color, in->getLocalGeo());
@@ -766,7 +778,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 
 				// }
 				Primitive* closest = in->getPrimitive();
-				isBlocked = closest->intersectP(*light_ray) && (primitive == closest);
+				isBlocked = (primitive == closest) && closest->intersectP(*light_ray);
 				if (!isBlocked) {
 			   //      if(lights[k]->isALight()) {
 						// // cout << k << " is ambient" << endl;
@@ -789,6 +801,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			      	// }
 
 		        } else {
+		        	// cout << "blocked" << endl;
 		        	Vector3f ambient, I_rgb;
 		        	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 					ambient = I_rgb.cwiseProduct(brdf->getKA());
@@ -799,12 +812,26 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 				// cout << "is block? " << isBlocked << " "; color->printV();
 	     	} 	// end For over lights
 
+	     	/*********************
+	     	** REFLECTION ****
+	     	*********************/
+	     	Color reflectColor;
+	     	if (brdf->hasReflection()) {
+	     		Ray rray = createReflectRay(in->getLocalGeo(), ray);
+	     		cout << rray.getDir() << endl;
+	     		trace(rray, depth - 1, &reflectColor);
+	     		// cout << depth - 1 << endl;
+				if (depth < 2) reflectColor.printV();
+	     		color->addColor(reflectColor);
+	     	}
+
 	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
 	    }		// end else
         
-    } //emd for over primitives
-	    //TODO now do for each other primitive? or should I have already decided which primitive is the front?
+    } // emd for over primitives
+	    // TODO now do for each other primitive? or should I have already decided which primitive is the front?
 	    // color->printV();
+    setEye(camera);
 }
 
 
@@ -853,6 +880,29 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
   }
 
 
+  Ray RayTracer::createReflectRay(LocalGeo lg, Ray& ray) {
+  	Vector3f pos, normal, light, reflection; 
+    Vector4f posh = lg.getNormal();
+    normal << posh(0), posh(1), posh(2);
+    // TODO: is this necesssary to renomralize..
+    normal.normalize();
+    posh = lg.getPos();
+    pos << posh(0), posh(1), posh(2);
+	light << ray.getDir()(0), ray.getDir()(1), ray.getDir()(2);
+	// TODO: to flip or not to flip
+	// light = light * -1;
+	reflection = (light * -1) + (normal * light.dot(normal) * 2);
+	reflection.normalize();
+	Vector4f newRay;
+	newRay << reflection(0), reflection(1), reflection(2), 0;
+  	Ray* rray = new Ray();
+  	rray->setEye(posh);
+  	rray->setDir(newRay);
+  	setEye(posh);
+  	// cout << posh << endl;
+  	return *rray;
+  }
+
 //****************************************************
 // SCENE
 //****************************************************
@@ -870,7 +920,8 @@ Scene::Scene(Sampler &s, Film& f, Camera &c, RayTracer &rt) {
 void Scene::render() {
 	Sample sample = *(new Sample());
 	bool notDone = sampler.getNextSample(&sample);
-	int depth = 0;
+	// TODO is this in input?
+	int depth = 2;
 	while (notDone) {
 		Ray ray = *(new Ray());
 		camera.generateRay(sample, &ray);

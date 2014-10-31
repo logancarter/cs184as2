@@ -416,7 +416,9 @@ int main(int argc, char *argv[]) {
   //camera = *(new Camera(0,0,0,width,height,-1,-1,-0,1,-1,-2,-1,1,0,1,1,-2));
   Film film = *(new Film(width, height, 1, 3, 0));
   Sampler sampler = *(new Sampler(width, height));
-  RayTracer raytracer = *(new RayTracer());
+  Vector4f rt_eye;
+  rt_eye << camera.getX(), camera.getY(), camera.getZ(), 1;
+  RayTracer raytracer = *(new RayTracer(rt_eye));
   //make a list of shapes and add them!
   //scene.addShape(sphere);
   for (int i = 0; i < numshapes; i++) {

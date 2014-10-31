@@ -347,6 +347,8 @@ public:
   float getKSP() { return ksp; }
   void setAmbient(float r, float g, float b) {
     if ((r == 0.0) && r == g && g == b) {
+      ka << r, g, b;
+      ambient = 0;
       cout << "AMBIENT IS NOTHING!" << endl;
       return;
     }
@@ -355,6 +357,8 @@ public:
   }
   void setDiffuse(float r, float g, float b) {
     if ((r == 0.0) && r == g && g == b) {
+      kd << r, g, b;
+      diffuse = 0;
       cout << "DIFFUSE IS NOTHING!" << endl;
       return;
     }
@@ -365,6 +369,8 @@ public:
   }
   void setSpecular(float r, float g, float b, float sp) {
     if ((r == 0.0) && r == g && g == b) {
+      ks << r, g, b;
+      specular = 0;
       cout << "SPECULAR IS NOTHING!" << endl;
       return;
     }
@@ -376,6 +382,8 @@ public:
   }
   void setReflection(float r, float g, float b) {
     if ((r == 0.0) && r == g && g == b) {
+      kr << r, g, b;
+      reflection = 0;
       cout << "REFLECTION IS NOTHING!" << endl;
       return;
     }
@@ -575,10 +583,11 @@ public:
 class RayTracer {
   std::vector<Primitive *> primitives;
   std::vector<Light *> lights;
-  Vector4f eye; 
+  Vector4f eye, camera; 
 public:
   RayTracer();
-  RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls);
+  RayTracer(Vector4f eye);
+  RayTracer(std::vector<Primitive *> ps, std::vector<Light *> ls, Vector4f cameraPos);
   void addPrimitive(Primitive &primitive);
   void addLight(Light &light);
   void trace(Ray& ray, int depth, Color* color);
@@ -587,6 +596,7 @@ public:
   Color shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_color);
   void setEye(Vector4f ai) { eye = ai; }
   Vector4f getEye() { return eye; }
+  Ray createReflectRay(LocalGeo lg, Ray& ray);
 };
 
 
