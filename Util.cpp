@@ -818,12 +818,12 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
     pos << posh(0), posh(1), posh(2);
     posh = lg.getNormal();
     normal << posh(0), posh(1), posh(2);
+    normal.normalize();
 
 	Vector3f light, I_rgb;
 	I_rgb << light_color->getR(), light_color->getG(), light_color->getB();
 	light << light_ray->getDir()(0), light_ray->getDir()(1), light_ray->getDir()(2);
 	// TODO...why normalize
-	light.normalize();
 
 	Vector3f kd, diffuse;
 	kd = brdf->getKD();

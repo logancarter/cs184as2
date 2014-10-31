@@ -62,7 +62,8 @@ float height = 500.0;
 std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
-std::vector<Matrix4f *> transformations;
+std::vector<Transformation *> transformations;
+int numtrans;
 int numlights = 0;
 Material* currentMaterial = new Material();
 
@@ -230,10 +231,15 @@ int main(int argc, char *argv[]) {
                 string str(sphstr);
                 sphere->setName(sphstr);
                 numshapes++;
-
-                primitives.push_back(sphere);
+                if (numtrans > 0) {
+                  //add transformations
+                  for (int i = 0; i < numtrans; i ++) {
+                    sphere->setO2w(*transformations[i]);
+                  }
                 }
-              else if (currentword.compare("tri") == 0) {
+                primitives.push_back(sphere);
+
+            } else if (currentword.compare("tri") == 0) {
                 float ax = atof(words.at(1).c_str());
                 float ay = atof(words.at(2).c_str());
                 float az = atof(words.at(3).c_str());
@@ -357,7 +363,10 @@ int main(int argc, char *argv[]) {
                 translate(0,3) = tx;
                 translate(1,3) = ty;
                 translate(2,3) = tz;
-                transformations.push_back(&translate);
+                Transformation* trans = new Transformation();
+                trans->setMat(translate);
+                transformations.push_back(trans);
+                numtrans ++;
               }
               else if (currentword.compare("xfr") == 0) {
                 float rx = atof(words.at(1).c_str());
@@ -379,7 +388,9 @@ int main(int argc, char *argv[]) {
                 scale(1,1) = sy;
                 scale(2,2) = sz;
                 scale(3,3) = 1;
-                transformations.push_back(&scale);
+                Transformation* trans = new Transformation();
+                trans->setMat(scale);
+                transformations.push_back(trans);
               }
               else if (currentword.compare("xfz") == 0) {
                 //Need to reset the current transformation to identity
