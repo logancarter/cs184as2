@@ -862,28 +862,8 @@ void RayTracer::addLight(Light &light) {
 // 	    // color->printV();
 // }
 
-void RayTracer::trace(Ray& ray, int depth, Color* color) {
-	color->setRGB(0.0, 0.0, 0.0);
-	if (depth < 2) {
-		// cout << depth << " " << ray.getPos() << endl << ray.getDir() << endl;
-	}
-	if (depth == 0) return;
-		// cout << primitives.size() << endl;
 
-	// TODO: Assume that object has coeffs, later handle if it doesn't.
-
-	/***********************
-	** FOR PRIMITIVES **
-	***********************/
-	float minDist = FLT_MAX;
-   	Primitive* prim;
-   	bool primitiveex = false;
-	float thit = 0.0;
-	float distance = 0.0;
-	Primitive* current;
-	Intersection* in = new Intersection();
-	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
-		/*
+		/* for primitives:
 		// cout << primitives[i]->getName() << endl;	
 		//cout << primitives[i]->getMaterial().getBRDF()->getKA() << endl;
 
@@ -978,9 +958,30 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		        	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 		        	*/
 
+void RayTracer::trace(Ray& ray, int depth, Color* color) {
+	color->setRGB(0.0, 0.0, 0.0);
+	if (depth < 2) {
+		// cout << depth << " " << ray.getPos() << endl << ray.getDir() << endl;
+	}
+	if (depth == 0) return;
+		// cout << primitives.size() << endl;
 
+	// TODO: Assume that object has coeffs, later handle if it doesn't.
+
+	/***********************
+	** FOR PRIMITIVES **
+	***********************/
+	float minDist = FLT_MAX;
+   	Primitive* prim;
+   	bool primitiveex = false;
+	float thit = 0.0;
+	float distance = 0.0;
+	Primitive* current;
+	Intersection* in = new Intersection();
+	for(std::vector<int>::size_type i = 0; i != primitives.size(); i++) {
     	//Normal nHit;
     	current = primitives[i];
+    	// cout << current->getCenter() << endl;
 		if (current->intersect(ray, &thit, in)) {
 			Vector4f dv = in->getLocalGeo().getPos() - getEye();//distance between eye and phit
 			distance = std::sqrt(dv[0] * dv[0] + dv[1] * dv[1] + dv[2] * dv[2]);
@@ -1009,47 +1010,54 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
     				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 					ambient = I_rgb.cwiseProduct(brdf->getKA());
 					color->appendRGB(ambient(0), ambient(1), ambient(2));
-					break;//no?
+					break; // TODO: check to see if we do or not no?
 				} else {
 					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
 					color->addColor(temp);
 				}
 			}
 		}
-	}
 
-	if (!isInShadow) {
-		Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
-		color->addColor(temp);
-	} else {
-	    Vector3f ambient, I_rgb;
-    	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
-		ambient = I_rgb.cwiseProduct(brdf->getKA());
-		color->appendRGB(ambient(0), ambient(1), ambient(2));
-	}
 
-/*
 	     	// *********************
 	     	// ** REFLECTION ****
 	     	// *********************
 	     	Color reflectColor;
 	     	if (brdf->hasReflection()) {
 	     		Ray rray = createReflectRay(in->getLocalGeo(), ray);
-	     		cout << rray.getDir() << endl;
+	     		// cout << rray.getDir() << endl;
 	     		trace(rray, depth - 1, &reflectColor);
 	     		// cout << depth - 1 << endl;
-				if (depth < 2) reflectColor.printV();
-	     		color->addColor(reflectColor);
+				// if (depth < 2) reflectColor.printV();
+				Vector3f rcolor;
+				rcolor << reflectColor.getR(), reflectColor.getG(), reflectColor.getB();
+				rcolor = brdf->getKR().cwiseProduct(rcolor);
+	     		color->appendRGB(rcolor(0), rcolor(1), rcolor(2));
 	     	}
 
+
+	}
+
+	// if (!isInShadow) {
+	// 	Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
+	// 	color->addColor(temp);
+	// } else {
+	//     Vector3f ambient, I_rgb;
+ //    	I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
+	// 	ambient = I_rgb.cwiseProduct(brdf->getKA());
+	// 	color->appendRGB(ambient(0), ambient(1), ambient(2));
+	// }
+
+
+
 	      // color->setRGB(RGB_result(0), RGB_result(1), RGB_result(2));
-	    }		// end else
+	    // }		// end else
         
-    } // emd for over primitives
+    // } // emd for over primitives
 	    // TODO now do for each other primitive? or should I have already decided which primitive is the front?
 	    // color->printV();
     setEye(camera);
-    */
+    
 }
 
 Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_color) {
@@ -1107,7 +1115,7 @@ Color RayTracer::shade(LocalGeo lg, BRDF* brdf, Ray* light_ray, Color *light_col
     pos << posh(0), posh(1), posh(2);
 	light << ray.getDir()(0), ray.getDir()(1), ray.getDir()(2);
 	// TODO: to flip or not to flip
-	// light = light * -1;
+	light = light * -1;
 	reflection = (light * -1) + (normal * light.dot(normal) * 2);
 	reflection.normalize();
 	Vector4f newRay;
