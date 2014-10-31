@@ -63,6 +63,7 @@ std::vector<Primitive *> primitives;
 int numshapes = 0;
 std::vector<Light *> lights;
 std::vector<Transformation *> transformations;
+Transformation* currentTrans = new Transformation();
 int numtrans;
 int numlights = 0;
 Material* currentMaterial = new Material();
@@ -174,6 +175,7 @@ void handle_obj(vector<string> words, char* file) {
 
 int main(int argc, char *argv[]) {
 
+
   //*******************************
   // ARGUMENT PARSER
   //*******************************
@@ -230,13 +232,14 @@ int main(int argc, char *argv[]) {
                 strcat(sphstr, numshapesstr);
                 string str(sphstr);
                 sphere->setName(sphstr);
+                sphere->setO2W(*currentTrans);
                 numshapes++;
-                if (numtrans > 0) {
-                  //add transformations
-                  for (int i = 0; i < numtrans; i ++) {
-                    sphere->setO2w(*transformations[i]);
-                  }
-                }
+                // if (numtrans > 0) {
+                //   //add transformations
+                //   for (int i = 0; i < numtrans; i ++) {
+                //     sphere->setO2w(*transformations[i]);
+                //   }
+                // }
                 primitives.push_back(sphere);
 
             } else if (currentword.compare("tri") == 0) {
@@ -264,6 +267,7 @@ int main(int argc, char *argv[]) {
                 strcat(tristr, numshapesstr);
                 string str(tristr);
                 triangle->setName(str);
+                triangle->setO2W(*currentTrans);
                 numshapes++;
                 primitives.push_back(triangle);
               }
@@ -277,6 +281,7 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 2) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                // TODO: transform obj files
               }
               else if (currentword.compare("ltp") == 0) {
                 float px = atof(words.at(1).c_str());
@@ -363,10 +368,10 @@ int main(int argc, char *argv[]) {
                 translate(0,3) = tx;
                 translate(1,3) = ty;
                 translate(2,3) = tz;
-                Transformation* trans = new Transformation();
-                trans->setMat(translate);
-                transformations.push_back(trans);
-                numtrans ++;
+                currentTrans->setMat(currentTrans->getMat() * translate);
+                // trans->setMat(translate);
+                // transformations.push_back(trans);
+                numtrans++;
               }
               else if (currentword.compare("xfr") == 0) {
                 float rx = atof(words.at(1).c_str());
@@ -375,6 +380,7 @@ int main(int argc, char *argv[]) {
                 if (words.size() > 4) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                cout << "ROtate!" << endl;
               }
               else if (currentword.compare("xfs") == 0) {
                 float sx = atof(words.at(1).c_str());
@@ -388,15 +394,18 @@ int main(int argc, char *argv[]) {
                 scale(1,1) = sy;
                 scale(2,2) = sz;
                 scale(3,3) = 1;
-                Transformation* trans = new Transformation();
-                trans->setMat(scale);
-                transformations.push_back(trans);
+                currentTrans->setMat(currentTrans->getMat() * scale);
+                // Transformation* trans = new Transformation();
+                // trans->setMat(scale);
+                // transformations.push_back(trans);
+                numtrans++;
               }
               else if (currentword.compare("xfz") == 0) {
                 //Need to reset the current transformation to identity
                 if (words.size() > 1) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
+                currentTrans->setID();
               }
               else {
                 fprintf(stderr, "Warning: Unsupported feature ignored.\n");

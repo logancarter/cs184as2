@@ -222,7 +222,8 @@ void DirectionalLight::getLightRay(Ray* light_ray, Color* light_color, LocalGeo 
 //****************************************************
 
 Primitive::Primitive() {
-
+	o2w.setID();
+	w2o.setID();
 }
 
 bool Primitive::intersect(Ray &ray, float *thit, Intersection* in) {
@@ -244,6 +245,13 @@ bool Primitive::intersectP(Ray &lray) {
 // 		return t0;
 // 	}
 // }
+
+Ray Primitive::transformRay(Ray &ray) {
+	Ray oray = *(new Ray());
+	oray.setEye(getO2W().getInv() * ray.getPos());
+	oray.setDir(getO2W().getInv() * ray.getDir());
+	return oray;
+}
 
 
 //****************************************************
@@ -306,22 +314,23 @@ bool Sphere::testIntersect(float &a, float &b, float &c, float &x0, float &x1) {
 
 //algorithm credit goes to scratchapixel.com
 bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
+	Ray oray = transformRay(ray);
 	float t0 = 0.0;
 	float t1 = 0.0;
 	// cout << "sphere intersect" << endl;
-	Vector4f difference = ray.getPos() - getCenter();
-	float a = ray.getDir().dot(ray.getDir());
-	float b = 2.0 * (ray.getDir()).dot(difference);
+	Vector4f difference = oray.getPos() - getCenter();
+	float a = oray.getDir().dot(oray.getDir());
+	float b = 2.0 * (oray.getDir()).dot(difference);
 	float c = difference.dot(difference) - (getRadius() * getRadius());
 	//cout << getRadius() << " is Radius\n";
 	if (!testIntersect(a, b, c, t0, t1)) {
 		return false;
 	}
 
-	if (t0 > ray.getTmax()) {
+	if (t0 > oray.getTmax()) {
 		return false;
 	} else {
-		ray.setTmax(t0);
+		oray.setTmax(t0);
 		//in->setPrimitive(this);
 	}
 	if (t0 < 0.01) {
@@ -342,23 +351,30 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	//cout << t_hit << "THIT" << endl;
 	//in->setPrimitive(this);
 	Vector4f intersectionPoint;
-	intersectionPoint = ray.getPos() + t_hit * ray.getDir();
+	intersectionPoint = oray.getPos() + t_hit * oray.getDir();
 	LocalGeo lg = *(new LocalGeo());
-	lg.setPos(intersectionPoint);
+	lg.setPos(getO2W().getMat() * intersectionPoint);
 	// cout << getCenter() << endl;
-	// TODO: change the normal
+
+	// // TODO: transform the normal correctly!
 	Vector4f normal = intersectionPoint - getCenter();
-	Vector3f temp;
-	temp << normal(0), normal(1), normal(2);
-	temp.normalize();
-	// normal.normalize();
-	normal << temp(0), temp(1), temp(2), 0;
+	// Vector3f temp;
+	// temp << normal(0), normal(1), normal(2);
+	// temp.normalize();
+	// // normal.normalize();
+	// normal << temp(0), temp(1), temp(2), 0;
+	// lg.setNormal(getO2W().getMat() * normal);
+
+	normal = getO2W().getMat() * normal;
+	normal.normalize();
 	lg.setNormal(normal);
+
 	in->setLocalGeo(lg);
 	return true;
 }
 
 bool Sphere::intersectP(Ray &lray) {
+	//TODO transform!
 	float t0 = 0;
 	float t1 = 0;
 	// cout << "sphere intersect" << endl;
@@ -491,7 +507,7 @@ bool Sphere::intersectP(Ray &lray) {
 //****************************************************
 
 Transformation::Transformation() {
-
+	setID();
 }
 
 void Transformation::setMat(Matrix4f m) {
@@ -849,7 +865,7 @@ void RayTracer::addLight(Light &light) {
 void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	color->setRGB(0.0, 0.0, 0.0);
 	if (depth < 2) {
-		cout << depth << " " << ray.getPos() << endl << ray.getDir() << endl;
+		// cout << depth << " " << ray.getPos() << endl << ray.getDir() << endl;
 	}
 	if (depth == 0) return;
 		// cout << primitives.size() << endl;
@@ -900,9 +916,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			Ray* light_ray = new Ray();
 	        Color* light_color = new Color();
 
-			//***********************
-			//** FOR LIGHTS **
-			//***********************
+			// ***********************
+			// ** FOR LIGHTS **
+			// ***********************
 			for(std::vector<int>::size_type k = 0; k != lights.size(); k++) {
 				// cout << k << "th light and color is "; color->printV();
 				cout << k << "th light" << endl;
@@ -978,7 +994,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		}
 	}
 	BRDF* brdf;
-	bool isInShadow = false;//is it okay to set it here?
+	bool isInShadow = false;			//is it okay to set it here?
 	Color* light_color = new Color();
 	Ray* shadow_ray = new Ray();
 	Ray* light_ray = new Ray();
@@ -1013,9 +1029,9 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	}
 
 /*
-	     	//*********************
-	     	//** REFLECTION ****
-	     	//*********************
+	     	// *********************
+	     	// ** REFLECTION ****
+	     	// *********************
 	     	Color reflectColor;
 	     	if (brdf->hasReflection()) {
 	     		Ray rray = createReflectRay(in->getLocalGeo(), ray);

@@ -129,6 +129,13 @@ class Transformation {
   Matrix4f mat, inv; // transpose
 public:
   Transformation();
+  void setID() {
+    mat << 1, 0, 0, 0,
+           0, 1, 0, 0,
+           0, 0, 1, 0,
+           0, 0, 0, 1;
+    inv = mat;
+  }
   void setMat(Matrix4f m);
   Matrix4f getMat();
   Matrix4f getInv();
@@ -431,16 +438,18 @@ public:
     //cout << t0 << " " << t1 << endl;
     return std::min(t0, t1);
   }
-  void setO2w(Transformation trans) {
+  void setO2W(Transformation trans) {
     o2w = trans;
     //w2o = trans.inv();
     //w2o is just o2w->getInv()
   }
+  Transformation getO2W() { return o2w; }
   void setName(string val) { name = val; }
   string getName() { return name; }
   //float posMin(float t0, float t1);
   Material getMaterial() { return mat; }
   virtual Vector4f getCenter() = 0;
+  Ray transformRay(Ray &ray);
 };
 
 
