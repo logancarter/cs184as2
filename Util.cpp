@@ -451,18 +451,19 @@ bool Sphere::intersectP(Ray &lray) {
   	*thit = t;
 
 ///////////////
-	// Vector4f intersectionPoint;
-	// intersectionPoint = ray.getPos() + t_hit * ray.getDir();
-	// LocalGeo lg = *(new LocalGeo());
-	// lg.setPos(intersectionPoint);
+	Vector4f intersectionPoint, normal;
+	intersectionPoint = ray.getPos() + *thit * ray.getDir();
+	LocalGeo lg = *(new LocalGeo());
+	lg.setPos(intersectionPoint);
 	// Vector4f normal = intersectionPoint - getCenter();
-	// Vector3f temp;
+	Vector3f temp;
 	// temp << normal(0), normal(1), normal(2);
-	// temp.normalize();
-	// // normal.normalize();
-	// normal << temp(0), temp(1), temp(2), 0;
-	// lg.setNormal(normal);
-	// in->setLocalGeo(lg);
+	temp << N(0), N(1), N(2);
+	temp.normalize();
+	// normal.normalize();
+	normal << temp(0), temp(1), temp(2), 0;
+	lg.setNormal(normal);
+	in->setLocalGeo(lg);
 	//////////////////
   	return true;
   }
@@ -877,7 +878,8 @@ void Scene::render() {
 		// raytracer.trace(ray, &sample, primitives, lights);
 		raytracer.trace(ray, depth, &color);
 		// if (sample.getX() == 107.0 && sample.getY() == 200.0) {
-		if (sample.getX() == 357.0 && sample.getY() == 253.0) {
+		// if (sample.getX() == 357.0 && sample.getY() == 253.0) {
+		if (sample.getX() == 250.0 && sample.getY() == 253.0) {
 			cout << color.getR() << " " << color.getG() << " " << color.getB() << endl;
 		}
     	// film.setPixel(sample.getX(), sample.getY(), 0, 0, 30000);
