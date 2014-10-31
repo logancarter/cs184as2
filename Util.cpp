@@ -877,7 +877,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
 			lights[p]->getLightRay(light_ray, light_color, in->getLocalGeo());
 			for (int k = 0; k != primitives.size(); k++) {
-				if (primitives[k]->intersectP(*light_ray)) {
+				if (primitives[k]->intersectP(*light_ray) && primitives[k] != prim) {
 					isInShadow = true;
 					Vector3f ambient, I_rgb;
     				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
