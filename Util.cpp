@@ -636,9 +636,9 @@ void Film::displayToScreen() {
 	// image.mirror('y');
 	// TODO: to flip or not to fliP?!??!?!?!??!!!??!?!??!?!?!?!???!
 	image.mirror('x');
-	image.normalize(0, 255);
+	// image.normalize(0, 255);
 	image.display();
-	image.save("file.bmp");
+	image.save("file.ppm");
 }
 
 
