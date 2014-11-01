@@ -1035,6 +1035,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 					color->appendRGB(ambient(0), ambient(1), ambient(2));
 					break; // TODO: check to see if we do or not no?
 				} else {
+					// TODO: do not add it unless it doesnt hit ANYTTHING
 					cout << prim->getName() << " goin to light" << p << " was not intersected by " << primitives[k]->getName() << endl;
 					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
 					color->addColor(temp);
