@@ -365,7 +365,7 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	// normal << temp(0), temp(1), temp(2), 0;
 	// lg.setNormal(getO2W().getMat() * normal);
 
-	normal = getO2W().getMat() * normal;
+	normal = getO2W().getMat().transpose().inverse() * normal;
 	normal.normalize();
 	lg.setNormal(normal);
 
@@ -373,8 +373,12 @@ bool Sphere::intersect(Ray &ray, float *thit, Intersection* in) {
 	return true;
 }
 
+
+
+
 bool Sphere::intersectP(Ray &lray) {
 	//TODO transform!
+	lray = transformRay(lray);
 	float t0 = 0;
 	float t1 = 0;
 	// cout << "sphere intersect" << endl;
@@ -412,6 +416,7 @@ bool Sphere::intersectP(Ray &lray) {
   }
 
   bool Triangle::intersect(Ray &ray, float *thit, Intersection* in) {
+  	ray = transformRay(ray);
   	Vector3f rayposition;
   	Vector3f raydir;
   	rayposition(0) = ray.getPos()[0]; rayposition(1) = ray.getPos()[1]; rayposition(2) = ray.getPos()[2];
@@ -465,18 +470,22 @@ bool Sphere::intersectP(Ray &lray) {
   	}
   	*thit = t;
 
-///////////////
+///////////////	
+
+
 	Vector4f intersectionPoint, normal;
 	intersectionPoint = ray.getPos() + *thit * ray.getDir();
 	LocalGeo lg = *(new LocalGeo());
-	lg.setPos(intersectionPoint);
+	// lg.setPos(intersectionPoint);
+    lg.setPos(getO2W().getMat() * intersectionPoint);
 	// Vector4f normal = intersectionPoint - getCenter();
 	Vector3f temp;
-	// temp << normal(0), normal(1), normal(2);
 	temp << N(0), N(1), N(2);
-	temp.normalize();
-	// normal.normalize();
+	// temp.normalize();
 	normal << temp(0), temp(1), temp(2), 0;
+	normal = getO2W().getMat().transpose().inverse() * normal;
+	normal.normalize();
+
 	lg.setNormal(normal);
 	in->setLocalGeo(lg);
 	//////////////////
@@ -1001,10 +1010,24 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	Ray* light_ray = new Ray();
 	if (primitiveex) {
 		brdf = prim->getMaterial().getBRDF();
+		// ***********************
+		// ***** FOR LIGHTS ******
+		// ***********************
 		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
+			cout << "==========================================" << endl;
+			if (lights[p]->isALight()) {
+				Vector3f ambient;
+				ambient = lights[p]->getColor().cwiseProduct(brdf->getKA());
+				color->appendRGB(ambient(0), ambient(1), ambient(2));
+				continue;
+			}
 			lights[p]->getLightRay(light_ray, light_color, in->getLocalGeo());
+			/* Intersection with all other primitives for that good shadow ray. */
 			for (int k = 0; k != primitives.size(); k++) {
+				cout << "light" << p << " " << lights[p]->getPos() << endl;
 				if (primitives[k]->intersectP(*light_ray) && primitives[k] != prim) {
+					cout << prim->getName() << " blocked by " << primitives[k]->getName() << " on the way to light " << p << endl;
+					// cout << "blocker: " + primitives[k]->getName() << endl;
 					isInShadow = true;
 					Vector3f ambient, I_rgb;
     				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
@@ -1012,6 +1035,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 					color->appendRGB(ambient(0), ambient(1), ambient(2));
 					break; // TODO: check to see if we do or not no?
 				} else {
+					cout << prim->getName() << " goin to light" << p << " was not intersected by " << primitives[k]->getName() << endl;
 					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
 					color->addColor(temp);
 				}
