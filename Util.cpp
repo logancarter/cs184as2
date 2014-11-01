@@ -1030,7 +1030,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 		// ***********************
 		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
 
-			cout << "==========================================" << endl;
+			//cout << "==========================================" << endl;
 			if (lights[p]->isALight()) {
 				cout << "adding ambient lta" << p << endl;
 				Vector3f ambient;
@@ -1042,7 +1042,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			/* Intersection with all other primitives for that good shadow ray. */
 
 			for (int k = 0; k != primitives.size(); k++) {
-				cout << "light" << p << " " << lights[p]->getPos() << endl;
+				//cout << "light" << p << " " << lights[p]->getPos() << endl;
 				if (primitives[k]->intersectP(*light_ray) && primitives[k] != prim) {
 					cout << prim->getName() << " blocked by " << primitives[k]->getName() << " on the way to light " << p << endl;
 					// cout << "blocker: " + primitives[k]->getName() << endl;
@@ -1055,12 +1055,12 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 				}
 			}
 			if (!isInShadow) {//adds ambient light
-				cout << "trace! light" << p << endl;
+				//cout << "trace! light" << p << endl;
 				Color temp = shade(best->getLocalGeo(), brdf, light_ray, light_color);//check this
 				color->addColor(temp);
 			} 
 			else {
-				cout << "ambient from light" << p << endl;
+				//cout << "ambient from light" << p << endl;
 			    Vector3f ambient, I_rgb;
 				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 				ambient = I_rgb.cwiseProduct(brdf->getKA());

@@ -1,0 +1,6 @@
+This image shows ellipsoids as well as the phong shading model and scale transformations(it is a sphere transformed to look like an ellipsoid), takes less than 1 minute to run, and can be run by running:
+
+make
+./raytracer tests/input-02.txt
+
+in the main project directory

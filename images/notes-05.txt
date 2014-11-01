@@ -1,0 +1,6 @@
+This image shows triangles, shadows and shading. takes less than 1 minute to run, and can be run by running:
+
+make
+./raytracer tests/input-05.txt
+
+in the main project directory
