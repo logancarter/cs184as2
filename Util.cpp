@@ -1032,6 +1032,7 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 
 			cout << "==========================================" << endl;
 			if (lights[p]->isALight()) {
+				cout << "adding ambient lta" << p << endl;
 				Vector3f ambient;
 				ambient = lights[p]->getColor().cwiseProduct(brdf->getKA());
 				color->appendRGB(ambient(0), ambient(1), ambient(2));
@@ -1051,21 +1052,15 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 					//ambient = I_rgb.cwiseProduct(brdf->getKA());
 					//color->appendRGB(ambient(0), ambient(1), ambient(2));
 					break; // TODO: check to see if we do or not no?
-
-				} else {
-					// TODO: do not add it unless it doesnt hit ANYTTHING
-					cout << prim->getName() << " goin to light" << p << " was not intersected by " << primitives[k]->getName() << endl;
-					Color temp = shade(in->getLocalGeo(), brdf, light_ray, light_color);//check this
-					color->addColor(temp);
-
 				}
 			}
 			if (!isInShadow) {//adds ambient light
+				cout << "trace! light" << p << endl;
 				Color temp = shade(best->getLocalGeo(), brdf, light_ray, light_color);//check this
 				color->addColor(temp);
-					//cout << "hello" << endl;
 			} 
 			else {
+				cout << "ambient from light" << p << endl;
 			    Vector3f ambient, I_rgb;
 				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 				ambient = I_rgb.cwiseProduct(brdf->getKA());
