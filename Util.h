@@ -286,11 +286,14 @@ class AmbientLight: public Light {
       r = r2;
       g = g2;
       b = b2;
-      x = y = z = 0;
+      x = y = z = 0.0;
+      color << r2, g2, b2;
+      pos << x, y, z, 1;
     }
     virtual void setValues(float r2, float g2, float b2) {
-      r = r2; g = g2; b = b2; x = 30; y = 30; z = 30;   //x, y, z shouldn't get used
+      r = r2; g = g2; b = b2; x = y = z = 0.0;   //x, y, z shouldn't get used
       color << r2, g2, b2;
+      pos << x, y, z, 1;
     }
     virtual int isALight() {
       return 1;
@@ -305,7 +308,8 @@ class PointLight: public Light {
     }    
     virtual void setValues(float x1, float y1, float z1, float r1, float g1, float b1) {
       x = x1; y = y1; z = z1; r = r1; g = g1; b = b1;
-      pos << x, y, z, 0;
+      // TODO...changed 0 to 1 
+      pos << x, y, z, 1;
       color << r, g, b;
     }
     virtual void getLightRay(Ray* light_ray, Color* light_color, LocalGeo lg);
@@ -356,7 +360,7 @@ public:
     if ((r == 0.0) && r == g && g == b) {
       ka << r, g, b;
       ambient = 0;
-      cout << "AMBIENT IS NOTHING!" << endl;
+      // cout << "AMBIENT IS NOTHING!" << endl;
       return;
     }
     ka << r, g, b;
@@ -366,7 +370,7 @@ public:
     if ((r == 0.0) && r == g && g == b) {
       kd << r, g, b;
       diffuse = 0;
-      cout << "DIFFUSE IS NOTHING!" << endl;
+      // cout << "DIFFUSE IS NOTHING!" << endl;
       return;
     }
     kd(0) = r;
@@ -378,7 +382,7 @@ public:
     if ((r == 0.0) && r == g && g == b) {
       ks << r, g, b;
       specular = 0;
-      cout << "SPECULAR IS NOTHING!" << endl;
+      // cout << "SPECULAR IS NOTHING!" << endl;
       return;
     }
     ks(0) = r;
@@ -391,7 +395,7 @@ public:
     if ((r == 0.0) && r == g && g == b) {
       kr << r, g, b;
       reflection = 0;
-      cout << "REFLECTION IS NOTHING!" << endl;
+      // cout << "REFLECTION IS NOTHING!" << endl;
       return;
     }
     kr(0) = r;

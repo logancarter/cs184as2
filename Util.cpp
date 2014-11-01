@@ -636,9 +636,9 @@ void Film::displayToScreen() {
 	// image.mirror('y');
 	// TODO: to flip or not to fliP?!??!?!?!??!!!??!?!??!?!?!?!???!
 	image.mirror('x');
-	image.normalize(0, 255);
+	// image.normalize(0, 255);
 	image.display();
-	image.save("file.bmp");
+	image.save("file.ppm");
 }
 
 
@@ -1023,16 +1023,15 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 	//brdf = prim->getMaterial().getBRDF();
 
 	if (primitiveex) {
-					//cout << "hello" << endl;
 		brdf = prim->getMaterial().getBRDF();
 		// ***********************
 		// ***** FOR LIGHTS ******
 		// ***********************
 		for(std::vector<int>::size_type p = 0; p != lights.size(); p++) {
 
-			//cout << "==========================================" << endl;
+
 			if (lights[p]->isALight()) {
-				cout << "adding ambient lta" << p << endl;
+				// cout << "light" << p << endl << lights[p]->getPos() << endl << lights[p]->getColor() << endl;
 				Vector3f ambient;
 				ambient = lights[p]->getColor().cwiseProduct(brdf->getKA());
 				color->appendRGB(ambient(0), ambient(1), ambient(2));
@@ -1042,25 +1041,21 @@ void RayTracer::trace(Ray& ray, int depth, Color* color) {
 			/* Intersection with all other primitives for that good shadow ray. */
 
 			for (int k = 0; k != primitives.size(); k++) {
-				//cout << "light" << p << " " << lights[p]->getPos() << endl;
+
 				if (primitives[k]->intersectP(*light_ray) && primitives[k] != prim) {
-					cout << prim->getName() << " blocked by " << primitives[k]->getName() << " on the way to light " << p << endl;
+					// cout << prim->getName() << " blocked by " << primitives[k]->getName() << " on the way to light " << p << endl;
 					// cout << "blocker: " + primitives[k]->getName() << endl;
 					isInShadow = true;
-					//Vector3f ambient, I_rgb;
-    				//I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
-					//ambient = I_rgb.cwiseProduct(brdf->getKA());
-					//color->appendRGB(ambient(0), ambient(1), ambient(2));
 					break; // TODO: check to see if we do or not no?
 				}
 			}
 			if (!isInShadow) {//adds ambient light
-				//cout << "trace! light" << p << endl;
+
 				Color temp = shade(best->getLocalGeo(), brdf, light_ray, light_color);//check this
 				color->addColor(temp);
 			} 
 			else {
-				//cout << "ambient from light" << p << endl;
+
 			    Vector3f ambient, I_rgb;
 				I_rgb << light_color->getR(), light_color->getR(), light_color->getR();
 				ambient = I_rgb.cwiseProduct(brdf->getKA());

@@ -369,6 +369,7 @@ int main(int argc, char *argv[]) {
                 translate(1,3) = ty;
                 translate(2,3) = tz;
                 currentTrans->setMat(currentTrans->getMat() * translate);
+                // Transformation* trans = new Transformation();
                 // trans->setMat(translate);
                 // transformations.push_back(trans);
                 numtrans++;
@@ -384,9 +385,9 @@ int main(int argc, char *argv[]) {
                 r << rx, ry, rz;
                 r.normalize();
                 Matrix4f rotate;
-                rotate << 0, -r(2), r(1), 0,
-                          r(2), 0, -r(0), 0,
-                          -r(1), r(0), 0, 1;
+                // rotate << 0, -r(2), r(1), 0,
+                //           r(2), 0, -r(0), 0,
+                //           -r(1), r(0), 0, 1;
                 currentTrans->setMat(currentTrans->getMat() * rotate);
                 // cout << "ROtate!" << endl;
               }
@@ -414,6 +415,7 @@ int main(int argc, char *argv[]) {
                   fprintf(stderr, "Warning: Extra arguments ignored.\n");
                 }
                 currentTrans->setID();
+                transformations.clear();
               }
               else {
                 fprintf(stderr, "Warning: Unsupported feature ignored.\n");
