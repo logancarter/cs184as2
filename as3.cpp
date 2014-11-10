@@ -293,7 +293,7 @@ void circle(float centerX, float centerY, float radius) {
           
           Vectorz subtotal = Vectorz::add(Vectorz::add(diffuse, specular), ambient);
           result = Vectorz::add(result, subtotal);
-	}
+  }
 
         setPixel(i,j, result.getX(), result.getY(), result.getZ());
 
@@ -344,9 +344,15 @@ void myKeyboard(unsigned char key, int x, int y) {
   case 'w':
    cout << "w: toggle filled/wireframe" << endl;
    break;
-   // TODO: error, maps to RFGH or some other shit
+  // TODO: check if its = or + (shift)
+  case '=':
+    cout << "+: zoom in" << endl;
+    break;
+  case '-':
+    cout << "-: zoom out" << endl;
+    break;
   default:
-    cout << key << endl;
+    cout << "unidentified " << key << endl;
     break;
 
   }
@@ -359,19 +365,37 @@ void specialKeys(int key, int x, int y) {
   if (mod == GLUT_ACTIVE_SHIFT) {
     switch (key) {
     case GLUT_KEY_UP:
-      cout << "up" << endl;
+      cout << "translate: up" << endl;
       break;
     case GLUT_KEY_DOWN:
-      cout << "down" << endl;
+      cout << "translate: down" << endl;
       break;
     case GLUT_KEY_RIGHT:
-      cout << "right" << endl;
+      cout << "translate: right" << endl;
       break;
     case GLUT_KEY_LEFT:
-      cout << "left" << endl;
+      cout << "translate: left" << endl;
       break;
     default:
-      cout << key << endl;
+      cout << "shift special " << key << endl;
+      break;
+    }
+  } else {
+    switch (key) {
+    case GLUT_KEY_UP:
+      cout << "rotate: up" << endl;
+      break;
+    case GLUT_KEY_DOWN:
+      cout << "rotate: down" << endl;
+      break;
+    case GLUT_KEY_RIGHT:
+      cout << "rotate: right" << endl;
+      break;
+    case GLUT_KEY_LEFT:
+      cout << "rotate: left" << endl;
+      break;
+    default:
+      cout << "special " << key << endl;
       break;
     }
   }
