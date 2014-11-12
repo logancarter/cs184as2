@@ -239,28 +239,12 @@ int main(int argc, char *argv[]) {
 
   glutDisplayFunc(myDisplay);// function to run when its time to draw something
   glutReshapeFunc(myReshape);// function to run when the window gets resized
+  // glutIdleFunc(myDisplay);
   glutKeyboardFunc(myKeyboard);           // function to run when spacebar is pressed: should exit
   glutSpecialFunc(specialKeys);
 
   glutMainLoop();// infinite loop that will keep drawing and resizing
-  // and whatever else
 
   return 0;
 }
 
-// TODO: Normalize your vectors
-
-
-
-// static GLfloat Vector::dot(Vector v1, Vector v2) {
-//   return v1.getX() * v2.getX() + v1.getY() * v2.getY() + v1.getZ() * v2.getZ();
-// }
-
-// static Vector Vector::subtract(Vector v1, Vector v2) {
-//   Vector res;
-//   res.setX(v1.getX()-v2.getX());
-//   res.setY(v1.getY()-v2.getY());
-//   res.setZ(v1.getZ()-v2.getZ());
-//   return res;
-// }
-  
