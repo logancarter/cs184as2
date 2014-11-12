@@ -77,16 +77,8 @@ Viewport viewport;
 // int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
 // std::vector<Light *> lights;
 float sub_div_param;
-bool adaptive = false;//if true: adaptive; if false: uniform
+bool adaptive = false;      //if true: adaptive; if false: uniform
 
-//****************************************************
-// Simple init function
-//****************************************************
-void initScene(){
-
-  // Nothing to do here for this simple example.
-
-}
 
 
 //****************************************************
@@ -99,8 +91,28 @@ void myReshape(int w, int h) {
   glViewport (0,0,viewport.w,viewport.h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(0, viewport.w, 0, viewport.h);
+  // gluOrtho2D(0, viewport.w, 0, viewport.h);
 
+  //----------- setting the projection -------------------------
+  // glOrtho sets left, right, bottom, top, zNear, zFar of the chord system
+
+
+  // glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
+  // glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
+
+  glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+
+  //------------------------------------------------------------
+
+}
+
+//****************************************************
+// Simple init function
+//****************************************************
+void initScene(){
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
+  myReshape(viewport.w,viewport.h);
 }
 
 
@@ -124,18 +136,66 @@ void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
 //***************************************************
 void myDisplay() {
 
-  glClear(GL_COLOR_BUFFER_BIT);// clear the color buffer
+  glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
 
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
   glLoadIdentity();        // make sure transformation is "zero'd"
 
 
-  // Start drawing
-  // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-  // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
+  // // Start drawing
+  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
+  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
+
+  // glColor3f(1.0f,1.0f,0.0f);
+  // glBegin(GL_POLYGON); 
+  //   glVertex3f(-100.0f, 100.0f, 0.0f);               // bottom left corner of rectangle
+  //   glVertex3f(-100.0f, -100.5f, 0.0f);               // top left corner of rectangle
+  //   glVertex3f(-100.95f, -100.5f, 0.0f);               // top right corner of rectangle
+  //   glVertex3f(-100.95f, 100.0f, 0.0f);               // bottom right corner of rectangle
+  // glEnd();
+
+  // for (float i = 0.0; i < viewport.w; i++) {
+  //   setPixel(i, 50.0f, 1.0f, 1.0f, 0.0f);
+  // }
+  
+    //----------------------- code to draw objects --------------------------
+  // Rectangle Code
+  //glColor3f(red component, green component, blue component);
+  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+
+  static float SW = 0.0f;
+  static float NW = 0.5f;
+  static float NE = 0.5f;
+  static float SE = 0.0f;
+  // Left rectangle
+  glBegin(GL_POLYGON);                         // draw rectangle 
+  //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+  glVertex3f(-1.0f, SW, 0.0f);               // bottom left corner of rectangle
+  glVertex3f(-1.0f, NW, 0.0f);               // top left corner of rectangle
+  glVertex3f(-0.95f, NE, 0.0f);               // top right corner of rectangle
+  glVertex3f(-0.95f, SE, 0.0f);               // bottom right corner of rectangle
+  glEnd();
+
+
+
 
   glFlush();
   glutSwapBuffers();// swap buffers (we earlier set double buffer)
+
+
+
+}
+
+
+//****************************************************
+// called by glut when there are no messages to handle
+//****************************************************
+void myFrameMove() {
+  //nothing here for now
+#ifdef _WIN32
+  Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
+#endif
+  glutPostRedisplay(); // forces glut to call the display function (myDisplay())
 }
 
 
@@ -143,7 +203,6 @@ void myDisplay() {
 // function that handles keyboard callback
 //****************************************************
 void myKeyboard(unsigned char key, int x, int y) {
-  // TODO: Why won't it print here?
   switch (key) {
   case 0x20:
     cout << "space: exit" << endl;
@@ -230,10 +289,12 @@ void specialKeys(int key, int x, int y) {
 // the usual stuff, nothing exciting here
 //****************************************************
 int main(int argc, char *argv[]) {
+  bool argParse = false;
 
   //*******************************
   // ARGUMENT PARSER
   //*******************************
+  if (argParse) { //hack to turn off until we have input file
   string STRING;
   ifstream infile;
   cout << argv[1] << endl;//that's input file
@@ -272,6 +333,10 @@ int main(int argc, char *argv[]) {
   }
 
   infile.close();
+
+}
+
+
   //This initializes glut
   glutInit(&argc, argv);
 
@@ -279,23 +344,23 @@ int main(int argc, char *argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Initalize theviewport size
-  viewport.w = 400;
-  viewport.h = 400;
+  viewport.w = 200;
+  viewport.h = 200;
 
   //The size and position of the window
   glutInitWindowSize(viewport.w, viewport.h);
   glutInitWindowPosition(0,0);
   glutCreateWindow(argv[0]);
 
-  initScene();// quick function to set up scene
+  initScene();      // quick function to set up scene
 
-  glutDisplayFunc(myDisplay);// function to run when its time to draw something
-  glutReshapeFunc(myReshape);// function to run when the window gets resized
-  // glutIdleFunc(myDisplay);
+  glutDisplayFunc(myDisplay);     // function to run when its time to draw something
+  glutReshapeFunc(myReshape);     // function to run when the window gets resized
+  glutIdleFunc(myFrameMove);
   glutKeyboardFunc(myKeyboard);           // function to run when spacebar is pressed: should exit
   glutSpecialFunc(specialKeys);
 
-  glutMainLoop();// infinite loop that will keep drawing and resizing
+  glutMainLoop();   // infinite loop that will keep drawing and resizing
 
   return 0;
 }
