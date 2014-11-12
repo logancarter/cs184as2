@@ -4,6 +4,8 @@
 #include <iostream>
 #include <fstream>
 #include <cmath>
+#include <string>
+#include <sstream>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -40,26 +42,42 @@ public:
   int w, h; // width and height
 };
 
+vector<string> split(const string &s, char delim, char delim2)
+{
+  vector<string> elems; 
+  stringstream ss(s);
+  string item;
+  while (getline(ss, item, delim) || getline(ss, item, delim2)) {
+    cout << item << " thats item" << endl;
+    if (item.compare(" ") != 0 && item.compare("\n") != 0 && !item.empty()) {
+      cout << item << " thats item" << endl;
+      elems.push_back(item);
+    }
+  }
+  return elems;
+}
 
 //****************************************************
 // Global Variables
 //****************************************************
 Viewport viewport;
 
-enum string_code {
-  ka,
-  kd,
-  ks,
-  sp,
-  pl,
-  dl,
-  error,
-};
+// enum string_code {
+//   ka,
+//   kd,
+//   ks,
+//   sp,
+//   pl,
+//   dl,
+//   error,
+// };
 
 // TODO: Make a data structure of the lights, can be dynamically filled
-GLfloat ka_r, ka_g, ka_b, kd_r, kd_g, kd_b, ks_r, ks_g, ks_b, sp_v, pl_x, pl_y, pl_z, pl_r, pl_g, pl_b, dl_x, dl_y, dl_z, dl_r, dl_g, dl_b;
-int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
-std::vector<Light *> lights;
+// GLfloat ka_r, ka_g, ka_b, kd_r, kd_g, kd_b, ks_r, ks_g, ks_b, sp_v, pl_x, pl_y, pl_z, pl_r, pl_g, pl_b, dl_x, dl_y, dl_z, dl_r, dl_g, dl_b;
+// int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
+// std::vector<Light *> lights;
+float sub_div_param;
+bool adaptive = false;//if true: adaptive; if false: uniform
 
 //****************************************************
 // Simple init function
@@ -198,15 +216,15 @@ void specialKeys(int key, int x, int y) {
 //****************************************************
 // function that hashes arguments, switch-able
 //****************************************************
-string_code hashstring (std::string const& inString) {
-  if (inString == "-ka") return ka;
-  if (inString == "-kd") return kd;
-  if (inString == "-ks") return ks;
-  if (inString == "-sp") return sp;
-  if (inString == "-pl") return pl;
-  if (inString == "-dl") return dl;
-  return error;
-}
+// string_code hashstring (std::string const& inString) {
+//   if (inString == "-ka") return ka;
+//   if (inString == "-kd") return kd;
+//   if (inString == "-ks") return ks;
+//   if (inString == "-sp") return sp;
+//   if (inString == "-pl") return pl;
+//   if (inString == "-dl") return dl;
+//   return error;
+// }
 
 //****************************************************
 // the usual stuff, nothing exciting here
@@ -216,10 +234,44 @@ int main(int argc, char *argv[]) {
   //*******************************
   // ARGUMENT PARSER
   //*******************************
+  string STRING;
+  ifstream infile;
+  cout << argv[1] << endl;//that's input file
+  infile.open (argv[1]);
+  int numpatches = 0;
+  if (!infile.eof()) {
+    getline(infile,STRING);
+    numpatches = atoi(STRING.c_str());
+  }
+  while(!infile.eof()) { // To get you all the lines. Each iteration is one patch
+    getline(infile,STRING);
+    float a, b, c, d, e, f, g, h, i, j, k, l;
+    std::istringstream iss (STRING);
+    iss >> std::skipws >> a >> b >> c;
+    iss >> std::skipws >> d >> e >> f;
+    iss >> std::skipws >> g >> h >> i;
+    iss >> std::skipws >> j >> k >> l;
+    cout << j << " THATS j " << k << " k " << l << " and l" << endl;
+    //now a-c is one vertex, d-f is another, etc to make up one rectangle/patch
+    //do something with them
+    //should probably use vector
+  }
 
+  string strsubp = argv[2];
+  sub_div_param = atof(strsubp.c_str());
+  cout << sub_div_param << endl;
+  if (argc > 3) {
+    string nextarg;
+    nextarg = argv[3];
+    if (nextarg.compare("-a") == 0) {
+      adaptive = true;
+      cout << "adaptive" << endl;
+    }
+  } else {
+    cout << "not adaptive" << endl;
+  }
 
-
-
+  infile.close();
   //This initializes glut
   glutInit(&argc, argv);
 
