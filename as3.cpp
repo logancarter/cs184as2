@@ -157,10 +157,8 @@ void myDisplay() {
   // for (float i = 0.0; i < viewport.w; i++) {
   //   setPixel(i, 50.0f, 1.0f, 1.0f, 0.0f);
   // }
-  
+
     //----------------------- code to draw objects --------------------------
-  // Rectangle Code
-  //glColor3f(red component, green component, blue component);
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
   static float SW = 0.0f;
@@ -273,46 +271,51 @@ void specialKeys(int key, int x, int y) {
 
 
 //****************************************************
-// function that hashes arguments, switch-able
-//****************************************************
-// string_code hashstring (std::string const& inString) {
-//   if (inString == "-ka") return ka;
-//   if (inString == "-kd") return kd;
-//   if (inString == "-ks") return ks;
-//   if (inString == "-sp") return sp;
-//   if (inString == "-pl") return pl;
-//   if (inString == "-dl") return dl;
-//   return error;
-// }
-
-//****************************************************
-// the usual stuff, nothing exciting here
+// MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-  bool argParse = false;
+  bool argParse = true;
+  // bool argParse = false;
 
   //*******************************
   // ARGUMENT PARSER
   //*******************************
-  if (argParse) { //hack to turn off until we have input file
+  if (argParse) {         // hack to turn off until we have input file
   string STRING;
   ifstream infile;
-  cout << argv[1] << endl;//that's input file
+  cout << argv[1] << endl;   //that's input file
   infile.open (argv[1]);
   int numpatches = 0;
   if (!infile.eof()) {
     getline(infile,STRING);
     numpatches = atoi(STRING.c_str());
   }
-  while(!infile.eof()) { // To get you all the lines. Each iteration is one patch
+
+  if (numpatches == 0) return 1; // throw an exception somehow
+  int line = 0;
+
+  // TODO-fix: parses the bottom line of each patch one extra time, then in the second patch parses it 3 extra times
+  while(!infile.eof()) {      // Each iteration is one LINE <<<<<<
     getline(infile,STRING);
-    float a, b, c, d, e, f, g, h, i, j, k, l;
+    cout << STRING << endl;
+    GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
     std::istringstream iss (STRING);
     iss >> std::skipws >> a >> b >> c;
     iss >> std::skipws >> d >> e >> f;
     iss >> std::skipws >> g >> h >> i;
     iss >> std::skipws >> j >> k >> l;
-    cout << j << " THATS j " << k << " k " << l << " and l" << endl;
+    // cout << "iteration" << endl;
+    // cout << a << b << c << endl;
+    // cout << d << e << f << endl;
+    // cout << g << h << i << endl;
+    // cout << j << k << l << endl;
+    line++;
+    if (line == 4) {
+      cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
+      getline(infile, STRING);
+      line = 0;
+    }
+    // cout << j << " THATS j " << k << " k " << l << " and l" << endl;
     //now a-c is one vertex, d-f is another, etc to make up one rectangle/patch
     //do something with them
     //should probably use vector
@@ -336,6 +339,9 @@ int main(int argc, char *argv[]) {
 
 }
 
+  //*******************************
+  // GLUT STUFF
+  //*******************************
 
   //This initializes glut
   glutInit(&argc, argv);
@@ -364,4 +370,28 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
+
+
+  //*******************************
+  // PSEUDOCODE
+  //*******************************
+  
+  /*****
+  for each PATCH in file
+    data structure to hold four vertices
+    // iterate thru u
+    //   iterate thru v
+    subdivide(patch, step)
+      bezpatchinterp(patch,u,v)
+        bezpatchinterp(curve,u);
+
+
+*/
+
+
+
+
+
+
 
