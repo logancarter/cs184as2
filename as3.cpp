@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <Eigen/Dense>
 #include <fstream>
 #include <cmath>
 #include <string>
@@ -30,6 +31,7 @@
 inline float sqr(float x) { return x*x; }
 
 using namespace std;
+using namespace Eigen;
 
 //****************************************************
 // Some Classes
@@ -77,16 +79,8 @@ Viewport viewport;
 // int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
 // std::vector<Light *> lights;
 float sub_div_param;
-bool adaptive = false;//if true: adaptive; if false: uniform
+bool adaptive = false;      //if true: adaptive; if false: uniform
 
-//****************************************************
-// Simple init function
-//****************************************************
-void initScene(){
-
-  // Nothing to do here for this simple example.
-
-}
 
 
 //****************************************************
@@ -99,8 +93,28 @@ void myReshape(int w, int h) {
   glViewport (0,0,viewport.w,viewport.h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  gluOrtho2D(0, viewport.w, 0, viewport.h);
+  // gluOrtho2D(0, viewport.w, 0, viewport.h);
 
+  //----------- setting the projection -------------------------
+  // glOrtho sets left, right, bottom, top, zNear, zFar of the chord system
+
+
+  // glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
+  // glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
+
+  glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+
+  //------------------------------------------------------------
+
+}
+
+//****************************************************
+// Simple init function
+//****************************************************
+void initScene(){
+
+  glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
+  myReshape(viewport.w,viewport.h);
 }
 
 
@@ -124,18 +138,71 @@ void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
 //***************************************************
 void myDisplay() {
 
-  glClear(GL_COLOR_BUFFER_BIT);// clear the color buffer
+  glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
 
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
   glLoadIdentity();        // make sure transformation is "zero'd"
 
 
-  // Start drawing
-  // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-  // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
+  // // Start drawing
+  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
+  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
+
+  // glColor3f(1.0f,1.0f,0.0f);
+  // glBegin(GL_POLYGON); 
+  //   glVertex3f(-100.0f, 100.0f, 0.0f);               // bottom left corner of rectangle
+  //   glVertex3f(-100.0f, -100.5f, 0.0f);               // top left corner of rectangle
+  //   glVertex3f(-100.95f, -100.5f, 0.0f);               // top right corner of rectangle
+  //   glVertex3f(-100.95f, 100.0f, 0.0f);               // bottom right corner of rectangle
+  // glEnd();
+
+  // for (float i = 0.0; i < viewport.w; i++) {
+  //   setPixel(i, 50.0f, 1.0f, 1.0f, 0.0f);
+  // }
+
+    //----------------------- code to draw objects --------------------------
+  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
+
+  glBegin(GL_LINE_STRIP);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex3f(0.0, 0.0, 0.0);
+    glVertex3f(.5, .5, 0.0);
+    glVertex3f(.5, .75, 0.0);
+  glEnd();
+
+  static float SW = 0.0f;
+  static float NW = 0.5f;
+  static float NE = 0.5f;
+  static float SE = 0.0f;
+  // Left rectangle
+  // glBegin(GL_POLYGON);                         // draw rectangle 
+  // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+  // glVertex3f(-1.0f, SW, 0.0f);               // bottom left corner of rectangle
+  // glVertex3f(-1.0f, NW, 0.0f);               // top left corner of rectangle
+  // glVertex3f(-0.95f, NE, 0.0f);               // top right corner of rectangle
+  // glVertex3f(-0.95f, SE, 0.0f);               // bottom right corner of rectangle
+  // glEnd();
+
+
+
 
   glFlush();
   glutSwapBuffers();// swap buffers (we earlier set double buffer)
+
+
+
+}
+
+
+//****************************************************
+// called by glut when there are no messages to handle
+//****************************************************
+void myFrameMove() {
+  //nothing here for now
+#ifdef _WIN32
+  Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
+#endif
+  glutPostRedisplay(); // forces glut to call the display function (myDisplay())
 }
 
 
@@ -143,7 +210,6 @@ void myDisplay() {
 // function that handles keyboard callback
 //****************************************************
 void myKeyboard(unsigned char key, int x, int y) {
-  // TODO: Why won't it print here?
   switch (key) {
   case 0x20:
     cout << "space: exit" << endl;
@@ -212,51 +278,64 @@ void specialKeys(int key, int x, int y) {
   }
 }
 
+Vector3f* bezcurveinterp(std::vector<Vector3f *> curve, float u) {
+  Vector3f *a = new Vector3f();
+  // cout << curve[0].x << endl;
+  // cout << curve[0].y << endl;
+  // cout << curve[0].z << endl;
+  return curve[0];
+}
 
 //****************************************************
-// function that hashes arguments, switch-able
-//****************************************************
-// string_code hashstring (std::string const& inString) {
-//   if (inString == "-ka") return ka;
-//   if (inString == "-kd") return kd;
-//   if (inString == "-ks") return ks;
-//   if (inString == "-sp") return sp;
-//   if (inString == "-pl") return pl;
-//   if (inString == "-dl") return dl;
-//   return error;
-// }
-
-//****************************************************
-// the usual stuff, nothing exciting here
+// MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
+  bool argParse = true;
+  // bool argParse = false;
 
   //*******************************
   // ARGUMENT PARSER
   //*******************************
+  if (argParse) {         // hack to turn off until we have input file
   string STRING;
   ifstream infile;
-  cout << argv[1] << endl;//that's input file
+  cout << argv[1] << endl;   //that's input file
   infile.open (argv[1]);
   int numpatches = 0;
   if (!infile.eof()) {
     getline(infile,STRING);
     numpatches = atoi(STRING.c_str());
   }
-  while(!infile.eof()) { // To get you all the lines. Each iteration is one patch
+
+  if (numpatches == 0) return 1; // throw an exception somehow
+  int line = 0;
+
+  // TODO-fix: parses the bottom line of each patch one extra time, then in the second patch parses it 3 extra times
+  while(!infile.eof()) {      // Each iteration is one LINE <<<<<<
     getline(infile,STRING);
-    float a, b, c, d, e, f, g, h, i, j, k, l;
+    cout << STRING << endl;
+    GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
     std::istringstream iss (STRING);
     iss >> std::skipws >> a >> b >> c;
     iss >> std::skipws >> d >> e >> f;
     iss >> std::skipws >> g >> h >> i;
     iss >> std::skipws >> j >> k >> l;
-    cout << j << " THATS j " << k << " k " << l << " and l" << endl;
+    // cout << "iteration" << endl;
+    // cout << a << b << c << endl;
+    // cout << d << e << f << endl;
+    // cout << g << h << i << endl;
+    // cout << j << k << l << endl;
+    line++;
+    if (line == 4) {
+      cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
+      getline(infile, STRING);
+      line = 0;
+    }
+    // cout << j << " THATS j " << k << " k " << l << " and l" << endl;
     //now a-c is one vertex, d-f is another, etc to make up one rectangle/patch
     //do something with them
     //should probably use vector
   }
-
   string strsubp = argv[2];
   sub_div_param = atof(strsubp.c_str());
   cout << sub_div_param << endl;
@@ -272,6 +351,17 @@ int main(int argc, char *argv[]) {
   }
 
   infile.close();
+
+}
+vector<Vector3f*> points;
+Vector3f *apoint = new Vector3f(1, 2, 3);
+points.push_back(apoint);
+bezcurveinterp(points, .4);
+
+  //*******************************
+  // GLUT STUFF
+  //*******************************
+
   //This initializes glut
   glutInit(&argc, argv);
 
@@ -279,40 +369,49 @@ int main(int argc, char *argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Initalize theviewport size
-  viewport.w = 400;
-  viewport.h = 400;
+  viewport.w = 200;
+  viewport.h = 200;
 
   //The size and position of the window
   glutInitWindowSize(viewport.w, viewport.h);
   glutInitWindowPosition(0,0);
   glutCreateWindow(argv[0]);
 
-  initScene();// quick function to set up scene
+  initScene();      // quick function to set up scene
 
-  glutDisplayFunc(myDisplay);// function to run when its time to draw something
-  glutReshapeFunc(myReshape);// function to run when the window gets resized
+  glutDisplayFunc(myDisplay);     // function to run when its time to draw something
+
+  glutReshapeFunc(myReshape);     // function to run when the window gets resized
+  glutIdleFunc(myFrameMove);
   glutKeyboardFunc(myKeyboard);           // function to run when spacebar is pressed: should exit
   glutSpecialFunc(specialKeys);
 
-  glutMainLoop();// infinite loop that will keep drawing and resizing
-  // and whatever else
+  glutMainLoop();   // infinite loop that will keep drawing and resizing
 
   return 0;
 }
 
-// TODO: Normalize your vectors
 
 
-
-// static GLfloat Vector::dot(Vector v1, Vector v2) {
-//   return v1.getX() * v2.getX() + v1.getY() * v2.getY() + v1.getZ() * v2.getZ();
-// }
-
-// static Vector Vector::subtract(Vector v1, Vector v2) {
-//   Vector res;
-//   res.setX(v1.getX()-v2.getX());
-//   res.setY(v1.getY()-v2.getY());
-//   res.setZ(v1.getZ()-v2.getZ());
-//   return res;
-// }
+  //*******************************
+  // PSEUDOCODE
+  //*******************************
   
+  /*****
+  for each PATCH in file
+    data structure to hold four vertices
+    // iterate thru u
+    //   iterate thru v
+    subdivide(patch, step)
+      bezpatchinterp(patch,u,v)
+        bezpatchinterp(curve,u);
+
+
+*/
+
+
+
+
+
+
+
