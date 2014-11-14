@@ -80,7 +80,7 @@ Viewport viewport;
 // std::vector<Light *> lights;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
-
+vector<Vector3f> somepoints_toconnect;
 
 
 //****************************************************
@@ -163,12 +163,20 @@ void myDisplay() {
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
-  // glBegin(GL_LINE_STRIP);
-  //   glColor3f(1.0, 1.0, 0.0);
-  //   glVertex3f(0.0, 0.0, 0.0);
-  //   glVertex3f(.5, .5, 0.0);
-  //   glVertex3f(.5, .75, 0.0);
-  // glEnd();
+  glBegin(GL_LINE_STRIP);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex3f(.5, 0.0, 0.0);
+    glVertex3f(0.3, 0.5, 0.0);
+    glVertex3f(-0.3, 0.5, 0.0);
+    glVertex3f(-0.3, 0.0, 0.0);
+  glEnd();
+
+  glBegin(GL_LINE_STRIP);
+    glColor3f(1.0f,0.0f,0.0f); 
+    for (int i = 0; i < somepoints_toconnect.size(); i++) {
+      glVertex3f(somepoints_toconnect[i].x(), somepoints_toconnect[i].y(), somepoints_toconnect[1].z());
+    }
+  glEnd();
 
   static float SW = 0.0f;
   static float NW = 0.5f;
@@ -278,6 +286,24 @@ void specialKeys(int key, int x, int y) {
   }
 }
 
+Vector3f bezcurveinterp(std::vector<Vector3f *> curve, float u) {
+  Vector3f a = *curve[0] * (1.0 - u) + *curve[1] * u;
+  Vector3f b = *curve[1] * (1.0 - u) + *curve[2] * u;
+  Vector3f c = *curve[2] * (1.0 - u) + *curve[3] * u;
+
+  Vector3f d = a * (1.0 - u) + b * u;
+  Vector3f e = b * (1.0 - u) + c * u;
+
+  Vector3f p = d * (1.0 - u) + e * u;
+
+  Vector3f dPdu = 3 * (e - d);
+  // cout << curve[0].x << endl;
+  // cout << curve[0].y << endl;
+  // cout << curve[0].z << endl;
+  //cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
+  return p;
+}
+
 //****************************************************
 // MAIN
 //****************************************************
@@ -341,10 +367,25 @@ int main(int argc, char *argv[]) {
   } else {
     cout << "not adaptive" << endl;
   }
-
   infile.close();
-
 }
+
+vector<Vector3f*> points;
+Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
+Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
+Vector3f *cpoint = new Vector3f(-0.3, 0.5, 0.0);
+Vector3f *dpoint = new Vector3f(-0.3, 0.0, 0.0);
+points.push_back(apoint);
+points.push_back(bpoint);
+points.push_back(cpoint);
+points.push_back(dpoint);
+//vector<Vector3f> lines;
+for (float i = 0; i < 1; i += 0.01) {
+  Vector3f result = bezcurveinterp(points, i);
+  //cout << result.x() << " " << result.y() << " " << result.z() << endl;
+  somepoints_toconnect.push_back(result);
+}
+
 
   //*******************************
   // GLUT STUFF
@@ -357,8 +398,8 @@ int main(int argc, char *argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Initalize theviewport size
-  viewport.w = 200;
-  viewport.h = 200;
+  viewport.w = 500;
+  viewport.h = 500;
 
   //The size and position of the window
   glutInitWindowSize(viewport.w, viewport.h);
