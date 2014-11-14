@@ -2,6 +2,7 @@
 #include <memory>
 #include <vector>
 #include <iostream>
+#include <Eigen/Dense>
 #include <fstream>
 #include <cmath>
 #include <string>
@@ -30,6 +31,7 @@
 inline float sqr(float x) { return x*x; }
 
 using namespace std;
+using namespace Eigen;
 
 //****************************************************
 // Some Classes
@@ -81,6 +83,7 @@ bool adaptive = false;      //if true: adaptive; if false: uniform
 std::vector<int *> patches;
 std::vector<GLfloat> points;    // hack for now
 
+vector<Vector3f> somepoints_toconnect;
 
 
 //****************************************************
@@ -148,6 +151,7 @@ void myDisplay() {
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
 
+
   // Left rectangle
   glBegin(GL_POLYGON);                         // draw rectangle 
   //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
@@ -164,6 +168,35 @@ void myDisplay() {
   glVertex3f(points[3], points[3], points[0]);
   glVertex3f(points[0], points[3], points[0]);
   glEnd();
+
+  glBegin(GL_LINE_STRIP);
+    glColor3f(1.0, 1.0, 0.0);
+    glVertex3f(.5, 0.0, 0.0);
+    glVertex3f(0.3, 0.5, 0.0);
+    glVertex3f(-0.3, 0.5, 0.0);
+    glVertex3f(-0.3, 0.0, 0.0);
+  glEnd();
+
+  glBegin(GL_LINE_STRIP);
+    glColor3f(1.0f,0.0f,0.0f); 
+    for (int i = 0; i < somepoints_toconnect.size(); i++) {
+      glVertex3f(somepoints_toconnect[i].x(), somepoints_toconnect[i].y(), somepoints_toconnect[1].z());
+    }
+  glEnd();
+
+  static float SW = 0.0f;
+  static float NW = 0.5f;
+  static float NE = 0.5f;
+  static float SE = 0.0f;
+  // Left rectangle
+  // glBegin(GL_POLYGON);                         // draw rectangle 
+  // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+  // glVertex3f(-1.0f, SW, 0.0f);               // bottom left corner of rectangle
+  // glVertex3f(-1.0f, NW, 0.0f);               // top left corner of rectangle
+  // glVertex3f(-0.95f, NE, 0.0f);               // top right corner of rectangle
+  // glVertex3f(-0.95f, SE, 0.0f);               // bottom right corner of rectangle
+  // glEnd();
+
 
 
 
@@ -260,6 +293,23 @@ void specialKeys(int key, int x, int y) {
   }
 }
 
+Vector3f bezcurveinterp(std::vector<Vector3f *> curve, float u) {
+  Vector3f a = *curve[0] * (1.0 - u) + *curve[1] * u;
+  Vector3f b = *curve[1] * (1.0 - u) + *curve[2] * u;
+  Vector3f c = *curve[2] * (1.0 - u) + *curve[3] * u;
+
+  Vector3f d = a * (1.0 - u) + b * u;
+  Vector3f e = b * (1.0 - u) + c * u;
+
+  Vector3f p = d * (1.0 - u) + e * u;
+
+  Vector3f dPdu = 3 * (e - d);
+  // cout << curve[0].x << endl;
+  // cout << curve[0].y << endl;
+  // cout << curve[0].z << endl;
+  //cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
+  return p;
+}
 
 //****************************************************
 // MAIN
@@ -368,7 +418,6 @@ int main(int argc, char *argv[]) {
     //do something with them
     //should probably use vector
   }
-
   string strsubp = argv[2];
   sub_div_param = atof(strsubp.c_str());
   cout << sub_div_param << endl;
@@ -382,10 +431,25 @@ int main(int argc, char *argv[]) {
   } else {
     cout << "not adaptive" << endl;
   }
-
   infile.close();
-
 }
+
+vector<Vector3f*> points;
+Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
+Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
+Vector3f *cpoint = new Vector3f(-0.3, 0.5, 0.0);
+Vector3f *dpoint = new Vector3f(-0.3, 0.0, 0.0);
+points.push_back(apoint);
+points.push_back(bpoint);
+points.push_back(cpoint);
+points.push_back(dpoint);
+//vector<Vector3f> lines;
+for (float i = 0; i < 1; i += 0.01) {
+  Vector3f result = bezcurveinterp(points, i);
+  //cout << result.x() << " " << result.y() << " " << result.z() << endl;
+  somepoints_toconnect.push_back(result);
+}
+
 
   //*******************************
   // GLUT STUFF
@@ -398,8 +462,8 @@ int main(int argc, char *argv[]) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Initalize theviewport size
-  viewport.w = 200;
-  viewport.h = 200;
+  viewport.w = 500;
+  viewport.h = 500;
 
   //The size and position of the window
   glutInitWindowSize(viewport.w, viewport.h);
@@ -409,6 +473,7 @@ int main(int argc, char *argv[]) {
   initScene();      // quick function to set up scene
 
   glutDisplayFunc(myDisplay);     // function to run when its time to draw something
+
   glutReshapeFunc(myReshape);     // function to run when the window gets resized
   glutIdleFunc(myFrameMove);
   glutKeyboardFunc(myKeyboard);           // function to run when spacebar is pressed: should exit
