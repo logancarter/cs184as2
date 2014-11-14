@@ -163,12 +163,12 @@ void myDisplay() {
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
-  glBegin(GL_LINE_STRIP);
-    glColor3f(1.0, 1.0, 0.0);
-    glVertex3f(0.0, 0.0, 0.0);
-    glVertex3f(.5, .5, 0.0);
-    glVertex3f(.5, .75, 0.0);
-  glEnd();
+  // glBegin(GL_LINE_STRIP);
+  //   glColor3f(1.0, 1.0, 0.0);
+  //   glVertex3f(0.0, 0.0, 0.0);
+  //   glVertex3f(.5, .5, 0.0);
+  //   glVertex3f(.5, .75, 0.0);
+  // glEnd();
 
   static float SW = 0.0f;
   static float NW = 0.5f;
@@ -278,14 +278,6 @@ void specialKeys(int key, int x, int y) {
   }
 }
 
-Vector3f* bezcurveinterp(std::vector<Vector3f *> curve, float u) {
-  Vector3f *a = new Vector3f();
-  // cout << curve[0].x << endl;
-  // cout << curve[0].y << endl;
-  // cout << curve[0].z << endl;
-  return curve[0];
-}
-
 //****************************************************
 // MAIN
 //****************************************************
@@ -353,10 +345,6 @@ int main(int argc, char *argv[]) {
   infile.close();
 
 }
-vector<Vector3f*> points;
-Vector3f *apoint = new Vector3f(1, 2, 3);
-points.push_back(apoint);
-bezcurveinterp(points, .4);
 
   //*******************************
   // GLUT STUFF
