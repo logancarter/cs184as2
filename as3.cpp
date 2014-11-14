@@ -162,7 +162,7 @@ void myDisplay() {
   glEnd();
 
   glBegin(GL_POLYGON);
-  cout << points[0] << points[1] << points[2] << endl;
+  // cout << points[0] << points[1] << points[2] << endl;
   glVertex3f(points[0], points[1], points[2]);
   glVertex3f(points[3], points[4], points[5]);
   glVertex3f(points[3], points[3], points[0]);
@@ -444,6 +444,8 @@ points.push_back(bpoint);
 points.push_back(cpoint);
 points.push_back(dpoint);
 //vector<Vector3f> lines;
+
+// TODO: make step size from input
 for (float i = 0; i < 1; i += 0.01) {
   Vector3f result = bezcurveinterp(points, i);
   //cout << result.x() << " " << result.y() << " " << result.z() << endl;
