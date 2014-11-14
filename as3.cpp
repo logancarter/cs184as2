@@ -158,22 +158,22 @@ void myDisplay() {
 
 
 
-  // Left rectangle
-  glBegin(GL_POLYGON);                         // draw rectangle 
-  //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
-  glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
-  glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
-  glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
-  glEnd();
+  // // Left rectangle
+  // glBegin(GL_POLYGON);                         // draw rectangle 
+  // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+  // glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
+  // glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
+  // glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
+  // glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
+  // glEnd();
 
-  glBegin(GL_POLYGON);
-  // cout << points[0] << points[1] << points[2] << endl;
-  glVertex3f(points[0], points[1], points[2]);
-  glVertex3f(points[3], points[4], points[5]);
-  glVertex3f(points[3], points[3], points[0]);
-  glVertex3f(points[0], points[3], points[0]);
-  glEnd();
+  // glBegin(GL_POLYGON);
+  // // cout << points[0] << points[1] << points[2] << endl;
+  // glVertex3f(points[0], points[1], points[2]);
+  // glVertex3f(points[3], points[4], points[5]);
+  // glVertex3f(points[3], points[3], points[0]);
+  // glVertex3f(points[0], points[3], points[0]);
+  // glEnd();
 
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
@@ -181,7 +181,8 @@ void myDisplay() {
     glTranslatef(horizontalshift, verticalshift, 0.0);
     glRotatef(rotatevertical, 1, 0, 0);
     glRotatef(rotatehoriz, 0, 1, 0);
-    glTranslatef(-horizontalshift, -verticalshift, -0.0);
+    // TODO: this? vvv
+    // glTranslatef(-horizontalshift, -verticalshift, -0.0);
     glScalef(zoomamount, zoomamount, zoomamount);
     glLineWidth(3);
     glBegin(GL_LINE_STRIP);
@@ -219,10 +220,10 @@ void myDisplay() {
     }
   glEnd();
 
-  static float SW = 0.0f;
-  static float NW = 0.5f;
-  static float NE = 0.5f;
-  static float SE = 0.0f;
+  // static float SW = 0.0f;
+  // static float NW = 0.5f;
+  // static float NE = 0.5f;
+  // static float SE = 0.0f;
   // Left rectangle
   // glBegin(GL_POLYGON);                         // draw rectangle 
   // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
@@ -296,23 +297,23 @@ void specialKeys(int key, int x, int y) {
   if (mod == GLUT_ACTIVE_SHIFT) {
     switch (key) {
     case GLUT_KEY_UP:
-      rotatehoriz += .1;
+      verticalshift += .1;
       glutPostRedisplay();
       cout << "translate: up" << endl;
       break;
     case GLUT_KEY_DOWN:
-      rotatehoriz -= .1;
+      verticalshift -= .1;
       glutPostRedisplay();
       cout << "translate: down" << endl;
       break;
     case GLUT_KEY_RIGHT:
-      rotatevertical += .1;
+      horizontalshift += .1;
       glutPostRedisplay();
       cout << "translate: right" << endl;
       break;
     case GLUT_KEY_LEFT:
       glutPostRedisplay();
-      rotatevertical -= .1;
+      horizontalshift -= .1;
       cout << "translate: left" << endl;
       break;
     default:
