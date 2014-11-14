@@ -78,6 +78,8 @@ Viewport viewport;
 // std::vector<Light *> lights;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
+std::vector<int *> patches;
+std::vector<GLfloat> points;    // hack for now
 
 
 
@@ -142,36 +144,25 @@ void myDisplay() {
   glLoadIdentity();        // make sure transformation is "zero'd"
 
 
-  // // Start drawing
-  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) / 3.0);
-  // // circle(viewport.w / 2.0 , viewport.h / 2.0 , min(viewport.w, viewport.h) * 0.9 / 2);
-
-  // glColor3f(1.0f,1.0f,0.0f);
-  // glBegin(GL_POLYGON); 
-  //   glVertex3f(-100.0f, 100.0f, 0.0f);               // bottom left corner of rectangle
-  //   glVertex3f(-100.0f, -100.5f, 0.0f);               // top left corner of rectangle
-  //   glVertex3f(-100.95f, -100.5f, 0.0f);               // top right corner of rectangle
-  //   glVertex3f(-100.95f, 100.0f, 0.0f);               // bottom right corner of rectangle
-  // glEnd();
-
-  // for (float i = 0.0; i < viewport.w; i++) {
-  //   setPixel(i, 50.0f, 1.0f, 1.0f, 0.0f);
-  // }
-
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
-  static float SW = 0.0f;
-  static float NW = 0.5f;
-  static float NE = 0.5f;
-  static float SE = 0.0f;
+
   // Left rectangle
   glBegin(GL_POLYGON);                         // draw rectangle 
   //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  glVertex3f(-1.0f, SW, 0.0f);               // bottom left corner of rectangle
-  glVertex3f(-1.0f, NW, 0.0f);               // top left corner of rectangle
-  glVertex3f(-0.95f, NE, 0.0f);               // top right corner of rectangle
-  glVertex3f(-0.95f, SE, 0.0f);               // bottom right corner of rectangle
+  glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
+  glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
+  glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
+  glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
+  glEnd();
+
+  glBegin(GL_POLYGON);
+  cout << points[0] << points[1] << points[2] << endl;
+  glVertex3f(points[0], points[1], points[2]);
+  glVertex3f(points[3], points[4], points[5]);
+  glVertex3f(points[3], points[3], points[0]);
+  glVertex3f(points[0], points[3], points[0]);
   glEnd();
 
 
@@ -294,7 +285,7 @@ int main(int argc, char *argv[]) {
   if (numpatches == 0) return 1; // throw an exception somehow
   int line = 0;
 
-  // TODO-fix: parses the bottom line of each patch one extra time, then in the second patch parses it 3 extra times
+  // TODO-fix: extra lines at end of file? check if STRING is empty?
   while(!infile.eof()) {      // Each iteration is one LINE <<<<<<
     getline(infile,STRING);
     cout << STRING << endl;
@@ -309,6 +300,63 @@ int main(int argc, char *argv[]) {
     // cout << d << e << f << endl;
     // cout << g << h << i << endl;
     // cout << j << k << l << endl;
+
+    // TODO-check if need to pass pointers to the floats...like the vector problem of yore
+    /*
+    std::vector<GLfloat> point1; 
+    point1.push_back(a);
+    point1.push_back(b);
+    point1.push_back(c);
+    std::vector<GLfloat> point2; 
+    point2.push_back(d);
+    point2.push_back(e);
+    point2.push_back(f);
+    std::vector<GLfloat> point3; 
+    point3.push_back(g);
+    point3.push_back(h);
+    point3.push_back(i);
+    std::vector<GLfloat> point3; 
+    point4.push_back(j);
+    point4.push_back(k);
+    point4.push_back(l);
+    std::vector<std::vector<GLfloat>> line;
+    line.push_back(point1);
+    line.push_back(point2);
+    line.push_back(point3);
+    line.push_back(point4);
+    */
+
+
+    // glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
+    // glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
+    // glLoadIdentity();
+    // glColor3f(1.0f,0.0f,0.0f); 
+
+    // glBegin(GL_POLYGON); 
+    // glVertex3f(a, b, c);
+    // glVertex3f(d, e, f);
+    // glVertex3f(g, h, i);
+    // glVertex3f(j, k, l);
+    // glEnd();
+    // glFlush();
+    // glutSwapBuffers();  
+
+    // points hack
+    points.push_back(a);
+    points.push_back(b);
+    points.push_back(c);
+    points.push_back(d);
+    points.push_back(e);
+    points.push_back(f);
+    points.push_back(g);
+    points.push_back(h);
+    points.push_back(i);
+    points.push_back(j);
+    points.push_back(k);
+    points.push_back(l);
+
+     
+
     line++;
     if (line == 4) {
       cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
