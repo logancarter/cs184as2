@@ -81,6 +81,11 @@ Viewport viewport;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
 vector<Vector3f> somepoints_toconnect;
+float zoomamount = 1.0;
+float horizontalshift = 0.0;
+float verticalshift = 0.0;
+float rotatehoriz = 0.0;
+float rotatevertical = 0.0;
 
 
 //****************************************************
@@ -162,15 +167,21 @@ void myDisplay() {
 
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-
-  glBegin(GL_LINE_STRIP);
+    //gluLookAt(-2, 0, 0, 0, 0,-1, 0, 1, 0);
+    glTranslatef(horizontalshift, verticalshift, 0.0);
+    glRotatef(rotatevertical, 1, 0, 0);
+    glRotatef(rotatehoriz, 0, 1, 0);
+    glTranslatef(-horizontalshift, -verticalshift, -0.0);
+    glScalef(zoomamount, zoomamount, zoomamount);
+    glLineWidth(3);
+    glBegin(GL_LINE_STRIP);
     glColor3f(1.0, 1.0, 0.0);
     glVertex3f(.5, 0.0, 0.0);
     glVertex3f(0.3, 0.5, 0.0);
     glVertex3f(-0.3, 0.5, 0.0);
     glVertex3f(-0.3, 0.0, 0.0);
-  glEnd();
-
+    glEnd();
+    glLineWidth(1.5);
   glBegin(GL_LINE_STRIP);
     glColor3f(1.0f,0.0f,0.0f); 
     for (int i = 0; i < somepoints_toconnect.size(); i++) {
@@ -231,9 +242,13 @@ void myKeyboard(unsigned char key, int x, int y) {
    break;
   // TODO: check if its = or + (shift)
   case '=':
+    zoomamount += .2;
+    glutPostRedisplay();
     cout << "+: zoom in" << endl;
     break;
   case '-':
+    zoomamount -= .2;
+    glutPostRedisplay();
     cout << "-: zoom out" << endl;
     break;
   default:
@@ -250,15 +265,23 @@ void specialKeys(int key, int x, int y) {
   if (mod == GLUT_ACTIVE_SHIFT) {
     switch (key) {
     case GLUT_KEY_UP:
+      rotatehoriz += .1;
+      glutPostRedisplay();
       cout << "translate: up" << endl;
       break;
     case GLUT_KEY_DOWN:
+      rotatehoriz -= .1;
+      glutPostRedisplay();
       cout << "translate: down" << endl;
       break;
     case GLUT_KEY_RIGHT:
+      rotatevertical += .1;
+      glutPostRedisplay();
       cout << "translate: right" << endl;
       break;
     case GLUT_KEY_LEFT:
+      glutPostRedisplay();
+      rotatevertical -= .1;
       cout << "translate: left" << endl;
       break;
     default:
@@ -268,15 +291,23 @@ void specialKeys(int key, int x, int y) {
   } else {
     switch (key) {
     case GLUT_KEY_UP:
+      rotatevertical += 10;
+      glutPostRedisplay();
       cout << "rotate: up" << endl;
       break;
     case GLUT_KEY_DOWN:
+      rotatevertical -= 10;
+      glutPostRedisplay();
       cout << "rotate: down" << endl;
       break;
     case GLUT_KEY_RIGHT:
+      rotatehoriz += 10;
+      glutPostRedisplay();
       cout << "rotate: right" << endl;
       break;
     case GLUT_KEY_LEFT:
+      rotatehoriz -= 10;
+      glutPostRedisplay();
       cout << "rotate: left" << endl;
       break;
     default:
