@@ -362,7 +362,7 @@ int main(int argc, char *argv[]) {
     if (line == 4) {
       cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
       getline(infile, STRING);
-      break;
+      
       line = 0;
     }
     // cout << j << " THATS j " << k << " k " << l << " and l" << endl;
