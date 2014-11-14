@@ -62,26 +62,13 @@ vector<string> split(const string &s, char delim, char delim2)
 //****************************************************
 // Global Variables
 //****************************************************
+
 Viewport viewport;
-
-// enum string_code {
-//   ka,
-//   kd,
-//   ks,
-//   sp,
-//   pl,
-//   dl,
-//   error,
-// };
-
-// TODO: Make a data structure of the lights, can be dynamically filled
-// GLfloat ka_r, ka_g, ka_b, kd_r, kd_g, kd_b, ks_r, ks_g, ks_b, sp_v, pl_x, pl_y, pl_z, pl_r, pl_g, pl_b, dl_x, dl_y, dl_z, dl_r, dl_g, dl_b;
-// int hasAmbient, hasDiffuse, hasSpecular, hasPLight, hasDLight, lightptr;
-// std::vector<Light *> lights;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
 std::vector<int *> patches;
-std::vector<GLfloat> points;    // hack for now
+
+std::vector<Vector3f *> points;
 
 vector<Vector3f> somepoints_toconnect;
 float zoomamount = 1.0;
@@ -101,18 +88,7 @@ void myReshape(int w, int h) {
   glViewport (0,0,viewport.w,viewport.h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  // gluOrtho2D(0, viewport.w, 0, viewport.h);
-
-  //----------- setting the projection -------------------------
-  // glOrtho sets left, right, bottom, top, zNear, zFar of the chord system
-
-
-  // glOrtho(-1, 1 + (w-400)/200.0 , -1 -(h-400)/200.0, 1, 1, -1); // resize type = add
-  // glOrtho(-w/400.0, w/400.0, -h/400.0, h/400.0, 1, -1); // resize type = center
-
   glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
-
-  //------------------------------------------------------------
 
 }
 
@@ -123,21 +99,7 @@ void initScene(){
 
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
   myReshape(viewport.w,viewport.h);
-}
 
-
-//****************************************************
-// A routine to set a pixel by drawing a GL point.  This is not a
-// general purpose routine as it assumes a lot of stuff specific to
-// this example.
-//****************************************************
-
-void setPixel(int x, int y, GLfloat r, GLfloat g, GLfloat b) {
-  glColor3f(r, g, b);
-  glVertex2f(x + 0.5, y + 0.5);   // The 0.5 is to target pixel
-  // centers 
-  // Note: Need to check for gap
-  // bug on inst machines.
 }
 
 
@@ -151,59 +113,16 @@ void myDisplay() {
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
   glLoadIdentity();        // make sure transformation is "zero'd"
 
-
-    //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-
-
-
-
-  // // Left rectangle
-  // glBegin(GL_POLYGON);                         // draw rectangle 
-  // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  // glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
-  // glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
-  // glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
-  // glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
-  // glEnd();
-
-  // glBegin(GL_POLYGON);
-  // // cout << points[0] << points[1] << points[2] << endl;
-  // glVertex3f(points[0], points[1], points[2]);
-  // glVertex3f(points[3], points[4], points[5]);
-  // glVertex3f(points[3], points[3], points[0]);
-  // glVertex3f(points[0], points[3], points[0]);
-  // glEnd();
-
-    //----------------------- code to draw objects --------------------------
-  glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
-    //gluLookAt(-2, 0, 0, 0, 0,-1, 0, 1, 0);
-    glTranslatef(horizontalshift, verticalshift, 0.0);
-    glRotatef(rotatevertical, 1, 0, 0);
-    glRotatef(rotatehoriz, 0, 1, 0);
-    // TODO: this? vvv
-    // glTranslatef(-horizontalshift, -verticalshift, -0.0);
-    glScalef(zoomamount, zoomamount, zoomamount);
-    glLineWidth(3);
-    glBegin(GL_LINE_STRIP);
-
-//   // Left rectangle
-//   glBegin(GL_POLYGON);                         // draw rectangle 
-//   //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-//   glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
-//   glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
-//   glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
-//   glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
-//   glEnd();
-
-//   glBegin(GL_POLYGON);
-//   cout << points[0] << points[1] << points[2] << endl;
-//   glVertex3f(points[0], points[1], points[2]);
-//   glVertex3f(points[3], points[4], points[5]);
-//   glVertex3f(points[3], points[3], points[0]);
-//   glVertex3f(points[0], points[3], points[0]);
-//   glEnd();
-
+  //gluLookAt(-2, 0, 0, 0, 0,-1, 0, 1, 0);
+  glTranslatef(horizontalshift, verticalshift, 0.0);
+  glRotatef(rotatevertical, 1, 0, 0);
+  glRotatef(rotatehoriz, 0, 1, 0);
+  // TODO: this? vvv
+  // glTranslatef(-horizontalshift, -verticalshift, -0.0);
+  glScalef(zoomamount, zoomamount, zoomamount);
+  glLineWidth(3);
+  // glBegin(GL_LINE_STRIP);
 
   glBegin(GL_LINE_STRIP);
     glColor3f(1.0, 1.0, 0.0);
@@ -211,8 +130,8 @@ void myDisplay() {
     glVertex3f(0.3, 0.5, 0.0);
     glVertex3f(-0.3, 0.5, 0.0);
     glVertex3f(-0.3, 0.0, 0.0);
-    glEnd();
-    glLineWidth(1.5);
+  glEnd();
+  glLineWidth(1.5);
   glBegin(GL_LINE_STRIP);
     glColor3f(1.0f,0.0f,0.0f); 
     for (int i = 0; i < somepoints_toconnect.size(); i++) {
@@ -220,27 +139,8 @@ void myDisplay() {
     }
   glEnd();
 
-  // static float SW = 0.0f;
-  // static float NW = 0.5f;
-  // static float NE = 0.5f;
-  // static float SE = 0.0f;
-  // Left rectangle
-  // glBegin(GL_POLYGON);                         // draw rectangle 
-  // //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  // glVertex3f(-1.0f, SW, 0.0f);               // bottom left corner of rectangle
-  // glVertex3f(-1.0f, NW, 0.0f);               // top left corner of rectangle
-  // glVertex3f(-0.95f, NE, 0.0f);               // top right corner of rectangle
-  // glVertex3f(-0.95f, SE, 0.0f);               // bottom right corner of rectangle
-  // glEnd();
-
-
-
-
-
   glFlush();
   glutSwapBuffers();// swap buffers (we earlier set double buffer)
-
-
 
 }
 
@@ -447,26 +347,22 @@ int main(int argc, char *argv[]) {
     // glFlush();
     // glutSwapBuffers();  
 
-    // points hack
-    points.push_back(a);
-    points.push_back(b);
-    points.push_back(c);
-    points.push_back(d);
-    points.push_back(e);
-    points.push_back(f);
-    points.push_back(g);
-    points.push_back(h);
-    points.push_back(i);
-    points.push_back(j);
-    points.push_back(k);
-    points.push_back(l);
 
-     
+    Vector3f *apoint = new Vector3f(a, b, c);
+    Vector3f *bpoint = new Vector3f(d, e, f);
+    Vector3f *cpoint = new Vector3f(g, h, i);
+    Vector3f *dpoint = new Vector3f(j, k, l);
+    points.push_back(apoint);
+    points.push_back(bpoint);
+    points.push_back(cpoint);
+    points.push_back(dpoint);
+
 
     line++;
     if (line == 4) {
       cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
       getline(infile, STRING);
+      break;
       line = 0;
     }
     // cout << j << " THATS j " << k << " k " << l << " and l" << endl;
@@ -490,19 +386,21 @@ int main(int argc, char *argv[]) {
   infile.close();
 }
 
-vector<Vector3f*> points;
-Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
-Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
-Vector3f *cpoint = new Vector3f(-0.3, 0.5, 0.0);
-Vector3f *dpoint = new Vector3f(-0.3, 0.0, 0.0);
-points.push_back(apoint);
-points.push_back(bpoint);
-points.push_back(cpoint);
-points.push_back(dpoint);
+// vector<Vector3f*> points;
+// Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
+// Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
+// Vector3f *cpoint = new Vector3f(-0.3, 0.5, 0.0);
+// Vector3f *dpoint = new Vector3f(-0.3, 0.0, 0.0);
+// points.push_back(apoint);
+// points.push_back(bpoint);
+// points.push_back(cpoint);
+// points.push_back(dpoint);
+
 //vector<Vector3f> lines;
 
 // TODO: make step size from input
-for (float i = 0; i < 1; i += 0.01) {
+// for (float i = 0; i < 1; i += 0.01) {
+for (float i = 0; i < 1; i += sub_div_param) {
   Vector3f result = bezcurveinterp(points, i);
   //cout << result.x() << " " << result.y() << " " << result.z() << endl;
   somepoints_toconnect.push_back(result);
