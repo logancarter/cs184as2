@@ -156,8 +156,6 @@ void myDisplay() {
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
 
 
-
-<<<<<<< HEAD
     //----------------------- code to draw objects --------------------------
   glColor3f(1.0f,0.0f,0.0f);                   // setting the color to pure red 90% for the rect
     //gluLookAt(-2, 0, 0, 0, 0,-1, 0, 1, 0);
@@ -168,26 +166,25 @@ void myDisplay() {
     glScalef(zoomamount, zoomamount, zoomamount);
     glLineWidth(3);
     glBegin(GL_LINE_STRIP);
-=======
-  // Left rectangle
-  glBegin(GL_POLYGON);                         // draw rectangle 
-  //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
-  glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
-  glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
-  glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
-  glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
-  glEnd();
+// =======
+//   // Left rectangle
+//   glBegin(GL_POLYGON);                         // draw rectangle 
+//   //glVertex3f(x val, y val, z val (won't change the point because of the projection type));
+//   glVertex3f(-1.0f, 0.0f, 0.0f);               // bottom left corner of rectangle
+//   glVertex3f(-1.0f, 0.5f, 0.0f);               // top left corner of rectangle
+//   glVertex3f(-0.95f, 0.5f, 0.0f);               // top right corner of rectangle
+//   glVertex3f(-0.95f, 0.0f, 0.0f);               // bottom right corner of rectangle
+//   glEnd();
 
-  glBegin(GL_POLYGON);
-  cout << points[0] << points[1] << points[2] << endl;
-  glVertex3f(points[0], points[1], points[2]);
-  glVertex3f(points[3], points[4], points[5]);
-  glVertex3f(points[3], points[3], points[0]);
-  glVertex3f(points[0], points[3], points[0]);
-  glEnd();
+//   glBegin(GL_POLYGON);
+//   cout << points[0] << points[1] << points[2] << endl;
+//   glVertex3f(points[0], points[1], points[2]);
+//   glVertex3f(points[3], points[4], points[5]);
+//   glVertex3f(points[3], points[3], points[0]);
+//   glVertex3f(points[0], points[3], points[0]);
+//   glEnd();
 
   glBegin(GL_LINE_STRIP);
->>>>>>> a10b50afb517c321879b3836ee8c273a9d1b0a6e
     glColor3f(1.0, 1.0, 0.0);
     glVertex3f(.5, 0.0, 0.0);
     glVertex3f(0.3, 0.5, 0.0);
