@@ -68,7 +68,7 @@ float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
 std::vector<int *> patches;
 
-std::vector<Vector3f *> points;
+//std::vector<Vector3f *> points;
 
 vector<Vector3f> somepoints_toconnect;
 float zoomamount = 1.0;
@@ -76,6 +76,8 @@ float horizontalshift = 0.0;
 float verticalshift = 0.0;
 float rotatehoriz = 0.0;
 float rotatevertical = 0.0;
+vector<vector<Vector3f*> > curves;
+vector<vector<Vector3f> > pointsofcurves;
 
 
 //****************************************************
@@ -124,20 +126,25 @@ void myDisplay() {
   glLineWidth(3);
   // glBegin(GL_LINE_STRIP);
 
-  glBegin(GL_LINE_STRIP);
-    glColor3f(1.0, 1.0, 0.0);
-    glVertex3f(.5, 0.0, 0.0);
-    glVertex3f(0.3, 0.5, 0.0);
-    glVertex3f(-0.3, 0.5, 0.0);
-    glVertex3f(-0.3, 0.0, 0.0);
-  glEnd();
-  glLineWidth(1.5);
-  glBegin(GL_LINE_STRIP);
+  // glBegin(GL_LINE_STRIP);
+  //   glColor3f(1.0, 1.0, 0.0);
+  //   glVertex3f(.5, 0.0, 0.0);
+  //   glVertex3f(0.3, 0.5, 0.0);
+  //   glVertex3f(-0.3, 0.5, 0.0);
+  //   glVertex3f(-0.3, 0.0, 0.0);
+  // glEnd();
+  // glLineWidth(1.5);
     glColor3f(1.0f,0.0f,0.0f); 
-    for (int i = 0; i < somepoints_toconnect.size(); i++) {
-      glVertex3f(somepoints_toconnect[i].x(), somepoints_toconnect[i].y(), somepoints_toconnect[1].z());
+    for (int i = 0; i < pointsofcurves.size(); i++) {
+      //cout << "one" << endl;
+      glBegin(GL_LINE_STRIP);
+      for (int j = 0; j < pointsofcurves[i].size(); j++) {
+        glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
+       // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
+      }
     }
-  glEnd();
+    glEnd();
+
 
   glFlush();
   glutSwapBuffers();// swap buffers (we earlier set double buffer)
@@ -249,7 +256,19 @@ void specialKeys(int key, int x, int y) {
   }
 }
 
+//credit goes to stack overflow for this function
+bool isEmptyOrBlank(const std::string& str) {
+   int len = str.size();
+   if(len == 0) { return true; }
+
+   for(int i=0;i<len;++i) {
+       if(str[i] != ' ' and str[i] != '\n' and str[i] != '\t' and str[i] != '\r') { return false; }
+   }
+   return true;
+}
+
 Vector3f bezcurveinterp(std::vector<Vector3f *> curve, float u) {
+  //cout << *curve[0] << " " << *curve[1] << " " << *curve[2] << " beg function" << endl;
   Vector3f a = *curve[0] * (1.0 - u) + *curve[1] * u;
   Vector3f b = *curve[1] * (1.0 - u) + *curve[2] * u;
   Vector3f c = *curve[2] * (1.0 - u) + *curve[3] * u;
@@ -294,6 +313,9 @@ int main(int argc, char *argv[]) {
   // TODO-fix: extra lines at end of file? check if STRING is empty?
   while(!infile.eof()) {      // Each iteration is one LINE <<<<<<
     getline(infile,STRING);
+    if (isEmptyOrBlank(STRING)) {
+      continue;
+    }
     cout << STRING << endl;
     GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
     std::istringstream iss (STRING);
@@ -332,7 +354,6 @@ int main(int argc, char *argv[]) {
     line.push_back(point4);
     */
 
-
     // glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
     // glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
     // glLoadIdentity();
@@ -346,17 +367,17 @@ int main(int argc, char *argv[]) {
     // glEnd();
     // glFlush();
     // glutSwapBuffers();  
-
-
+    vector<Vector3f*> curve;
     Vector3f *apoint = new Vector3f(a, b, c);
     Vector3f *bpoint = new Vector3f(d, e, f);
     Vector3f *cpoint = new Vector3f(g, h, i);
     Vector3f *dpoint = new Vector3f(j, k, l);
-    points.push_back(apoint);
-    points.push_back(bpoint);
-    points.push_back(cpoint);
-    points.push_back(dpoint);
-
+    curve.push_back(apoint);
+    curve.push_back(bpoint);
+    curve.push_back(cpoint);
+    curve.push_back(dpoint);
+    curves.push_back(curve);
+    cout << curves.size() << "   SIZE" << endl;
 
     line++;
     if (line == 4) {
@@ -385,7 +406,6 @@ int main(int argc, char *argv[]) {
   }
   infile.close();
 }
-
 // vector<Vector3f*> points;
 // Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
 // Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
@@ -400,10 +420,16 @@ int main(int argc, char *argv[]) {
 
 // TODO: make step size from input
 // for (float i = 0; i < 1; i += 0.01) {
-for (float i = 0; i < 1; i += sub_div_param) {
-  Vector3f result = bezcurveinterp(points, i);
-  //cout << result.x() << " " << result.y() << " " << result.z() << endl;
-  somepoints_toconnect.push_back(result);
+  //cout << curves.size() << "   SIZE" << endl;
+  for (int k = 0; k < curves.size(); k++) {
+      vector<Vector3f> somepoints_toconnect;
+    for (float j = 0; j < 1; j += sub_div_param) {
+      //cout << curves[i][j] << " " << curves[i] << " " << curves[i] << " HIHIH" << endl;
+      Vector3f result = bezcurveinterp(curves[k], j);
+      //cout << result.x() << " " << result.y() << " " << result.z() << endl;
+      somepoints_toconnect.push_back(result);
+    }
+  pointsofcurves.push_back(somepoints_toconnect);
 }
 
 
