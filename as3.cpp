@@ -44,6 +44,7 @@ public:
   int w, h; // width and height
 };
 
+//part of algorithm credit goes to stack overflow
 vector<string> split(const string &s, char delim, char delim2)
 {
   vector<string> elems; 
@@ -267,25 +268,47 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
-Vector3f bezcurveinterp(std::vector<Vector3f *> curve, float u) {
+Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f *dPdu) {
   //cout << *curve[0] << " " << *curve[1] << " " << *curve[2] << " beg function" << endl;
-  Vector3f a = *curve[0] * (1.0 - u) + *curve[1] * u;
-  Vector3f b = *curve[1] * (1.0 - u) + *curve[2] * u;
-  Vector3f c = *curve[2] * (1.0 - u) + *curve[3] * u;
+  Vector3f a = *zero * (1.0 - u) + *one * u;
+  Vector3f b = *one * (1.0 - u) + *two * u;
+  Vector3f c = *two * (1.0 - u) + *three * u;
 
   Vector3f d = a * (1.0 - u) + b * u;
   Vector3f e = b * (1.0 - u) + c * u;
 
   Vector3f p = d * (1.0 - u) + e * u;
 
-  Vector3f dPdu = 3 * (e - d);
+  Vector3f fordpdu = 3 * (e - d);
+  dPdu = &fordpdu;
+  //cout << dPdu->y() << " HELLO" << endl;
   // cout << curve[0].x << endl;
   // cout << curve[0].y << endl;
   // cout << curve[0].z << endl;
   //cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
   return p;
 }
+//vector<vector<Vector3f*> > curves;
+Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vector3f *n) {
+  vector<Vector3f> vcurve;
+  vector<Vector3f> ucurve;
+  Vector3f p;
+  Vector3f *dPdu;
+  Vector3f *dPdv;
+  vcurve[0] = bezcurveinterp(patch[0][0], patch[0][1], patch[0][3], patch[0][4], u, dPdu);
+  vcurve[1] = bezcurveinterp(patch[1][0], patch[1][1], patch[1][3], patch[1][4], u, dPdu);
+  vcurve[2] = bezcurveinterp(patch[2][0], patch[2][1], patch[2][3], patch[2][4], u, dPdu);
+  vcurve[3] = bezcurveinterp(patch[3][0], patch[3][1], patch[3][3], patch[3][4], u, dPdu);
 
+  ucurve[0] = bezcurveinterp(patch[0][0], patch[1][0], patch[2][0], patch[3][0], v, dPdu);
+  ucurve[1] = bezcurveinterp(patch[0][1], patch[1][1], patch[2][1], patch[3][1], v, dPdu);
+  ucurve[2] = bezcurveinterp(patch[0][2], patch[1][2], patch[2][2], patch[3][2], v, dPdu);
+  ucurve[3] = bezcurveinterp(patch[0][3], patch[1][3], patch[2][3], patch[3][3], v, dPdu);
+
+  p = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
+  p = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
+  return *patch[0][0];
+}
 //****************************************************
 // MAIN
 //****************************************************
@@ -421,11 +444,13 @@ int main(int argc, char *argv[]) {
 // TODO: make step size from input
 // for (float i = 0; i < 1; i += 0.01) {
   //cout << curves.size() << "   SIZE" << endl;
+  Vector3f *no;
   for (int k = 0; k < curves.size(); k++) {
       vector<Vector3f> somepoints_toconnect;
     for (float j = 0; j < 1; j += sub_div_param) {
       //cout << curves[i][j] << " " << curves[i] << " " << curves[i] << " HIHIH" << endl;
-      Vector3f result = bezcurveinterp(curves[k], j);
+      Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
+      //cout << no->x() << " " << no->y() << " " << no->z() << endl;
       //cout << result.x() << " " << result.y() << " " << result.z() << endl;
       somepoints_toconnect.push_back(result);
     }
