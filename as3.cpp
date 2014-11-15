@@ -268,7 +268,11 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
+<<<<<<< HEAD
  Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f &dPdu) {
+=======
+Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f &dPdu) {
+>>>>>>> adc5e2d1e60642ee954db7acf9f763e9f4a0a78e
   //cout << *curve[0] << " " << *curve[1] << " " << *curve[2] << " beg function" << endl;
   Vector3f a = *zero * (1.0 - u) + *one * u;
   Vector3f b = *one * (1.0 - u) + *two * u;
@@ -289,6 +293,7 @@ bool isEmptyOrBlank(const std::string& str) {
   cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
   return p;
 }
+
 //vector<vector<Vector3f*> > curves;
 Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vector3f *n) {
   vector<Vector3f> vcurve;
@@ -468,7 +473,11 @@ int main(int argc, char *argv[]) {
       //cout << curves[i][j] << " " << curves[i] << " " << curves[i] << " HIHIH" << endl;
       Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
       cout << "Nooooooo: " << no.x() << " " << no.y() << " " << no.z() << endl;
+<<<<<<< HEAD
       //cout << result.x() << " " << result.y() << " " << result.z() << endl;
+=======
+      // cout << ">>>>>>>>>>>>>>>> " << result.x() << " " << result.y() << " " << result.z() << endl;
+>>>>>>> adc5e2d1e60642ee954db7acf9f763e9f4a0a78e
       somepoints_toconnect.push_back(result);
     }
   pointsofcurves.push_back(somepoints_toconnect);

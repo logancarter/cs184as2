@@ -12,9 +12,9 @@ endif
 RM = /bin/rm -f 
 all: main 
 main: as3.o 
-	$(CC) $(CFLAGS) -o as3 as3.o $(LDFLAGS) 
+	$(CC) $(CFLAGS) -o as3 as3.o $(LDFLAGS) -w
 as3.o: as3.cpp
-	$(CC) $(CFLAGS) -c as3.cpp -o as3.o
+	$(CC) $(CFLAGS) -c as3.cpp -o as3.o -w
 clean: 
 	$(RM) *.o as3
  
