@@ -125,26 +125,17 @@ void myDisplay() {
   // glTranslatef(-horizontalshift, -verticalshift, -0.0);
   glScalef(zoomamount, zoomamount, zoomamount);
   glLineWidth(3);
-  // glBegin(GL_LINE_STRIP);
 
-  // glBegin(GL_LINE_STRIP);
-  //   glColor3f(1.0, 1.0, 0.0);
-  //   glVertex3f(.5, 0.0, 0.0);
-  //   glVertex3f(0.3, 0.5, 0.0);
-  //   glVertex3f(-0.3, 0.5, 0.0);
-  //   glVertex3f(-0.3, 0.0, 0.0);
-  // glEnd();
-  // glLineWidth(1.5);
-    glColor3f(1.0f,0.0f,0.0f); 
-    for (int i = 0; i < pointsofcurves.size(); i++) {
-      //cout << "one" << endl;
-      glBegin(GL_LINE_STRIP);
-      for (int j = 0; j < pointsofcurves[i].size(); j++) {
-        glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
-       // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
-      }
+  glColor3f(1.0f,0.0f,0.0f); 
+  for (int i = 0; i < pointsofcurves.size(); i++) {
+    //cout << "one" << endl;
+    glBegin(GL_LINE_STRIP);
+    for (int j = 0; j < pointsofcurves[i].size(); j++) {
+      glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
+     // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
     }
-    glEnd();
+  }
+  glEnd();
 
 
   glFlush();
@@ -331,13 +322,10 @@ void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-  bool argParse = true;
-  // bool argParse = false;
 
   //*******************************
   // ARGUMENT PARSER
   //*******************************
-  if (argParse) {         // hack to turn off until we have input file
   string STRING;
   ifstream infile;
   cout << argv[1] << endl;   //that's input file
@@ -364,50 +352,7 @@ int main(int argc, char *argv[]) {
     iss >> std::skipws >> d >> e >> f;
     iss >> std::skipws >> g >> h >> i;
     iss >> std::skipws >> j >> k >> l;
-    // cout << "iteration" << endl;
-    // cout << a << b << c << endl;
-    // cout << d << e << f << endl;
-    // cout << g << h << i << endl;
-    // cout << j << k << l << endl;
 
-    // TODO-check if need to pass pointers to the floats...like the vector problem of yore
-    /*
-    std::vector<GLfloat> point1; 
-    point1.push_back(a);
-    point1.push_back(b);
-    point1.push_back(c);
-    std::vector<GLfloat> point2; 
-    point2.push_back(d);
-    point2.push_back(e);
-    point2.push_back(f);
-    std::vector<GLfloat> point3; 
-    point3.push_back(g);
-    point3.push_back(h);
-    point3.push_back(i);
-    std::vector<GLfloat> point3; 
-    point4.push_back(j);
-    point4.push_back(k);
-    point4.push_back(l);
-    std::vector<std::vector<GLfloat>> line;
-    line.push_back(point1);
-    line.push_back(point2);
-    line.push_back(point3);
-    line.push_back(point4);
-    */
-
-    // glClear(GL_COLOR_BUFFER_BIT);                // clear the color buffer (sets everything to black)
-    // glMatrixMode(GL_MODELVIEW);                  // indicate we are specifying camera transformations
-    // glLoadIdentity();
-    // glColor3f(1.0f,0.0f,0.0f); 
-
-    // glBegin(GL_POLYGON); 
-    // glVertex3f(a, b, c);
-    // glVertex3f(d, e, f);
-    // glVertex3f(g, h, i);
-    // glVertex3f(j, k, l);
-    // glEnd();
-    // glFlush();
-    // glutSwapBuffers();  
     vector<Vector3f*> curve;
     Vector3f *apoint = new Vector3f(a, b, c);
     Vector3f *bpoint = new Vector3f(d, e, f);
@@ -427,10 +372,7 @@ int main(int argc, char *argv[]) {
       
       line = 0;
     }
-    // cout << j << " THATS j " << k << " k " << l << " and l" << endl;
-    //now a-c is one vertex, d-f is another, etc to make up one rectangle/patch
-    //do something with them
-    //should probably use vector
+
   }
 
   string strsubp = argv[2];
@@ -447,23 +389,8 @@ int main(int argc, char *argv[]) {
     cout << "not adaptive" << endl;
   }
   infile.close();
-}
 
-// vector<Vector3f*> points;
-// Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
-// Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
-// Vector3f *cpoint = new Vector3f(-0.3, 0.5, 0.0);
-// Vector3f *dpoint = new Vector3f(-0.3, 0.0, 0.0);
-// points.push_back(apoint);
-// points.push_back(bpoint);
-// points.push_back(cpoint);
-// points.push_back(dpoint);
 
-//vector<Vector3f> lines;
-
-// TODO: make step size from input
-// for (float i = 0; i < 1; i += 0.01) {
-  //cout << curves.size() << "   SIZE" << endl;
   Vector3f no;
   for (int k = 0; k < curves.size(); k++) {
       vector<Vector3f> somepoints_toconnect;
