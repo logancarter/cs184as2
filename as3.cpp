@@ -268,7 +268,7 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
-Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f &dPdu) {
+ Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f &dPdu) {
   //cout << *curve[0] << " " << *curve[1] << " " << *curve[2] << " beg function" << endl;
   Vector3f a = *zero * (1.0 - u) + *one * u;
   Vector3f b = *one * (1.0 - u) + *two * u;
@@ -280,7 +280,6 @@ Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* 
   Vector3f p = d * (1.0 - u) + e * u;
 
   Vector3f fordpdu = 3 * (e - d);
-  // dPdu = &fordpdu;
   dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
   cout << dPdu.z() << " HELLO" << endl;
   // cout << curve[0].x << endl;
@@ -309,7 +308,23 @@ Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vect
 
   p = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
   p = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
-  return *patch[0][0];
+
+  Vector3f n2 = dPdu.cross(dPdv);
+  *n = n2 / n2.norm();
+  return p;
+}
+
+void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
+  Vector3f* n;
+  float numdiv = ((1 + .01) / step);
+  for (int iu = 0; iu < numdiv; iu ++) {
+    float u = iu * step;
+    for (int iv = 0; iv < numdiv; iv++) {
+      float v = iv * step;
+      Vector3f p = bezpatchinterp(patch, u, v, n);
+      //TODO:save surface point and normal
+    }
+  }
 }
 
 //****************************************************
@@ -455,8 +470,8 @@ int main(int argc, char *argv[]) {
     for (float j = 0; j < 1; j += sub_div_param) {
       //cout << curves[i][j] << " " << curves[i] << " " << curves[i] << " HIHIH" << endl;
       Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
-      cout << "Nooooooo: " << no.x() << " " << no.y() << " " << no.z() << endl;
-      // cout << ">>>>>>>>>>>>>>>> " << result.x() << " " << result.y() << " " << result.z() << endl;
+      //cout << "Nooooooo: " << no.x() << " " << no.y() << " " << no.z() << endl;
+      //cout << no.z() << " after" << endl;
       somepoints_toconnect.push_back(result);
     }
   pointsofcurves.push_back(somepoints_toconnect);
