@@ -282,7 +282,7 @@ Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* 
   Vector3f fordpdu = 3 * (e - d);
   // dPdu = &fordpdu;
   dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
-  cout << dPdu.y() << " HELLO" << endl;
+  cout << dPdu.z() << " HELLO" << endl;
   // cout << curve[0].x << endl;
   // cout << curve[0].y << endl;
   // cout << curve[0].z << endl;
@@ -311,6 +311,7 @@ Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vect
   p = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
   return *patch[0][0];
 }
+
 //****************************************************
 // MAIN
 //****************************************************
@@ -416,6 +417,7 @@ int main(int argc, char *argv[]) {
     //do something with them
     //should probably use vector
   }
+
   string strsubp = argv[2];
   sub_div_param = atof(strsubp.c_str());
   cout << sub_div_param << endl;
@@ -431,6 +433,7 @@ int main(int argc, char *argv[]) {
   }
   infile.close();
 }
+
 // vector<Vector3f*> points;
 // Vector3f *apoint = new Vector3f(0.5, 0.0, 0.0);
 // Vector3f *bpoint = new Vector3f(0.3, 0.5, 0.0);
