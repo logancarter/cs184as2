@@ -60,6 +60,18 @@ vector<string> split(const string &s, char delim, char delim2)
   return elems;
 }
 
+class Patch {
+public:
+  Vector3f patch[4][4];
+  Patch() {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        patch[i][j] = Vector3f(0.0, 0.0, 0.0);
+      }
+    }
+  }
+};
+
 //****************************************************
 // Global Variables
 //****************************************************
@@ -67,7 +79,7 @@ vector<string> split(const string &s, char delim, char delim2)
 Viewport viewport;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
-std::vector<int *> patches;
+std::vector< Patch * > patchez;
 
 //std::vector<Vector3f *> points;
 
@@ -272,11 +284,11 @@ bool isEmptyOrBlank(const std::string& str) {
 
   Vector3f fordpdu = 3 * (e - d);
   dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
-  cout << dPdu.z() << " HELLO" << endl;
+  // cout << dPdu.z() << " HELLO" << endl;
   // cout << curve[0].x << endl;
   // cout << curve[0].y << endl;
   // cout << curve[0].z << endl;
-  cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
+  // cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
   return p;
 }
 
@@ -318,10 +330,12 @@ void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
   }
 }
 
+
 //****************************************************
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
+  // std::vector<Vector3f**> patchez;
 
   //*******************************
   // ARGUMENT PARSER
@@ -336,43 +350,66 @@ int main(int argc, char *argv[]) {
     numpatches = atoi(STRING.c_str());
   }
 
-  if (numpatches == 0) return 1; // throw an exception somehow
-  int line = 0;
+  if (numpatches == 0) return 1; // throw an exception somehow]
+  
+  // TODO: Assume input is well-formed!!!
+  for (int i = 0; i < numpatches; i++) {
+    Patch* current_patch = new Patch();
+    int line = 0;
 
-  // TODO-fix: extra lines at end of file? check if STRING is empty?
-  while(!infile.eof()) {      // Each iteration is one LINE <<<<<<
-    getline(infile,STRING);
-    if (isEmptyOrBlank(STRING)) {
-      continue;
+
+    // TODO-fix: extra lines at end of file? check if STRING is empty?
+    while(!infile.eof() && line < 4) {      // Each iteration is one LINE <<<<<<
+      getline(infile,STRING);
+      if (isEmptyOrBlank(STRING)) {
+        continue;
+      }
+      cout << STRING << endl;
+      GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
+      std::istringstream iss (STRING);
+      iss >> std::skipws >> a >> b >> c;
+      iss >> std::skipws >> d >> e >> f;
+      iss >> std::skipws >> g >> h >> i;
+      iss >> std::skipws >> j >> k >> l;
+
+      vector<Vector3f*> curve;
+      Vector3f *apoint = new Vector3f(a, b, c);
+      Vector3f *bpoint = new Vector3f(d, e, f);
+      Vector3f *cpoint = new Vector3f(g, h, i);
+      Vector3f *dpoint = new Vector3f(j, k, l);
+      curve.push_back(apoint);
+      curve.push_back(bpoint);
+      curve.push_back(cpoint);
+      curve.push_back(dpoint);
+      curves.push_back(curve);
+      // cout << curves.size() << "   SIZE" << endl;
+
+
+
+      // cout << "line " << line << " done" << endl;
+      current_patch->patch[line][0] = *apoint;
+      current_patch->patch[line][1] = *bpoint;
+      current_patch->patch[line][2] = *cpoint;
+      current_patch->patch[line][3] = *dpoint;
+      // cout << "line " << line << " done" << endl;
+
+      line++;
+
+    } // while
+
+    cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
+    // getline(infile, STRING);
+    patchez.push_back(current_patch);
+
+  } // for
+
+  cout << "patchez size: " << patchez.size() << endl;
+  for (int l = 0; l < patchez.size(); l++) {
+    cout << "hi? " << l << endl;
+    Patch patchz = *patchez[l];
+    for (int i = 0; i < 4; i++) {
+        cout << patchz.patch[i][0].transpose() << " " << patchz.patch[i][1].transpose() << " " << patchz.patch[i][2].transpose() << " " << patchz.patch[i][3].transpose() << " " << endl;
     }
-    cout << STRING << endl;
-    GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
-    std::istringstream iss (STRING);
-    iss >> std::skipws >> a >> b >> c;
-    iss >> std::skipws >> d >> e >> f;
-    iss >> std::skipws >> g >> h >> i;
-    iss >> std::skipws >> j >> k >> l;
-
-    vector<Vector3f*> curve;
-    Vector3f *apoint = new Vector3f(a, b, c);
-    Vector3f *bpoint = new Vector3f(d, e, f);
-    Vector3f *cpoint = new Vector3f(g, h, i);
-    Vector3f *dpoint = new Vector3f(j, k, l);
-    curve.push_back(apoint);
-    curve.push_back(bpoint);
-    curve.push_back(cpoint);
-    curve.push_back(dpoint);
-    curves.push_back(curve);
-    cout << curves.size() << "   SIZE" << endl;
-
-    line++;
-    if (line == 4) {
-      cout << "/~~~~~~~~~ end patch ~~~~~~~~~~/" << endl;
-      getline(infile, STRING);
-      
-      line = 0;
-    }
-
   }
 
   string strsubp = argv[2];
