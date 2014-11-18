@@ -150,6 +150,44 @@ void myDisplay() {
   // TODO: this? vvv
   // glTranslatef(-horizontalshift, -verticalshift, -0.0);
   glScalef(zoomamount, zoomamount, zoomamount);
+
+  /* Pre-merge 11/18 12:23pm */
+  // glLineWidth(3);
+  // glColor3f(1.0f,0.0f,0.0f); 
+  // for (int i = 0; i < pointsofcurves.size(); i++) {
+  //   //cout << "one" << endl;
+  //   glBegin(GL_LINE_STRIP);
+  //   for (int j = 0; j < pointsofcurves[i].size(); j++) {
+  //     glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
+  //    // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
+  //   }
+  // }
+  // glEnd();
+
+  /* For wireframe vs filled mode */
+  // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+  // glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
+
+
+  // glBegin(GL_QUADS);
+  // // glBegin(GL_POLYGON);
+  // for (int i = 0; i + numdiv + 1 < toconnect.size(); i+= 2) {
+  //   // cout << toconnect[i].x() << " " << toconnect[i].y() << " " << toconnect[i].z() << endl;
+  //   // glVertex3f(toconnect[i].x(), toconnect[i].y(), toconnect[i].z());
+  //   // if ((i + 1) % 4 == 0) {
+  //   //   // cout << "----------------" << endl;
+  //   //   glEnd();
+  //   //   glBegin(GL_QUADS);
+  //   // }
+  //   glVertex3f(toconnect[i].x(), toconnect[i].y(), toconnect[i].z());
+  //   glVertex3f(toconnect[i+1].x(), toconnect[i+1].y(), toconnect[i+1].z());
+  //   glVertex3f(toconnect[i+numdiv].x(), toconnect[i+numdiv].y(), toconnect[i+numdiv].z());
+  //   glVertex3f(toconnect[i+numdiv+1].x(), toconnect[i+numdiv+1].y(), toconnect[i+numdiv+1].z());
+  // }
+  // glEnd();
+  // // cout << ">>>>>>>>>>>>>>>>> END MYDISPLAY >>>>>>>>>>>>>>>>" << endl;
+
+
   glLineWidth(.75);
   glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   glColor3f(1.0f,1.0f,0.0f); 
@@ -294,7 +332,7 @@ bool isEmptyOrBlank(const std::string& str) {
 }
 
  Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, GLfloat u, Vector3f *dPdu) {
-  //cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
+  // cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
   Vector3f a = *zero * (1.0 - u) + *one * u;
   Vector3f b = *one * (1.0 - u) + *two * u;
   Vector3f c = *two * (1.0 - u) + *three * u;
@@ -307,20 +345,12 @@ bool isEmptyOrBlank(const std::string& str) {
   Vector3f fordpdu = 3 * (e - d);
   *dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
 
-
-  // cout << dPdu.z() << " HELLO" << endl;
-  // cout << curve[0].x << endl;
-  // cout << curve[0].y << endl;
-  // cout << curve[0].z << endl;
-  // cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
-
   //cout << "bezcurve returns " << p.transpose() << endl;
   return p;
 }
 
 
 Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
-// Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vector3f *n) {
   //cout << "bezpatch u: " << u << " v: " << v << endl;
   vector<Vector3f> vcurve;
   vector<Vector3f> ucurve;
@@ -381,7 +411,7 @@ void subdividepatch(Patch &patch, GLfloat step) {
     for (int iv = 0; iv <= numdiv; iv++) {
       cout << "iv " << iv << endl;
       GLfloat v = iv * step;
-      cout << "subdivide: u: " << u << " v: " << v << endl;
+      // cout << "subdivide: u: " << u << " v: " << v << endl;
       Vector3f p = bezpatchinterp(patch, u, v, n);
       //TODO:save surface point and normal      // cout << *n << endl;
       cout << "---- end -----" << endl;
@@ -489,9 +519,9 @@ int main(int argc, char *argv[]) {
 
   Vector3f normal;
   for (int k = 0; k < patchez.size(); k++) {
+
    // vector<Vector3f> somepoints_toconnect;
     // Uniform
-    cout << "on patch " << k << endl;
     subdividepatch(*patchez[k], sub_div_param);
     // cout << result.transpose() << endl;
     // somepoints_toconnect.push_back(result);
