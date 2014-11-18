@@ -483,8 +483,7 @@ int main(int argc, char *argv[]) {
   // }
 
   Vector3f normal;
-  // for (int k = 0; k < patchez.size(); k++) {
-  for (int k = 0; k < 1; k++) {
+  for (int k = 0; k < patchez.size(); k++) {
     vector<Vector3f> somepoints_toconnect;
     // Uniform
     cout << "on patch " << k << endl;
