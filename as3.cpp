@@ -89,6 +89,7 @@ std::vector< Patch * > patchez;
 //std::vector<Vector3f *> points;
 
 vector<Vector3f> somepoints_toconnect;
+vector<Vector3f> toconnect;
 float zoomamount = 1.0;
 float horizontalshift = 0.0;
 float verticalshift = 0.0;
@@ -144,19 +145,24 @@ void myDisplay() {
   glLineWidth(3);
 
   glColor3f(1.0f,0.0f,0.0f); 
-  for (int i = 0; i < pointsofcurves.size(); i++) {
-    //cout << "one" << endl;
-    glBegin(GL_LINE_STRIP);
-    for (int j = 0; j < pointsofcurves[i].size(); j++) {
-      glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
-     // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
-    }
+  // for (int i = 0; i < pointsofcurves.size(); i++) {
+  //   //cout << "one" << endl;
+  //   glBegin(GL_LINE_STRIP);
+  //   for (int j = 0; j < pointsofcurves[i].size(); j++) {
+  //     glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
+  //    // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
+  //   }
+  // }
+  // glEnd();
+
+  glBegin(GL_LINE_STRIP);
+  for (int i = 0; i < toconnect.size(); i++) {
+    glVertex3f(toconnect[i].x(), toconnect[i].y(), toconnect[i].z());
   }
   glEnd();
 
-
   glFlush();
-  glutSwapBuffers();// swap buffers (we earlier set double buffer)
+  glutSwapBuffers();        // swap buffers (we earlier set double buffer)
 
 }
 
@@ -167,9 +173,9 @@ void myDisplay() {
 void myFrameMove() {
   //nothing here for now
 #ifdef _WIN32
-  Sleep(10);                                   //give ~10ms back to OS (so as not to waste the CPU)
+  Sleep(10);                                 //give ~10ms back to OS (so as not to waste the CPU)
 #endif
-  glutPostRedisplay(); // forces glut to call the display function (myDisplay())
+  glutPostRedisplay();                       // forces glut to call the display function (myDisplay())
 }
 
 
@@ -356,7 +362,7 @@ void subdividepatch(Patch &patch, GLfloat step) {
   GLfloat numdiv = ((1 + epsilon) / step);
   cout << "numdiv " << numdiv << endl;
   // TODO: is it ++?
-  for (int iu = 0; iu < numdiv; iu ++) {
+  for (int iu = 0; iu < numdiv; iu++) {
     GLfloat u = iu * step;
     cout << "iu " << iu << endl;
     for (int iv = 0; iv < numdiv; iv++) {
@@ -364,11 +370,9 @@ void subdividepatch(Patch &patch, GLfloat step) {
       GLfloat v = iv * step;
       cout << "subdivide: u: " << u << " v: " << v << endl;
       Vector3f p = bezpatchinterp(patch, u, v, n);
-      //TODO:save surface point and normal
-      cout << p << endl;
-      // cout << *n << endl;
+      //TODO:save surface point and normal      // cout << *n << endl;
       cout << "---- end -----" << endl;
-      somepoints_toconnect.push_back(p);
+      toconnect.push_back(p);
       // pointsofcurves.push_back(somepoints_toconnect);
     }
   }
