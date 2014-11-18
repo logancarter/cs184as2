@@ -70,6 +70,11 @@ public:
       }
     }
   }
+  void printPatch() {
+    for (int i = 0; i < 4; i++) {
+        cout << patch[i][0].transpose() << " " << patch[i][1].transpose() << " " <<  patch[i][2].transpose() << " " <<  patch[i][3].transpose() << " " << endl;
+    }
+  }
 };
 
 //****************************************************
@@ -271,8 +276,8 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
- Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, float u, Vector3f &dPdu) {
-  //cout << *curve[0] << " " << *curve[1] << " " << *curve[2] << " beg function" << endl;
+ Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, GLfloat u, Vector3f *dPdu) {
+  cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
   Vector3f a = *zero * (1.0 - u) + *one * u;
   Vector3f b = *one * (1.0 - u) + *two * u;
   Vector3f c = *two * (1.0 - u) + *three * u;
@@ -283,49 +288,83 @@ bool isEmptyOrBlank(const std::string& str) {
   Vector3f p = d * (1.0 - u) + e * u;
 
   Vector3f fordpdu = 3 * (e - d);
-  dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
+  *dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
+
+
   // cout << dPdu.z() << " HELLO" << endl;
   // cout << curve[0].x << endl;
   // cout << curve[0].y << endl;
   // cout << curve[0].z << endl;
   // cout << p.x() << " " << p.y() << " " << p.z() << "in function" << endl;
+
+  cout << "bezcurve returns " << p.transpose() << endl;
   return p;
 }
 
-//vector<vector<Vector3f*> > curves;
-Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vector3f *n) {
+
+Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
+// Vector3f bezpatchinterp(vector<vector<Vector3f*> > patch, float u, float v, Vector3f *n) {
+  cout << "bezpatch u: " << u << " v: " << v << endl;
   vector<Vector3f> vcurve;
   vector<Vector3f> ucurve;
+  // Vector3f p = *(new Vector3f(0.0,0.0,0.0));
   Vector3f p;
-  Vector3f dPdu;
-  Vector3f dPdv;
-  vcurve[0] = bezcurveinterp(patch[0][0], patch[0][1], patch[0][3], patch[0][4], u, dPdu);
-  vcurve[1] = bezcurveinterp(patch[1][0], patch[1][1], patch[1][3], patch[1][4], u, dPdu);
-  vcurve[2] = bezcurveinterp(patch[2][0], patch[2][1], patch[2][3], patch[2][4], u, dPdu);
-  vcurve[3] = bezcurveinterp(patch[3][0], patch[3][1], patch[3][3], patch[3][4], u, dPdu);
+  Vector3f *dPdu = new Vector3f(0.0,0.0,0.0);
+  Vector3f *dPdv = new Vector3f(0.0,0.0,0.0);
+  // cout << "first row: " << patch.patch[0][0].transpose() << " " << patch.patch[0][1].transpose() << " " << patch.patch[0][2].transpose() << " " << patch.patch[0][3].transpose() << endl;
+  vcurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[0][1], &patch.patch[0][2], &patch.patch[0][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[1][0], &patch.patch[1][1], &patch.patch[1][2], &patch.patch[1][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[2][0], &patch.patch[2][1], &patch.patch[2][2], &patch.patch[2][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[3][0], &patch.patch[3][1], &patch.patch[3][2], &patch.patch[3][3], u, dPdu));
 
-  ucurve[0] = bezcurveinterp(patch[0][0], patch[1][0], patch[2][0], patch[3][0], v, dPdu);
-  ucurve[1] = bezcurveinterp(patch[0][1], patch[1][1], patch[2][1], patch[3][1], v, dPdu);
-  ucurve[2] = bezcurveinterp(patch[0][2], patch[1][2], patch[2][2], patch[3][2], v, dPdu);
-  ucurve[3] = bezcurveinterp(patch[0][3], patch[1][3], patch[2][3], patch[3][3], v, dPdu);
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[1][0], &patch.patch[2][0], &patch.patch[3][0], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][1], &patch.patch[1][1], &patch.patch[2][1], &patch.patch[3][1], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][2], &patch.patch[1][2], &patch.patch[2][2], &patch.patch[3][2], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][3], &patch.patch[1][3], &patch.patch[2][3], &patch.patch[3][3], v, dPdu));
 
-  p = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
-  p = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
+  cout << vcurve[0].transpose() << " "<< vcurve[1].transpose() << " "<< vcurve[2].transpose() << " " << vcurve[3].transpose() << endl;
+  Vector3f v_point = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
+  cout << "v curve: " << v_point.transpose() << endl;
+  // cout << "p " << p.transpose() << endl;
+  Vector3f u_point = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
+  // cout << "p " << p.transpose() << endl;
+  cout << "u curve: " << u_point.transpose() << endl;
+  p = v_point;
 
-  Vector3f n2 = dPdu.cross(dPdv);
+  // cout << "dpdu " << *dPdu << endl;
+  // cout << "dpdv " << *dPdv << endl;
+
+  Vector3f n2 = (*dPdu).cross(*dPdv);
+
+  // cout << "n2 : " << n2 << endl;
+
   *n = n2 / n2.norm();
+
+  // cout << "n2 normalized: " << *n << endl;
+  cout << "===== P  ======" << endl;
+  cout << p << endl;
   return p;
 }
 
-void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
-  Vector3f* n;
-  float numdiv = ((1 + .01) / step);
+
+Vector3f subdividepatch(Patch &patch, GLfloat step) {
+// void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
+// Vector3f subdividepatch(vector<vector<Vector3f*> > patch, float step) {
+  // patch.printPatch();
+  Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
+  GLfloat numdiv = ((1 + .01) / step);
+  // TODO: is it ++?
   for (int iu = 0; iu < numdiv; iu ++) {
-    float u = iu * step;
+    GLfloat u = iu * step;
     for (int iv = 0; iv < numdiv; iv++) {
-      float v = iv * step;
+      GLfloat v = iv * step;
+      cout << "subdivide: u: " << u << " v: " << v << endl;
       Vector3f p = bezpatchinterp(patch, u, v, n);
       //TODO:save surface point and normal
+      cout << p << endl;
+      // cout << *n << endl;
+      cout << "---- end -----" << endl;
+      return p;
     }
   }
 }
@@ -403,14 +442,10 @@ int main(int argc, char *argv[]) {
 
   } // for
 
-  cout << "patchez size: " << patchez.size() << endl;
-  for (int l = 0; l < patchez.size(); l++) {
-    cout << "hi? " << l << endl;
-    Patch patchz = *patchez[l];
-    for (int i = 0; i < 4; i++) {
-        cout << patchz.patch[i][0].transpose() << " " << patchz.patch[i][1].transpose() << " " << patchz.patch[i][2].transpose() << " " << patchz.patch[i][3].transpose() << " " << endl;
-    }
-  }
+  // cout << "patchez size: " << patchez.size() << endl;
+  // for (int l = 0; l < patchez.size(); l++) {
+  //   patchez[l].printPatch();
+  // }
 
   string strsubp = argv[2];
   sub_div_param = atof(strsubp.c_str());
@@ -428,18 +463,30 @@ int main(int argc, char *argv[]) {
   infile.close();
 
 
-  Vector3f no;
-  for (int k = 0; k < curves.size(); k++) {
-      vector<Vector3f> somepoints_toconnect;
-    for (float j = 0; j < 1; j += sub_div_param) {
-      //cout << curves[i][j] << " " << curves[i] << " " << curves[i] << " HIHIH" << endl;
-      Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
-      //cout << "Nooooooo: " << no.x() << " " << no.y() << " " << no.z() << endl;
-      //cout << no.z() << " after" << endl;
+  // Vector3f no;
+  // for (int k = 0; k < curves.size(); k++) {
+  //   vector<Vector3f> somepoints_toconnect;
+  //   for (float j = 0; j < 1; j += sub_div_param) {
+  //     Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
+  //     somepoints_toconnect.push_back(result);
+  //   }
+  //   pointsofcurves.push_back(somepoints_toconnect);
+  // }
+
+  Vector3f normal;
+  // for (int k = 0; k < patchez.size(); k++) {
+  for (int k = 0; k < 1; k++) {
+    vector<Vector3f> somepoints_toconnect;
+    // Uniform
+    cout << "on patch " << k << endl;
+    for (GLfloat j = 0; j < 1; j += sub_div_param) {
+      // TODO: save normals
+      Vector3f result = subdividepatch(*patchez[k], j);
+      cout << result.transpose() << endl;
       somepoints_toconnect.push_back(result);
     }
-  pointsofcurves.push_back(somepoints_toconnect);
-}
+    pointsofcurves.push_back(somepoints_toconnect);
+  }
 
 
   //*******************************
@@ -476,22 +523,6 @@ int main(int argc, char *argv[]) {
 }
 
 
-
-  //*******************************
-  // PSEUDOCODE
-  //*******************************
-  
-  /*****
-  for each PATCH in file
-    data structure to hold four vertices
-    // iterate thru u
-    //   iterate thru v
-    subdivide(patch, step)
-      bezpatchinterp(patch,u,v)
-        bezpatchinterp(curve,u);
-
-
-*/
 
 
 
