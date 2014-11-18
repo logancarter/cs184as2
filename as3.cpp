@@ -161,12 +161,12 @@ void myDisplay() {
           glBegin(GL_QUADS);
 
       for (int k = 0; k < numdiv; k ++) {
-        // if (j == 0 and i != 0 and k != numdiv - 1) {
-        // glVertex3f(patchez[i - 1]->getPoints()[numdiv - 1][k].x(), patchez[i - 1]->getPoints()[numdiv - 1][k].y(), patchez[i - 1]->getPoints()[numdiv - 1][k].z());
-        // glVertex3f(patchez[i - 1]->getPoints()[numdiv - 1][k + 1].x(), patchez[i - 1]->getPoints()[numdiv - 1][k + 1].y(), patchez[i - 1]->getPoints()[numdiv - 1][k + 1].z());
-        // glVertex3f(patchez[i]->getPoints()[0][k + 1].x(), patchez[i]->getPoints()[0][k + 1].y(), patchez[i]->getPoints()[0][k + 1].z());
-        // glVertex3f(patchez[i]->getPoints()[0][k].x(), patchez[i]->getPoints()[0][k].y(), patchez[i]->getPoints()[0][k].z());
-        // }
+       // if (j == numdiv - 1 and i != patchez.size() - 1 and k != numdiv - 1) {
+       //  glVertex3f(patchez[i]->getPoints()[numdiv - 1][k].x(), patchez[i]->getPoints()[numdiv - 1][k].y(), patchez[i]->getPoints()[numdiv - 1][k].z());
+       //  glVertex3f(patchez[i]->getPoints()[numdiv - 1][k + 1].x(), patchez[i]->getPoints()[numdiv - 1][k + 1].y(), patchez[i]->getPoints()[numdiv - 1][k + 1].z());
+       //  glVertex3f(patchez[i + 1]->getPoints()[numdiv - 1][k + 1].x(), patchez[i + 1]->getPoints()[numdiv - 1][k + 1].y(), patchez[i + 1]->getPoints()[numdiv - 1][k + 1].z());
+       //  glVertex3f(patchez[i + 1]->getPoints()[numdiv - 1][k].x(), patchez[i + 1]->getPoints()[numdiv - 1][k].y(), patchez[i + 1]->getPoints()[numdiv - 1][k].z());
+       //  }
         if (k != numdiv - 1 and j != numdiv - 1) {
           glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
           glVertex3f(patchez[i]->getPoints()[j][k + 1].x(), patchez[i]->getPoints()[j][k + 1].y(), patchez[i]->getPoints()[j][k + 1].z());
