@@ -347,16 +347,20 @@ Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
 }
 
 
-Vector3f subdividepatch(Patch &patch, GLfloat step) {
+void subdividepatch(Patch &patch, GLfloat step) {
 // void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
 // Vector3f subdividepatch(vector<vector<Vector3f*> > patch, float step) {
   // patch.printPatch();
   Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
-  GLfloat numdiv = ((1 + .01) / step);
+  GLfloat epsilon = step - fmod(1.0, step);
+  GLfloat numdiv = ((1 + epsilon) / step);
+  cout << "numdiv " << numdiv << endl;
   // TODO: is it ++?
   for (int iu = 0; iu < numdiv; iu ++) {
     GLfloat u = iu * step;
+    cout << "iu " << iu << endl;
     for (int iv = 0; iv < numdiv; iv++) {
+      cout << "iv " << iv << endl;
       GLfloat v = iv * step;
       cout << "subdivide: u: " << u << " v: " << v << endl;
       Vector3f p = bezpatchinterp(patch, u, v, n);
@@ -364,7 +368,8 @@ Vector3f subdividepatch(Patch &patch, GLfloat step) {
       cout << p << endl;
       // cout << *n << endl;
       cout << "---- end -----" << endl;
-      return p;
+      somepoints_toconnect.push_back(p);
+      // pointsofcurves.push_back(somepoints_toconnect);
     }
   }
 }
@@ -479,12 +484,17 @@ int main(int argc, char *argv[]) {
     vector<Vector3f> somepoints_toconnect;
     // Uniform
     cout << "on patch " << k << endl;
+    /*
     for (GLfloat j = 0; j < 1; j += sub_div_param) {
       // TODO: save normals
       Vector3f result = subdividepatch(*patchez[k], j);
       cout << result.transpose() << endl;
       somepoints_toconnect.push_back(result);
     }
+    */
+    subdividepatch(*patchez[k], sub_div_param);
+    // cout << result.transpose() << endl;
+    // somepoints_toconnect.push_back(result);
     pointsofcurves.push_back(somepoints_toconnect);
   }
 
