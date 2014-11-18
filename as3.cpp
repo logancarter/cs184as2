@@ -150,18 +150,31 @@ void myDisplay() {
   // TODO: this? vvv
   // glTranslatef(-horizontalshift, -verticalshift, -0.0);
   glScalef(zoomamount, zoomamount, zoomamount);
-  glLineWidth(1);
-
+  glLineWidth(.75);
+  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   glColor3f(1.0f,1.0f,0.0f); 
   vector<Vector3f> somevertices;
   for (int i = 0; i < patchez.size(); i++) {
     int numdiv = patchez[i]->getPoints().size();
     cout << numdiv << " NUMDIV" << endl;
     for (int j = 0; j < numdiv; j ++) {
+          glBegin(GL_QUADS);
+
       for (int k = 0; k < numdiv; k ++) {
-          glBegin(GL_POINTS);
-        glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
-      }
+        // if (j == 0 and i != 0 and k != numdiv - 1) {
+        // glVertex3f(patchez[i - 1]->getPoints()[numdiv - 1][k].x(), patchez[i - 1]->getPoints()[numdiv - 1][k].y(), patchez[i - 1]->getPoints()[numdiv - 1][k].z());
+        // glVertex3f(patchez[i - 1]->getPoints()[numdiv - 1][k + 1].x(), patchez[i - 1]->getPoints()[numdiv - 1][k + 1].y(), patchez[i - 1]->getPoints()[numdiv - 1][k + 1].z());
+        // glVertex3f(patchez[i]->getPoints()[0][k + 1].x(), patchez[i]->getPoints()[0][k + 1].y(), patchez[i]->getPoints()[0][k + 1].z());
+        // glVertex3f(patchez[i]->getPoints()[0][k].x(), patchez[i]->getPoints()[0][k].y(), patchez[i]->getPoints()[0][k].z());
+        // }
+        if (k != numdiv - 1 and j != numdiv - 1) {
+          glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
+          glVertex3f(patchez[i]->getPoints()[j][k + 1].x(), patchez[i]->getPoints()[j][k + 1].y(), patchez[i]->getPoints()[j][k + 1].z());
+          glVertex3f(patchez[i]->getPoints()[j + 1][k + 1].x(), patchez[i]->getPoints()[j+1][k + 1].y(), patchez[i]->getPoints()[j+1][k + 1].z());
+          glVertex3f(patchez[i]->getPoints()[j + 1][k].x(), patchez[i]->getPoints()[j + 1][k].y(), patchez[i]->getPoints()[j + 1][k].z());
+        }
+        //glVertex3f(patchez[i]->getPoints()[j + 1][0].x(), patchez[i]->getPoints()[j+1][0].y(), patchez[i]->getPoints()[j+1][0].z());
+     }
     }
       //glBegin(GL_LINES);
   }
