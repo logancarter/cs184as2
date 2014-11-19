@@ -105,6 +105,7 @@ float rotatehoriz = 0.0;
 float rotatevertical = 0.0;
 vector<vector<Vector3f*> > curves;
 vector<vector<Vector3f> > pointsofcurves;
+bool wireframe = true;
 
 
 //****************************************************
@@ -189,7 +190,8 @@ void myDisplay() {
 
 
   glLineWidth(.75);
-  glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+  if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
+  else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
   glColor3f(1.0f,1.0f,0.0f); 
   vector<Vector3f> somevertices;
   for (int i = 0; i < patchez.size(); i++) {
@@ -252,6 +254,7 @@ void myKeyboard(unsigned char key, int x, int y) {
    break;
   case 'w':
    cout << "w: toggle filled/wireframe" << endl;
+   wireframe = !wireframe;
    break;
   // TODO: check if its = or + (shift)
   case '=':
