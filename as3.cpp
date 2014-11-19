@@ -93,9 +93,6 @@ Viewport viewport;
 float sub_div_param;
 bool adaptive = false;      //if true: adaptive; if false: uniform
 std::vector< Patch * > patchez;
-
-//std::vector<Vector3f *> points;
-
 vector<Vector3f> somepoints_toconnect;
 vector<Vector3f> toconnect;
 float zoomamount = 1.0;
@@ -152,43 +149,6 @@ void myDisplay() {
   // glTranslatef(-horizontalshift, -verticalshift, -0.0);
   glScalef(zoomamount, zoomamount, zoomamount);
 
-  /* Pre-merge 11/18 12:23pm */
-  // glLineWidth(3);
-  // glColor3f(1.0f,0.0f,0.0f); 
-  // for (int i = 0; i < pointsofcurves.size(); i++) {
-  //   //cout << "one" << endl;
-  //   glBegin(GL_LINE_STRIP);
-  //   for (int j = 0; j < pointsofcurves[i].size(); j++) {
-  //     glVertex3f(pointsofcurves[i][j].x(), pointsofcurves[i][j].y(), pointsofcurves[i][j].z());
-  //    // cout << pointsofcurves[i][j].x() <<" " << pointsofcurves[i][j].y() << " " << pointsofcurves[i][j].z() << endl;
-  //   }
-  // }
-  // glEnd();
-
-  /* For wireframe vs filled mode */
-  // glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
-  // glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-
-
-  // glBegin(GL_QUADS);
-  // // glBegin(GL_POLYGON);
-  // for (int i = 0; i + numdiv + 1 < toconnect.size(); i+= 2) {
-  //   // cout << toconnect[i].x() << " " << toconnect[i].y() << " " << toconnect[i].z() << endl;
-  //   // glVertex3f(toconnect[i].x(), toconnect[i].y(), toconnect[i].z());
-  //   // if ((i + 1) % 4 == 0) {
-  //   //   // cout << "----------------" << endl;
-  //   //   glEnd();
-  //   //   glBegin(GL_QUADS);
-  //   // }
-  //   glVertex3f(toconnect[i].x(), toconnect[i].y(), toconnect[i].z());
-  //   glVertex3f(toconnect[i+1].x(), toconnect[i+1].y(), toconnect[i+1].z());
-  //   glVertex3f(toconnect[i+numdiv].x(), toconnect[i+numdiv].y(), toconnect[i+numdiv].z());
-  //   glVertex3f(toconnect[i+numdiv+1].x(), toconnect[i+numdiv+1].y(), toconnect[i+numdiv+1].z());
-  // }
-  // glEnd();
-  // // cout << ">>>>>>>>>>>>>>>>> END MYDISPLAY >>>>>>>>>>>>>>>>" << endl;
-
-
   glLineWidth(.75);
   if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
@@ -207,9 +167,8 @@ void myDisplay() {
           glVertex3f(patchez[i]->getPoints()[j + 1][k + 1].x(), patchez[i]->getPoints()[j+1][k + 1].y(), patchez[i]->getPoints()[j+1][k + 1].z());
           glVertex3f(patchez[i]->getPoints()[j + 1][k].x(), patchez[i]->getPoints()[j + 1][k].y(), patchez[i]->getPoints()[j + 1][k].z());
         }
-     }
+      }
     }
-      //glBegin(GL_LINES);
   }
   glEnd();
   glFlush();
@@ -389,23 +348,15 @@ Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
   // cout << "n2 : " << n2 << endl;
 
   *n = n2 / n2.norm();
-
-  // cout << "n2 normalized: " << *n << endl;
-  //cout << "===== P  ======" << endl;
-  //cout << p << endl;
   return p;
 }
 
 
 void subdividepatch(Patch &patch, GLfloat step) {
-// void subdividepatch(vector<vector<Vector3f*> > patch, float step) {
-// Vector3f subdividepatch(vector<vector<Vector3f*> > patch, float step) {
-  // patch.printPatch();
   Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
   GLfloat epsilon = step - fmod(1.0, step);
   GLfloat numdiv = ((1 + epsilon) / step);
   //cout << "numdiv " << numdiv << endl;
-  // TODO: is it ++?
   vector<vector<Vector3f > >allpoints;
   for (int iu = 0; iu <= numdiv; iu++) {
     vector<Vector3f> onepoint;
@@ -418,9 +369,7 @@ void subdividepatch(Patch &patch, GLfloat step) {
       Vector3f p = bezpatchinterp(patch, u, v, n);
       //TODO:save surface point and normal      // cout << *n << endl;
       cout << "---- end -----" << endl;
-      //patch.addPoint(p);
       onepoint.push_back(p);
-      // pointsofcurves.push_back(somepoints_toconnect);
     }
     allpoints.push_back(onepoint);
   }
@@ -432,14 +381,13 @@ void subdividepatch(Patch &patch, GLfloat step) {
 // MAIN
 //****************************************************
 int main(int argc, char *argv[]) {
-  // std::vector<Vector3f**> patchez;
 
   //*******************************
   // ARGUMENT PARSER
   //*******************************
   string STRING;
   ifstream infile;
-  cout << argv[1] << endl;   //that's input file
+  cout << argv[1] << endl;
   infile.open (argv[1]);
   int numpatches = 0;
   if (!infile.eof()) {
@@ -447,7 +395,7 @@ int main(int argc, char *argv[]) {
     numpatches = atoi(STRING.c_str());
   }
 
-  if (numpatches == 0) return 1; // throw an exception somehow]
+  if (numpatches == 0) return 1; // TODO: throw an exception somehow]
   
   // TODO: Assume input is well-formed!!!
   for (int i = 0; i < numpatches; i++) {
@@ -458,9 +406,11 @@ int main(int argc, char *argv[]) {
     // TODO-fix: extra lines at end of file? check if STRING is empty?
     while(!infile.eof() && line < 4) {      // Each iteration is one LINE <<<<<<
       getline(infile,STRING);
+
       if (isEmptyOrBlank(STRING)) {
         continue;
       }
+
       cout << STRING << endl;
       GLfloat a, b, c, d, e, f, g, h, i, j, k, l;
       std::istringstream iss (STRING);
@@ -474,21 +424,17 @@ int main(int argc, char *argv[]) {
       Vector3f *bpoint = new Vector3f(d, e, f);
       Vector3f *cpoint = new Vector3f(g, h, i);
       Vector3f *dpoint = new Vector3f(j, k, l);
+
       curve.push_back(apoint);
       curve.push_back(bpoint);
       curve.push_back(cpoint);
       curve.push_back(dpoint);
       curves.push_back(curve);
-      // cout << curves.size() << "   SIZE" << endl;
 
-
-
-      // cout << "line " << line << " done" << endl;
       current_patch->patch[line][0] = *apoint;
       current_patch->patch[line][1] = *bpoint;
       current_patch->patch[line][2] = *cpoint;
       current_patch->patch[line][3] = *dpoint;
-      // cout << "line " << line << " done" << endl;
 
       line++;
 
@@ -500,10 +446,6 @@ int main(int argc, char *argv[]) {
 
   } // for
 
-  // cout << "patchez size: " << patchez.size() << endl;
-  // for (int l = 0; l < patchez.size(); l++) {
-  //   patchez[l].printPatch();
-  // }
 
   string strsubp = argv[2];
   sub_div_param = atof(strsubp.c_str());
@@ -523,12 +465,8 @@ int main(int argc, char *argv[]) {
   Vector3f normal;
   for (int k = 0; k < patchez.size(); k++) {
 
-   // vector<Vector3f> somepoints_toconnect;
     // Uniform
     subdividepatch(*patchez[k], sub_div_param);
-    // cout << result.transpose() << endl;
-    // somepoints_toconnect.push_back(result);
-    //pointsofcurves.push_back(somepoints_toconnect);
   }
 
 
