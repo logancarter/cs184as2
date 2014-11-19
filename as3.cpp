@@ -195,33 +195,23 @@ void myDisplay() {
   glColor3f(1.0f,1.0f,0.0f); 
   vector<Vector3f> somevertices;
   for (int i = 0; i < patchez.size(); i++) {
-    int numdiv = patchez[i]->getPoints().size();
-    // cout << numdiv << " NUMDIV" << endl;
-    for (int j = 0; j < numdiv; j ++) {
+    int numdiv = patchez[i]->getPoints().size() - 1;
+    //cout << numdiv << " NUMDIV" << endl;
+    for (int j = 0; j < numdiv + 1; j ++) {
+      for (int k = 0; k < numdiv + 1; k ++) {
+        if (k != numdiv and j != numdiv) {
           glBegin(GL_QUADS);
-
-      for (int k = 0; k < numdiv; k ++) {
-       // if (j == numdiv - 1 and i != patchez.size() - 1 and k != numdiv - 1) {
-       //  glVertex3f(patchez[i]->getPoints()[numdiv - 1][k].x(), patchez[i]->getPoints()[numdiv - 1][k].y(), patchez[i]->getPoints()[numdiv - 1][k].z());
-       //  glVertex3f(patchez[i]->getPoints()[numdiv - 1][k + 1].x(), patchez[i]->getPoints()[numdiv - 1][k + 1].y(), patchez[i]->getPoints()[numdiv - 1][k + 1].z());
-       //  glVertex3f(patchez[i + 1]->getPoints()[numdiv - 1][k + 1].x(), patchez[i + 1]->getPoints()[numdiv - 1][k + 1].y(), patchez[i + 1]->getPoints()[numdiv - 1][k + 1].z());
-       //  glVertex3f(patchez[i + 1]->getPoints()[numdiv - 1][k].x(), patchez[i + 1]->getPoints()[numdiv - 1][k].y(), patchez[i + 1]->getPoints()[numdiv - 1][k].z());
-       //  }
-        if (k != numdiv - 1 and j != numdiv - 1) {
+          glColor3f(1.0f,1.0f,0.0f); 
           glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
           glVertex3f(patchez[i]->getPoints()[j][k + 1].x(), patchez[i]->getPoints()[j][k + 1].y(), patchez[i]->getPoints()[j][k + 1].z());
           glVertex3f(patchez[i]->getPoints()[j + 1][k + 1].x(), patchez[i]->getPoints()[j+1][k + 1].y(), patchez[i]->getPoints()[j+1][k + 1].z());
           glVertex3f(patchez[i]->getPoints()[j + 1][k].x(), patchez[i]->getPoints()[j + 1][k].y(), patchez[i]->getPoints()[j + 1][k].z());
         }
-        //glVertex3f(patchez[i]->getPoints()[j + 1][0].x(), patchez[i]->getPoints()[j+1][0].y(), patchez[i]->getPoints()[j+1][0].z());
      }
     }
       //glBegin(GL_LINES);
   }
   glEnd();
-
-
-
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
 
@@ -417,22 +407,17 @@ void subdividepatch(Patch &patch, GLfloat step) {
   //cout << "numdiv " << numdiv << endl;
   // TODO: is it ++?
   vector<vector<Vector3f > >allpoints;
-  for (int iu = 0; iu < numdiv; iu++) {
+  for (int iu = 0; iu <= numdiv; iu++) {
     vector<Vector3f> onepoint;
     GLfloat u = iu * step;
-    // cout << "iu " << iu << endl;
-    for (int iv = 0; iv < numdiv; iv++) {
-      // cout << "iv " << iv << endl;
+    cout << "iu " << iu << endl;
+    for (int iv = 0; iv <= numdiv; iv++) {
+      cout << "iv " << iv << endl;
       GLfloat v = iv * step;
       // cout << "subdivide: u: " << u << " v: " << v << endl;
       Vector3f p = bezpatchinterp(patch, u, v, n);
       //TODO:save surface point and normal      // cout << *n << endl;
-// <<<<<<< HEAD
-//       // cout << "---- end -----" << endl;
-//       toconnect.push_back(p);
-// =======
-      // cout << "---- end -----" << endl;
-      //toconnect.push_back(p);//reminder :this wasn't commented out before
+      cout << "---- end -----" << endl;
       //patch.addPoint(p);
       onepoint.push_back(p);
       // pointsofcurves.push_back(somepoints_toconnect);
@@ -535,31 +520,11 @@ int main(int argc, char *argv[]) {
   }
   infile.close();
 
-
-  // Vector3f no;
-  // for (int k = 0; k < curves.size(); k++) {
-  //   vector<Vector3f> somepoints_toconnect;
-  //   for (float j = 0; j < 1; j += sub_div_param) {
-  //     Vector3f result = bezcurveinterp(curves[k][0], curves[k][1], curves[k][2], curves[k][3], j, no);
-  //     somepoints_toconnect.push_back(result);
-  //   }
-  //   pointsofcurves.push_back(somepoints_toconnect);
-  // }
-
   Vector3f normal;
   for (int k = 0; k < patchez.size(); k++) {
 
    // vector<Vector3f> somepoints_toconnect;
     // Uniform
-    cout << ">>>>>>>>>>>>>>> on patch " << k << endl;
-    /*
-    for (GLfloat j = 0; j < 1; j += sub_div_param) {
-      // TODO: save normals
-      Vector3f result = subdividepatch(*patchez[k], j);
-      cout << result.transpose() << endl;
-      somepoints_toconnect.push_back(result);
-    }
-    */
     subdividepatch(*patchez[k], sub_div_param);
     // cout << result.transpose() << endl;
     // somepoints_toconnect.push_back(result);
