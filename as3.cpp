@@ -33,7 +33,8 @@ inline float sqr(float x) { return x*x; }
 using namespace std;
 using namespace Eigen;
 
-//****************************************************
+
+//***************************************************--*
 // Some Classes
 //****************************************************
 
@@ -85,6 +86,141 @@ public:
   }
 };
 
+class Triangle {
+public:
+  Vector3f points[3];
+  Vector2f uvpoints[6];
+  Triangle(Vector3f x, Vector3f y, Vector3f z) {
+    points[0] = x;
+    points[1] = y;
+    points[2] = z;
+  }
+  void setUV(Vector2f one, Vector2f two, Vector2f three, Vector2f four, Vector2f five, Vector2f six) {
+    cout << uvpoints[0].x() << " X " << uvpoints[0].y() << endl;
+    uvpoints[0]= one;
+    uvpoints[1]= two;
+    uvpoints[2]= three;
+    uvpoints[3]= four;
+    uvpoints[4]= five;
+    uvpoints[5]= six;
+  }
+  Vector3f side1() {
+    return points[0];
+  }
+  Vector3f side2() {
+    return points[1];
+  }
+  Vector3f side3() {
+    return points[2];
+  }
+  void drawit() {
+    glVertex3f(points[0].x(), points[0].y(), points[0].z());
+    glVertex3f(points[1].x(), points[1].y(), points[1].z());
+    glVertex3f(points[2].x(), points[2].y(), points[2].z());
+  }
+};
+
+Vector3f midpoint (Vector3f one, Vector3f two) {
+  return (one + two) / 2.0;
+}
+Vector2f midpoint (Vector2f one, Vector2f two) {
+  return (one + two) / 2.0;
+}
+
+ Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, GLfloat u, Vector3f *dPdu) {
+  // cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
+  Vector3f a = *zero * (1.0 - u) + *one * u;
+  Vector3f b = *one * (1.0 - u) + *two * u;
+  Vector3f c = *two * (1.0 - u) + *three * u;
+
+  Vector3f d = a * (1.0 - u) + b * u;
+  Vector3f e = b * (1.0 - u) + c * u;
+
+  Vector3f p = d * (1.0 - u) + e * u;
+
+  Vector3f fordpdu = 3 * (e - d);
+  *dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
+
+  //cout << "bezcurve returns " << p.transpose() << endl;
+  return p;
+}
+
+
+Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
+  //cout << "bezpatch u: " << u << " v: " << v << endl;
+  vector<Vector3f> vcurve;
+  vector<Vector3f> ucurve;
+  // Vector3f p = *(new Vector3f(0.0,0.0,0.0));
+  Vector3f p;
+  Vector3f *dPdu = new Vector3f(0.0,0.0,0.0);
+  Vector3f *dPdv = new Vector3f(0.0,0.0,0.0);
+  // cout << "first row: " << patch.patch[0][0].transpose() << " " << patch.patch[0][1].transpose() << " " << patch.patch[0][2].transpose() << " " << patch.patch[0][3].transpose() << endl;
+  vcurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[0][1], &patch.patch[0][2], &patch.patch[0][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[1][0], &patch.patch[1][1], &patch.patch[1][2], &patch.patch[1][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[2][0], &patch.patch[2][1], &patch.patch[2][2], &patch.patch[2][3], u, dPdu));
+  vcurve.push_back(bezcurveinterp(&patch.patch[3][0], &patch.patch[3][1], &patch.patch[3][2], &patch.patch[3][3], u, dPdu));
+
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[1][0], &patch.patch[2][0], &patch.patch[3][0], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][1], &patch.patch[1][1], &patch.patch[2][1], &patch.patch[3][1], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][2], &patch.patch[1][2], &patch.patch[2][2], &patch.patch[3][2], v, dPdu));
+  ucurve.push_back(bezcurveinterp(&patch.patch[0][3], &patch.patch[1][3], &patch.patch[2][3], &patch.patch[3][3], v, dPdu));
+
+  //cout << vcurve[0].transpose() << " "<< vcurve[1].transpose() << " "<< vcurve[2].transpose() << " " << vcurve[3].transpose() << endl;
+  Vector3f v_point = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
+  //cout << "v curve: " << v_point.transpose() << endl;
+  // cout << "p " << p.transpose() << endl;
+  Vector3f u_point = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
+  // cout << "p " << p.transpose() << endl;
+  //cout << "u curve: " << u_point.transpose() << endl;
+  p = v_point;
+
+  // cout << "dpdu " << *dPdu << endl;
+  // cout << "dpdv " << *dPdv << endl;
+  cout << u << " u" << v << " v" << endl;
+  Vector3f n2 = (*dPdu).cross(*dPdv);
+
+  // cout << "n2 : " << n2 << endl;
+
+  *n = n2 / n2.norm();
+  return p;
+}
+
+
+void subdividepatch(Patch &patch, GLfloat step) {
+  Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
+  //GLfloat epsilon = step - fmod(1.0, step);
+  GLfloat numdiv;
+  if (fmod(1.0, step) == 0) {
+    numdiv = 1.0 / step;
+  } else {
+    numdiv = 1 / step;
+  }
+  //numdiv = ((1 + epsilon) / step);
+  //cout << "numdiv " << numdiv << endl;
+  vector<vector<Vector3f > >allpoints;
+  for (int iu = 0; iu <= numdiv; iu++) {
+    vector<Vector3f> onepoint;
+    GLfloat u = iu * step;
+    cout << "iu " << iu << endl;
+    for (int iv = 0; iv <= numdiv; iv++) {
+      cout << "iv " << iv << endl;
+      GLfloat v = iv * step;
+      // cout << "subdivide: u: " << u << " v: " << v << endl;
+      Vector3f p = bezpatchinterp(patch, u, v, n);
+      //TODO:save surface point and normal      // cout << *n << endl;
+      cout << "---- end -----" << endl;
+      onepoint.push_back(p);
+    }
+    allpoints.push_back(onepoint);
+  }
+  patch.setPoints(allpoints);
+}
+
+bool lessthan(Vector3f somevector, float eps) {
+  return somevector.x() < eps and somevector.y() < eps and somevector.y() < eps;
+}
+
+
 //****************************************************
 // Global Variables
 //****************************************************
@@ -103,6 +239,121 @@ float rotatevertical = 0.0;
 vector<vector<Vector3f*> > curves;
 vector<vector<Vector3f> > pointsofcurves;
 bool wireframe = true;
+
+
+void checkandDivide(Triangle* t1, int i) {
+    Vector3f e1 = midpoint(t1->side3(), t1->side1());
+    Vector3f e2 = midpoint(t1->side1(), t1->side2());
+    Vector3f e3 = midpoint(t1->side2(), t1->side3());
+    GLfloat zero = 0;
+    Vector3f dont;
+    Vector3f p1 = bezpatchinterp(*patchez[i], t1->uvpoints[0].x(), t1->uvpoints[0].y(), &dont);
+    Vector3f p2 = bezpatchinterp(*patchez[i], t1->uvpoints[2].x(), t1->uvpoints[2].y(), &dont);
+    Vector3f p3 = bezpatchinterp(*patchez[i], t1->uvpoints[4].x(), t1->uvpoints[4].y(), &dont);
+    Vector3f diff2 = (p2 - e2).cwiseAbs();
+    Vector3f diff3 = (p3 - e3).cwiseAbs();
+    Vector3f diff1 = (p1 - e1).cwiseAbs();
+    if (lessthan(diff1, sub_div_param) and lessthan(diff2, sub_div_param) and lessthan(diff3, sub_div_param)) {
+      cout << "YESSSSSSSSSSS" << endl;
+      t1->drawit();//base case yaay
+    } else if (!lessthan(diff1, sub_div_param) and !lessthan(diff2, sub_div_param) and !lessthan(diff3, sub_div_param)) {
+      //call this function on four new triangles
+      cout << "one" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), p2, p1);
+      newtri->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[1]),t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[2]),t1->uvpoints[2], midpoint(t1->uvpoints[0], t1->uvpoints[2]), t1->uvpoints[0]);
+      
+      Triangle *newtri2 = new Triangle(p1, p2, p3);
+      newtri2->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[4]), t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[2]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[4]), t1->uvpoints[4]);
+      
+      Triangle *newtri3 = new Triangle(p2, t1->side2(), p3);
+      newtri3->setUV(midpoint(t1->uvpoints[2], t1->uvpoints[4]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[3]), t1->uvpoints[3], midpoint(t1->uvpoints[3], t1->uvpoints[4]), t1->uvpoints[4]);
+      
+      Triangle *newtri4 = new Triangle(p1, p3, t1->side3());
+      newtri4->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[5]), t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[4]), t1->uvpoints[4], midpoint(t1->uvpoints[4], t1->uvpoints[5]), t1->uvpoints[5]);
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+      checkandDivide(newtri3, i);
+      checkandDivide(newtri4, i);
+    } else if (!lessthan(diff1, sub_div_param) and lessthan(diff2, sub_div_param) and !lessthan(diff3, sub_div_param)) {
+      //call this function on three new triangles
+      cout << "two" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), t1->side2(), p1);
+      newtri->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[1]), t1->uvpoints[1], t1->uvpoints[2], t1->uvpoints[3], midpoint(t1->uvpoints[0], t1->uvpoints[3]), t1->uvpoints[0]);
+      Triangle *newtri2 = new Triangle(p1, t1->side2(), p3);
+      newtri2->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[4]), t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[3]), t1->uvpoints[3], midpoint(t1->uvpoints[3], t1->uvpoints[4]), t1->uvpoints[4]);
+      Triangle *newtri3 = new Triangle(p1, p3, t1->side3());
+      newtri3->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[5]), t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[4]), t1->uvpoints[4], midpoint(t1->uvpoints[4], t1->uvpoints[5]), t1->uvpoints[5]);
+      //t1->drawit();
+      // newtri->drawit();
+      // newtri2->drawit();
+      // newtri3->drawit();
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+      checkandDivide(newtri3, i);
+    } else if(lessthan(diff1, sub_div_param) and !lessthan(diff2, sub_div_param) and !lessthan(diff3, sub_div_param)) {
+      //call this function on three new triangles
+      cout << "three" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), p2, p3);
+      newtri->setUV(midpoint(t1->uvpoints[1], t1->uvpoints[4]), t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[2]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[4]), t1->uvpoints[4]);
+      Triangle *newtri2 = new Triangle(t1->side1(), p3, t1->side3());
+      newtri2->setUV(t1->uvpoints[0], t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[4]), t1->uvpoints[4], midpoint(t1->uvpoints[5], t1->uvpoints[4]), t1->uvpoints[5]);
+      Triangle *newtri3 = new Triangle(p2, t1->side2(), p3);
+      newtri3->setUV(midpoint(t1->uvpoints[2], t1->uvpoints[4]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[3]), t1->uvpoints[3], midpoint(t1->uvpoints[3], t1->uvpoints[4]), t1->uvpoints[4]);
+     // newtri->drawit();
+    //  newtri2->drawit();
+    //  newtri3->drawit();
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+      checkandDivide(newtri3, i);
+    } else if (!lessthan(diff1, sub_div_param) and !lessthan(diff2, sub_div_param) and lessthan(diff3, sub_div_param)) {
+      //call this function on three new triangles
+      cout << "four" << endl;
+      Triangle *newtri = new Triangle(p2, t1->side2(), t1->side3());
+      newtri->setUV(midpoint(t1->uvpoints[2], t1->uvpoints[5]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[3]), t1->uvpoints[3], t1->uvpoints[4], t1->uvpoints[5]);
+      Triangle *newtri2 = new Triangle(p1, p2, t1->side3());
+      newtri2->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[5]),t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[2]),t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[5]), t1->uvpoints[5]);
+      Triangle *newtri3 = new Triangle(t1->side1(), p2, p1);
+      newtri3->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[1]),t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[2]),t1->uvpoints[2], midpoint(t1->uvpoints[0], t1->uvpoints[2]), t1->uvpoints[0]);
+      // newtri->drawit();
+      // newtri2->drawit();
+      // newtri3->drawit();
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+      checkandDivide(newtri3, i);
+    } else if (lessthan(diff1, sub_div_param) and lessthan(diff2, sub_div_param) and !lessthan(diff3, sub_div_param)) {
+      //call this function on two new triangles
+                  cout << "five" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), p3, t1->side3());
+      newtri->setUV(t1->uvpoints[0], t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[4]), t1->uvpoints[4], midpoint(t1->uvpoints[4], t1->uvpoints[5]), t1->uvpoints[5]);
+      Triangle *newtri2 = new Triangle(t1->side1(), t1->side2(), p3);
+      newtri2->setUV(midpoint(t1->uvpoints[1], t1->uvpoints[4]), t1->uvpoints[1], t1->uvpoints[2], t1->uvpoints[3], midpoint(t1->uvpoints[3], t1->uvpoints[4]), t1->uvpoints[4]);
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+    } else if (lessthan(diff1, sub_div_param) and !lessthan(diff2, sub_div_param) and lessthan(diff3, sub_div_param)) {
+      //call this function on two new triangles
+                  cout << "six" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), p2, t1->side3());
+      newtri->setUV(t1->uvpoints[0], t1->uvpoints[1], midpoint(t1->uvpoints[1], t1->uvpoints[2]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[5]), t1->uvpoints[5]);
+      Triangle *newtri2 = new Triangle(p2, t1->side2(), t1->side3());
+      newtri2->setUV(midpoint(t1->uvpoints[5], t1->uvpoints[2]), t1->uvpoints[2], midpoint(t1->uvpoints[2], t1->uvpoints[3]), t1->uvpoints[3], t1->uvpoints[4], t1->uvpoints[5]);
+     // newtri->drawit();
+     // newtri2->drawit();
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+    } else if (!lessthan(diff1, sub_div_param) and lessthan(diff2, sub_div_param) and lessthan(diff3, sub_div_param)) {
+      //call this function on two new triangles
+      cout << "seven" << endl;
+      Triangle *newtri = new Triangle(t1->side1(), t1->side2(), p1);
+      newtri->setUV(midpoint(t1->uvpoints[0], t1->uvpoints[1]), t1->uvpoints[1], t1->uvpoints[2], t1->uvpoints[3], midpoint(t1->uvpoints[0], t1->uvpoints[3]), t1->uvpoints[0]);
+      Triangle *newtri2 = new Triangle(p1, t1->side2(), t1->side3());
+      newtri2->setUV(midpoint(t1->uvpoints[5], t1->uvpoints[0]), t1->uvpoints[0], midpoint(t1->uvpoints[0], t1->uvpoints[3]), t1->uvpoints[3], t1->uvpoints[4], t1->uvpoints[5]);
+      checkandDivide(newtri, i);
+      checkandDivide(newtri2, i);
+    } else {
+      cout << "SHOULDN'T get here" << endl;
+    }
+}
+
 
 
 //****************************************************
@@ -149,33 +400,102 @@ void myDisplay() {
   // glTranslatef(-horizontalshift, -verticalshift, -0.0);
   glScalef(zoomamount, zoomamount, zoomamount);
 
-  glLineWidth(.75);
+  glLineWidth(1);
   if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
-  glColor3f(1.0f,1.0f,0.0f); 
-  vector<Vector3f> somevertices;
-  for (int i = 0; i < patchez.size(); i++) {
-    int numdiv = patchez[i]->getPoints().size() - 1;
-    //cout << numdiv << " NUMDIV" << endl;
-    for (int j = 0; j < numdiv + 1; j ++) {
-      for (int k = 0; k < numdiv + 1; k ++) {
-        if (k != numdiv and j != numdiv) {
-          glBegin(GL_QUADS);
-          glColor3f(1.0f,1.0f,0.0f); 
-          glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
-          glVertex3f(patchez[i]->getPoints()[j][k + 1].x(), patchez[i]->getPoints()[j][k + 1].y(), patchez[i]->getPoints()[j][k + 1].z());
-          glVertex3f(patchez[i]->getPoints()[j + 1][k + 1].x(), patchez[i]->getPoints()[j+1][k + 1].y(), patchez[i]->getPoints()[j+1][k + 1].z());
-          glVertex3f(patchez[i]->getPoints()[j + 1][k].x(), patchez[i]->getPoints()[j + 1][k].y(), patchez[i]->getPoints()[j + 1][k].z());
+  glColor3f(1.0f,0.0f,0.0f); 
+  if (!adaptive) {//uniform
+    for (int i = 0; i < patchez.size(); i++) {
+      int numdiv = patchez[i]->getPoints().size() - 1;
+      //cout << numdiv << " NUMDIV" << endl;
+      for (int j = 0; j < numdiv + 1; j ++) {
+        for (int k = 0; k < numdiv + 1; k ++) {
+          if (k != numdiv and j != numdiv) {
+            glBegin(GL_QUADS);
+            glColor3f(1.0f,1.0f,0.0f); 
+            glVertex3f(patchez[i]->getPoints()[j][k].x(), patchez[i]->getPoints()[j][k].y(), patchez[i]->getPoints()[j][k].z());
+            glVertex3f(patchez[i]->getPoints()[j][k + 1].x(), patchez[i]->getPoints()[j][k + 1].y(), patchez[i]->getPoints()[j][k + 1].z());
+            glVertex3f(patchez[i]->getPoints()[j + 1][k + 1].x(), patchez[i]->getPoints()[j+1][k + 1].y(), patchez[i]->getPoints()[j+1][k + 1].z());
+            glVertex3f(patchez[i]->getPoints()[j + 1][k].x(), patchez[i]->getPoints()[j + 1][k].y(), patchez[i]->getPoints()[j + 1][k].z());
+          }
         }
       }
     }
+  } else {//adaptive
+    vector<Vector3f> midpoints;
+    for (int i = 1; i < patchez.size(); i++) {
+      glBegin(GL_TRIANGLES);
+        Triangle *t1 = new Triangle(patchez[i]->getPoints()[0][1], patchez[i]->getPoints()[1][1], patchez[i]->getPoints()[0][0]);
+        // Vector3f e1 = midpoint(t1->side1(), t1->side2());
+        // Vector3f e2 = midpoint(t1->side2(), t1->side3());
+        // Vector3f e3 = midpoint(t1->side3(), t1->side1());
+        // Vector3f dont;
+        // GLfloat half= .5;
+        // GLfloat one = 1;
+        // GLfloat zero = 0;
+        Vector2f onev = *(new Vector2f(0.0, 0.5));
+        Vector2f twov = *( new Vector2f(0.0, 1.0));
+        Vector2f threev = *(new Vector2f(0.5, 1.0));
+        Vector2f fourv = *(new Vector2f(1.0, 1.0));
+        Vector2f fivev = *(new Vector2f(0.5, 0.5));
+        Vector2f sixv = *(new Vector2f(0.0, 0.0));
+        t1->setUV(onev, twov, threev, fourv, fivev, sixv);
+        // t1->uvpoints[0] = *onev;
+        // t1->uvpoints[1] = *twov;
+        // t1->uvpoints[2] = *threev;
+        // t1->uvpoints[3] = *fourv;
+        // t1->uvpoints[4] = *fourv;
+        // t1->uvpoints[5] = *sixv;
+        checkandDivide(t1, i);
+        Triangle *t2 = new Triangle(patchez[i]->getPoints()[0][0], patchez[i]->getPoints()[1][1], patchez[i]->getPoints()[1][0]);
+        Vector2f onev2 = *(new Vector2f(0.5, 0.0));
+        Vector2f twov2 = *( new Vector2f(0.0, 0.0));
+        Vector2f threev2 = *(new Vector2f(0.5, 0.5));
+        Vector2f fourv2 = *(new Vector2f(1.0, 1.0));
+        Vector2f fivev2 = *(new Vector2f(1.0, 0.5));
+        Vector2f sixv2 = *(new Vector2f(1.0, 0.0));
+        // Vector3f p2 = bezpatchinterp(*patchez[i], half, one, &dont);
+        // Vector3f p3 = bezpatchinterp(*patchez[i], half, half, &dont);
+        // Vector3f p1 = bezpatchinterp(*patchez[i], zero, half, &dont);
+        t2->setUV(onev2, twov2, threev2, fourv2, fivev2, sixv2);
+        checkandDivide(t2, i);
+        // glEnd();
+        // glPointSize(5);
+        // glBegin(GL_POINTS);
+        // glColor3f(1.0f,1.0f,0.0f); 
+        // glVertex3f(p2.x(), p2.y(), p2.z());
+        // glVertex3f(p3.x(), p3.y(), p3.z());
+        // glVertex3f(p1.x(), p1.y(), p1.z());
+        // glEnd();
+        // glBegin(GL_LINES);
+        // glVertex3f(p2.x(), p2.y(), p2.z());
+        // glVertex3f(e2.x(), e2.y(), e2.z());
+        // glBegin(GL_LINES);
+        // glVertex3f(p3.x(), p3.y(), p3.z());
+        // glVertex3f(e3.x(), e3.y(), e3.z());
+        // glBegin(GL_LINES);
+        // glVertex3f(p1.x(), p1.y(), p1.z());
+        // glVertex3f(e1.x(), e1.y(), e1.z());
+        // Triangle *t2 = new Triangle(patchez[i]->getPoints()[0][0], patchez[i]->getPoints()[1][1], patchez[i]->getPoints()[1][0]);
+        // Vector3f m2ab = midpoint(t2->side1(), t2->side2());
+        // Vector3f m2bc = midpoint(t2->side2(), t2->side3());
+        // Vector3f m2ca = midpoint(t2->side3(), t2->side1());
+        // t2->drawit();
+        // checkandDivide(t2, half, one, i);
+    }
+    // glEnd();
+    // glLineWidth(5);
+    // glBegin(GL_POINTS);
+    // glColor3f(1.0f,1.0f,0.0f); 
+    // for (int b = 0; b < midpoints.size(); b++) {
+    //   glVertex3f(midpoints[b].x(), midpoints[b].y(), midpoints[b].z());
+    // }
   }
   glEnd();
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
 
 }
-
 
 //****************************************************
 // called by glut when there are no messages to handle
@@ -293,88 +613,6 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
- Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, GLfloat u, Vector3f *dPdu) {
-  // cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
-  Vector3f a = *zero * (1.0 - u) + *one * u;
-  Vector3f b = *one * (1.0 - u) + *two * u;
-  Vector3f c = *two * (1.0 - u) + *three * u;
-
-  Vector3f d = a * (1.0 - u) + b * u;
-  Vector3f e = b * (1.0 - u) + c * u;
-
-  Vector3f p = d * (1.0 - u) + e * u;
-
-  Vector3f fordpdu = 3 * (e - d);
-  *dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
-
-  //cout << "bezcurve returns " << p.transpose() << endl;
-  return p;
-}
-
-
-Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
-  //cout << "bezpatch u: " << u << " v: " << v << endl;
-  vector<Vector3f> vcurve;
-  vector<Vector3f> ucurve;
-  // Vector3f p = *(new Vector3f(0.0,0.0,0.0));
-  Vector3f p;
-  Vector3f *dPdu = new Vector3f(0.0,0.0,0.0);
-  Vector3f *dPdv = new Vector3f(0.0,0.0,0.0);
-  // cout << "first row: " << patch.patch[0][0].transpose() << " " << patch.patch[0][1].transpose() << " " << patch.patch[0][2].transpose() << " " << patch.patch[0][3].transpose() << endl;
-  vcurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[0][1], &patch.patch[0][2], &patch.patch[0][3], u, dPdu));
-  vcurve.push_back(bezcurveinterp(&patch.patch[1][0], &patch.patch[1][1], &patch.patch[1][2], &patch.patch[1][3], u, dPdu));
-  vcurve.push_back(bezcurveinterp(&patch.patch[2][0], &patch.patch[2][1], &patch.patch[2][2], &patch.patch[2][3], u, dPdu));
-  vcurve.push_back(bezcurveinterp(&patch.patch[3][0], &patch.patch[3][1], &patch.patch[3][2], &patch.patch[3][3], u, dPdu));
-
-  ucurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[1][0], &patch.patch[2][0], &patch.patch[3][0], v, dPdu));
-  ucurve.push_back(bezcurveinterp(&patch.patch[0][1], &patch.patch[1][1], &patch.patch[2][1], &patch.patch[3][1], v, dPdu));
-  ucurve.push_back(bezcurveinterp(&patch.patch[0][2], &patch.patch[1][2], &patch.patch[2][2], &patch.patch[3][2], v, dPdu));
-  ucurve.push_back(bezcurveinterp(&patch.patch[0][3], &patch.patch[1][3], &patch.patch[2][3], &patch.patch[3][3], v, dPdu));
-
-  //cout << vcurve[0].transpose() << " "<< vcurve[1].transpose() << " "<< vcurve[2].transpose() << " " << vcurve[3].transpose() << endl;
-  Vector3f v_point = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
-  //cout << "v curve: " << v_point.transpose() << endl;
-  // cout << "p " << p.transpose() << endl;
-  Vector3f u_point = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
-  // cout << "p " << p.transpose() << endl;
-  //cout << "u curve: " << u_point.transpose() << endl;
-  p = v_point;
-
-  // cout << "dpdu " << *dPdu << endl;
-  // cout << "dpdv " << *dPdv << endl;
-
-  Vector3f n2 = (*dPdu).cross(*dPdv);
-
-  // cout << "n2 : " << n2 << endl;
-
-  *n = n2 / n2.norm();
-  return p;
-}
-
-
-void subdividepatch(Patch &patch, GLfloat step) {
-  Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
-  GLfloat epsilon = step - fmod(1.0, step);
-  GLfloat numdiv = ((1 + epsilon) / step);
-  //cout << "numdiv " << numdiv << endl;
-  vector<vector<Vector3f > >allpoints;
-  for (int iu = 0; iu <= numdiv; iu++) {
-    vector<Vector3f> onepoint;
-    GLfloat u = iu * step;
-    cout << "iu " << iu << endl;
-    for (int iv = 0; iv <= numdiv; iv++) {
-      cout << "iv " << iv << endl;
-      GLfloat v = iv * step;
-      // cout << "subdivide: u: " << u << " v: " << v << endl;
-      Vector3f p = bezpatchinterp(patch, u, v, n);
-      //TODO:save surface point and normal      // cout << *n << endl;
-      cout << "---- end -----" << endl;
-      onepoint.push_back(p);
-    }
-    allpoints.push_back(onepoint);
-  }
-  patch.setPoints(allpoints);
-}
 
 
 //****************************************************
@@ -466,7 +704,11 @@ int main(int argc, char *argv[]) {
   for (int k = 0; k < patchez.size(); k++) {
 
     // Uniform
-    subdividepatch(*patchez[k], sub_div_param);
+    if (!adaptive) {
+      subdividepatch(*patchez[k], sub_div_param);
+    } else {
+      subdividepatch(*patchez[k], 1.0);
+    }
   }
 
 
