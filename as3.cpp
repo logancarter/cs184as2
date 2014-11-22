@@ -7,6 +7,8 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <limits>
+//#include <math>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -230,7 +232,9 @@ void subdividepatch(Patch &patch, float step) {
     }
     allpoints.push_back(onepoint);
   }
+  //cout << patch.getPoints()[0] << " before" << endl;
   patch.setPoints(allpoints);
+  cout << patch.getPoints()[0][0] << " after" << endl;
 }
 
 bool lessthan(Vector3f somevector, float eps) {
@@ -255,6 +259,10 @@ float verticalshift = 0.0;
 float rotatehoriz = 0.0;
 float rotatevertical = 0.0;
 vector<vector<Vector3f*> > curves;
+float maxx = std::numeric_limits<float>::min();
+float minx = std::numeric_limits<float>::max();
+float maxy = std::numeric_limits<float>::min();
+float miny = std::numeric_limits<float>::max();
 vector<vector<Vector3f> > pointsofcurves;
 bool wireframe = true, flat = true;
 
@@ -392,7 +400,6 @@ void myReshape(int w, int h) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
-
 }
 
 //****************************************************
@@ -418,9 +425,8 @@ void initScene(){
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
 
-
   } else {
-    glDisable(GL_LIGHTING);
+    // glDisable(GL_LIGHTING);
     glColor3f(1.0,1.0,0.0);
   }  
 }
@@ -430,6 +436,7 @@ void initScene(){
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
+  glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   gluPerspective(40.0, 1.0, 1.0, 100.0);
@@ -497,6 +504,7 @@ if (!adaptive) {//uniform
     for (int i = 0; i < patchez.size(); i++) {
       glBegin(GL_TRIANGLES);
         Triangle *t1 = new Triangle(patchez[i]->getPoints()[0][1], patchez[i]->getPoints()[1][1], patchez[i]->getPoints()[0][0]);
+        t1->setNormals(normalz[i]->getPoints()[0][1], normalz[i]->getPoints()[1][1], normalz[i]->getPoints()[0][0]);
         Vector2f onev = *(new Vector2f(0.0, 0.5));
         Vector2f twov = *( new Vector2f(0.0, 1.0));
         Vector2f threev = *(new Vector2f(0.5, 1.0));
@@ -506,6 +514,7 @@ if (!adaptive) {//uniform
         t1->setUV(onev, twov, threev, fourv, fivev, sixv);
         checkandDivide(t1, i);
         Triangle *t2 = new Triangle(patchez[i]->getPoints()[0][0], patchez[i]->getPoints()[1][1], patchez[i]->getPoints()[1][0]);
+        t2->setNormals(normalz[i]->getPoints()[0][1], normalz[i]->getPoints()[1][1], normalz[i]->getPoints()[1][0]);
         Vector2f onev2 = *(new Vector2f(0.5, 0.0));
         Vector2f twov2 = *( new Vector2f(0.0, 0.0));
         Vector2f threev2 = *(new Vector2f(0.5, 0.5));
@@ -647,64 +656,6 @@ bool isEmptyOrBlank(const std::string& str) {
    return true;
 }
 
-//  Vector3f bezcurveinterp(Vector3f* zero, Vector3f* one, Vector3f* two, Vector3f* three, GLfloat u, Vector3f *dPdu) {
-//   // cout << "bezcurve " << (*zero).transpose() << " " << (*one).transpose() << " " << (*two).transpose() << " " << (*three).transpose() << " U_step " << u << endl;
-//   Vector3f a = *zero * (1.0 - u) + *one * u;
-//   Vector3f b = *one * (1.0 - u) + *two * u;
-//   Vector3f c = *two * (1.0 - u) + *three * u;
-
-//   Vector3f d = a * (1.0 - u) + b * u;
-//   Vector3f e = b * (1.0 - u) + c * u;
-
-//   Vector3f p = d * (1.0 - u) + e * u;
-
-//   Vector3f fordpdu = 3 * (e - d);
-//   *dPdu << fordpdu[0], fordpdu[1], fordpdu[2];
-
-//   //cout << "bezcurve returns " << p.transpose() << endl;
-//   return p;
-// }
-
-
-// Vector3f bezpatchinterp(Patch &patch, GLfloat &u, GLfloat &v, Vector3f* n) {
-//   //cout << "bezpatch u: " << u << " v: " << v << endl;
-//   vector<Vector3f> vcurve;
-//   vector<Vector3f> ucurve;
-//   // Vector3f p = *(new Vector3f(0.0,0.0,0.0));
-//   Vector3f p;
-//   Vector3f *dPdu = new Vector3f(0.0,0.0,0.0);
-//   Vector3f *dPdv = new Vector3f(0.0,0.0,0.0);
-//   // cout << "first row: " << patch.patch[0][0].transpose() << " " << patch.patch[0][1].transpose() << " " << patch.patch[0][2].transpose() << " " << patch.patch[0][3].transpose() << endl;
-//   vcurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[0][1], &patch.patch[0][2], &patch.patch[0][3], u, dPdu));
-//   vcurve.push_back(bezcurveinterp(&patch.patch[1][0], &patch.patch[1][1], &patch.patch[1][2], &patch.patch[1][3], u, dPdu));
-//   vcurve.push_back(bezcurveinterp(&patch.patch[2][0], &patch.patch[2][1], &patch.patch[2][2], &patch.patch[2][3], u, dPdu));
-//   vcurve.push_back(bezcurveinterp(&patch.patch[3][0], &patch.patch[3][1], &patch.patch[3][2], &patch.patch[3][3], u, dPdu));
-
-//   ucurve.push_back(bezcurveinterp(&patch.patch[0][0], &patch.patch[1][0], &patch.patch[2][0], &patch.patch[3][0], v, dPdu));
-//   ucurve.push_back(bezcurveinterp(&patch.patch[0][1], &patch.patch[1][1], &patch.patch[2][1], &patch.patch[3][1], v, dPdu));
-//   ucurve.push_back(bezcurveinterp(&patch.patch[0][2], &patch.patch[1][2], &patch.patch[2][2], &patch.patch[3][2], v, dPdu));
-//   ucurve.push_back(bezcurveinterp(&patch.patch[0][3], &patch.patch[1][3], &patch.patch[2][3], &patch.patch[3][3], v, dPdu));
-
-//   //cout << vcurve[0].transpose() << " "<< vcurve[1].transpose() << " "<< vcurve[2].transpose() << " " << vcurve[3].transpose() << endl;
-//   Vector3f v_point = bezcurveinterp(&vcurve[0], &vcurve[1], &vcurve[2], &vcurve[3], v, dPdv);
-//   //cout << "v curve: " << v_point.transpose() << endl;
-//   // cout << "p " << p.transpose() << endl;
-//   Vector3f u_point = bezcurveinterp(&ucurve[0], &ucurve[1], &ucurve[2], &ucurve[3], u, dPdu);
-//   // cout << "p " << p.transpose() << endl;
-//   //cout << "u curve: " << u_point.transpose() << endl;
-//   p = v_point;
-
-//   // cout << "dpdu " << *dPdu << endl;
-//   // cout << "dpdv " << *dPdv << endl;
-
-//   Vector3f n2 = (*dPdu).cross(*dPdv);
-
-//   // cout << "n2 : " << n2 << endl;
-
-//   *n = n2 / n2.norm();
-//   return p;
-// }
-
 // TODO: MAKE EVERYTHING POINTERS AGAIN SO AVOID OVERWRITING
 void subdividepatch(Patch &patch, Patch &normal_patch, GLfloat step) {
   Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
@@ -789,7 +740,12 @@ int main(int argc, char *argv[]) {
       iss >> std::skipws >> g >> h >> i;
       iss >> std::skipws >> j >> k >> l;
 
-      // vector<Vector3f*> curve;
+      maxx = max(max(max(max(a, d), g), j), maxx);
+      maxy = max(max(max(max(b, e), h), k), maxy);
+      miny = min(min(min(min(b, e), h), k), miny);
+      minx = min(min(min(min(a, d), g), j), minx);
+
+      vector<Vector3f*> curve;
       Vector3f *apoint = new Vector3f(a, b, c);
       Vector3f *bpoint = new Vector3f(d, e, f);
       Vector3f *cpoint = new Vector3f(g, h, i);
@@ -840,7 +796,7 @@ int main(int argc, char *argv[]) {
     if (!adaptive) {
       subdividepatch(*patchez[k], *normalz[k], sub_div_param);
     } else {
-      subdividepatch(*patchez[k], 1.0);//to get the squares
+      subdividepatch(*patchez[k], *normalz[k], 1.0);//to get the squares
     }
     // (*patchez[k]).printPatch();
   }
