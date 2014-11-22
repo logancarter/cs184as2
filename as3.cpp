@@ -138,7 +138,7 @@ bool wireframe = true, flat = true;
 GLfloat diffuse[]={1.0, 0.0, 0.0, 1.0};
 GLfloat ambient[]={0.1, 0.1, 0.1, 1.0};
 GLfloat specular[]={1.0, 1.0, 1.0, 1.0};
-GLfloat light_pos[]={1.0, 2.0, 3,0, 1.0};
+GLfloat light_pos[]={1.0, 2.0, 3,0, 0.0};
 
 
 //****************************************************
@@ -183,7 +183,7 @@ void initScene(){
   glMatrixMode(GL_MODELVIEW);
   gluLookAt(0.0, 0.0, 5.0,  /* eye is at (0,0,5) */
     0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-    0.0, 1.0, 0.0);     
+    0.0, 1.0, 0.0);
 
 }
 
@@ -251,7 +251,6 @@ void myDisplay() {
   glEnd();
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
-
 }
 
 
