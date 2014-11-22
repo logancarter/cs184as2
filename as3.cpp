@@ -7,6 +7,8 @@
 #include <cmath>
 #include <string>
 #include <sstream>
+#include <limits>
+//#include <math>
 
 #ifdef _WIN32
 #include <windows.h>
@@ -187,7 +189,9 @@ void subdividepatch(Patch &patch, float step) {
     }
     allpoints.push_back(onepoint);
   }
+  //cout << patch.getPoints()[0] << " before" << endl;
   patch.setPoints(allpoints);
+  cout << patch.getPoints()[0][0] << " after" << endl;
 }
 
 bool lessthan(Vector3f somevector, float eps) {
@@ -210,6 +214,10 @@ float rotatehoriz = 0.0;
 float rotatevertical = 0.0;
 vector<vector<Vector3f*> > curves;
 bool wireframe = true;
+float maxx = std::numeric_limits<float>::min();
+float minx = std::numeric_limits<float>::max();
+float maxy = std::numeric_limits<float>::min();
+float miny = std::numeric_limits<float>::max();
 
 
 void checkandDivide(Triangle* t1, int i) {
@@ -217,10 +225,12 @@ void checkandDivide(Triangle* t1, int i) {
     Vector3f e2 = midpoint(t1->side1(), t1->side2());
     Vector3f e3 = midpoint(t1->side2(), t1->side3());
     GLfloat zero = 0;
-    Vector3f dont;
-    Vector3f p1 = bezpatchinterp(*patchez[i], t1->uvpoints[0].x(), t1->uvpoints[0].y(), &dont);
-    Vector3f p2 = bezpatchinterp(*patchez[i], t1->uvpoints[2].x(), t1->uvpoints[2].y(), &dont);
-    Vector3f p3 = bezpatchinterp(*patchez[i], t1->uvpoints[4].x(), t1->uvpoints[4].y(), &dont);
+    Vector3f normal1;
+    Vector3f normal2;
+    Vector3f normal3;
+    Vector3f p1 = bezpatchinterp(*patchez[i], t1->uvpoints[0].x(), t1->uvpoints[0].y(), &normal1);
+    Vector3f p2 = bezpatchinterp(*patchez[i], t1->uvpoints[2].x(), t1->uvpoints[2].y(), &normal2);
+    Vector3f p3 = bezpatchinterp(*patchez[i], t1->uvpoints[4].x(), t1->uvpoints[4].y(), &normal3);
     Vector3f diff2 = (p2 - e2).cwiseAbs();
     Vector3f diff3 = (p3 - e3).cwiseAbs();
     Vector3f diff1 = (p1 - e1).cwiseAbs();
@@ -318,14 +328,37 @@ void myReshape(int w, int h) {
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
   glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
-
 }
 
 //****************************************************
 // Simple init function
 //****************************************************
 void initScene(){
-
+  float diameter;
+  float xcenter;
+  float ycenter;
+  if (abs(minx - maxx) > abs(miny - maxy)) {
+    diameter = abs(minx - maxx);
+    xcenter = (minx + maxx) / 2.0;
+    ycenter = (miny + maxy) / 2.0;
+  } else {
+    diameter = abs(miny = maxy);
+    xcenter = (minx + maxx) / 2.0;
+    ycenter = (miny + maxy) / 2.0;
+  }
+  Vector3f center;
+  Vector3f eye;
+  center << xcenter, ycenter, 0.0;
+  float radius = diameter / 2.0;
+  Vector3f toeye = eye - center;
+  toeye.normalize();
+  float sine = sin(min(viewport.w, viewport.h) * 0.5);
+  float distance = radius / sine;
+  Vector3f eye2 = center + (distance * toeye);
+  cout << eye2 << " eye" << endl;
+  cout << center << " center" << endl;
+  gluLookAt(eye2.x(), eye2.y(), eye2.z(), center.x(), center.y(), center.z(), 0.0, 1.0, 0.0);
+  //gluLookAt(25, 25, 25, 0, 0, 0, 0, 1, 0);
   glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
   myReshape(viewport.w,viewport.h);
 
@@ -336,7 +369,6 @@ void initScene(){
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
-
   glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
 
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
@@ -348,13 +380,14 @@ void myDisplay() {
   glRotatef(rotatevertical, 1, 0, 0);
   glRotatef(rotatehoriz, 0, 1, 0);
   glScalef(zoomamount, zoomamount, zoomamount);
-
+  //glOrtho(-1.0, 1.0, -1.0, 1.0, -1.0, 1.0);
+  //glOrtho(-5.0f,5.0f,-5.0f,5.0f,0.0f,1.0f);
   glLineWidth(1);
   if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
   glColor3f(1.0f,0.0f,0.0f); 
   if (!adaptive) {//uniform
-    for (int i = 1; i < patchez.size(); i++) {
+    for (int i = 0; i < patchez.size(); i++) {
       int numdiv = patchez[i]->getPoints().size() - 1;
       for (int j = 0; j < numdiv + 1; j ++) {
         for (int k = 0; k < numdiv + 1; k ++) {
@@ -552,6 +585,12 @@ int main(int argc, char *argv[]) {
       iss >> std::skipws >> d >> e >> f;
       iss >> std::skipws >> g >> h >> i;
       iss >> std::skipws >> j >> k >> l;
+
+
+      maxx = max(max(max(max(a, d), g), j), maxx);
+      maxy = max(max(max(max(b, e), h), k), maxy);
+      miny = min(min(min(min(b, e), h), k), miny);
+      minx = min(min(min(min(a, d), g), j), minx);
 
       vector<Vector3f*> curve;
       Vector3f *apoint = new Vector3f(a, b, c);
