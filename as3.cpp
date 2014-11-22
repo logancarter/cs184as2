@@ -399,7 +399,7 @@ void myReshape(int w, int h) {
   glViewport (0,0,viewport.w,viewport.h);
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
-  glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+  // glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
 }
 
 //****************************************************
@@ -443,8 +443,8 @@ void myDisplay() {
   // glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // clear the color buffer
-  gluLookAt(0.0, 0.0, 10.0,  /* eye is at (0,0,5) */
-    0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+  gluLookAt(0.0, 0.0, 13.0,  /* eye is at (0,0,5) */
+    0.0, 0.0, 0.0,      /*center is at (0,0,0) */
     0.0, 1.0, 0.0);
 
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
