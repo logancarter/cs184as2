@@ -436,6 +436,7 @@ void initScene(){
 //   glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
 //   myReshape(viewport.w,viewport.h);
 // =======
+
   bool lighting = true;
 
   if (lighting){
@@ -453,7 +454,7 @@ void initScene(){
     /* Use depth buffering for hidden surface elimination. */
     glEnable(GL_DEPTH_TEST);
      glDepthFunc(GL_LEQUAL);
-  } else glColor3f(1.0,1.0,1.0);
+  } else glColor3f(1.0,0.0,0.0);
 }
 
 
