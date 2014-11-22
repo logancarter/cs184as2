@@ -482,7 +482,6 @@ void myDisplay() {
   /*************************
   ** TRANSFORMATIONS
   *************************/
-  //todo fix roationt issue for top-down
   glTranslatef(horizontalshift, verticalshift, 0.0);
   glRotatef(rotatevertical, 1, 0, 0);
   glRotatef(rotatehoriz, 0, 1, 0);
@@ -863,12 +862,6 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
-
-
-
-
-
-
 
 
 
