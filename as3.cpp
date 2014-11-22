@@ -106,7 +106,6 @@ public:
   void setPoints(vector<vector<Vector3f> > somepoints) {
     // printOldPatch();
     mypoints = somepoints;
-    cout << "sdsafasfnas" << endl;
     // printNewPatch();
   }
 
@@ -262,7 +261,7 @@ bool wireframe = true, flat = true;
 GLfloat diffuse[]={1.0, 0.0, 0.0, 1.0};
 GLfloat ambient[]={0.1, 0.1, 0.1, 1.0};
 GLfloat specular[]={1.0, 1.0, 1.0, 1.0};
-GLfloat light_pos[]={1.0, 2.0, 3,0, 0.0};
+GLfloat light_pos[]={10.0, 20.0, 30.0, 0.0};
 
 
 void checkandDivide(Triangle* t1, int i) {
@@ -400,7 +399,8 @@ void myReshape(int w, int h) {
 // Simple init function
 //****************************************************
 void initScene(){
-  bool lighting = false;
+  // bool lighting = false;
+  bool lighting = true;
 
   if (lighting){
     glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
@@ -416,10 +416,13 @@ void initScene(){
 
     /* Use depth buffering for hidden surface elimination. */
     glEnable(GL_DEPTH_TEST);
-     glDepthFunc(GL_LEQUAL);
+    glDepthFunc(GL_LEQUAL);
 
 
-  } else glColor3f(1.0,1.0,1.0);
+  } else {
+    glDisable(GL_LIGHTING);
+    glColor3f(1.0,1.0,0.0);
+  }  
 }
 
 
@@ -546,6 +549,7 @@ void myKeyboard(unsigned char key, int x, int y) {
   case 'w':
    cout << "w: toggle filled/wireframe" << endl;
    wireframe = !wireframe;
+   // initScene();
    break;
   case '=':
     zoomamount += .1;
@@ -606,12 +610,12 @@ void specialKeys(int key, int x, int y) {
   } else {
     switch (key) {
     case GLUT_KEY_UP:
-      rotatevertical += 10;
+      rotatevertical -= 10;
       glutPostRedisplay();
       cout << "rotate: up " << rotatevertical << endl;
       break;
     case GLUT_KEY_DOWN:
-      rotatevertical -= 10;
+      rotatevertical += 10;
       glutPostRedisplay();
       cout << "rotate: down " << rotatevertical << endl;
       break;
@@ -704,7 +708,7 @@ bool isEmptyOrBlank(const std::string& str) {
 // TODO: MAKE EVERYTHING POINTERS AGAIN SO AVOID OVERWRITING
 void subdividepatch(Patch &patch, Patch &normal_patch, GLfloat step) {
   Vector3f* n = new Vector3f(0.0, 0.0, 0.0);
-  cout << "--------- START --------- " << (*n).transpose() << endl;
+  // cout << "--------- START --------- " << (*n).transpose() << endl;
   GLfloat epsilon = step - fmod(1.0, step);
   GLfloat numdiv = ((1 + epsilon) / step);
   //cout << "numdiv " << numdiv << endl;
@@ -725,22 +729,22 @@ void subdividepatch(Patch &patch, Patch &normal_patch, GLfloat step) {
       // cout << "onepoint curr: " << p.transpose() << " onepoint first: " << onepoint.begin()->transpose() << endl;
       Vector3f normz = *n;
       normal.push_back(normz);
-      cout << "pushed a normal on, check if all normal stuff was overridden by: " << normz.transpose() << endl;
-      for( std::vector<Vector3f>::const_iterator i = normal.begin(); i != normal.end(); ++i)
-        std::cout << (*i).transpose() << endl;
+      // // cout << "pushed a normal on, check if all normal stuff was overridden by: " << normz.transpose() << endl;
+      // for( std::vector<Vector3f>::const_iterator i = normal.begin(); i != normal.end(); ++i)
+      //   std::cout << (*i).transpose() << endl;
     }
     allpoints.push_back(onepoint);
     allnormals.push_back(normal);
   }
 
       // cout << allpoints.back().back().transpose() << endl;
-  cout << ">>>>>>>>>> patch" << endl;
+  // cout << ">>>>>>>>>> patch" << endl;
   patch.setPoints(allpoints);
   // cout << ">>>>>>>>>>" << endl;
   // normal_patch.printPatch();
 
       // cout << allnormals.back().back().transpose() << endl;
-  cout << "~~~~~~~~~~ normals" << endl;
+  // cout << "~~~~~~~~~~ normals" << endl;
   normal_patch.setPoints(allnormals);
   // normal_patch.printNewPatch();
 }
