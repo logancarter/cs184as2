@@ -418,15 +418,7 @@ void initScene(){
     glEnable(GL_DEPTH_TEST);
      glDepthFunc(GL_LEQUAL);
 
-    /* Setup the view of the cube. */
-    glMatrixMode(GL_PROJECTION);
-    gluPerspective( /* field of view in degree */ 40.0,
-      /* aspect ratio */  1.0,
-      /* Z near */ 1.0, /* Z far */ 10.0);
-    glMatrixMode(GL_MODELVIEW);
-    gluLookAt(0.0, 0.0, 5.0,  /* eye is at (0,0,5) */
-      0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-      0.0, 1.0, 0.0);
+
   } else glColor3f(1.0,1.0,1.0);
 }
 
@@ -435,8 +427,16 @@ void initScene(){
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluPerspective(40.0, 1.0, 1.0, 100.0);
+  // glMatrixMode(GL_MODELVIEW);
   glClearDepth(1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // clear the color buffer
+  gluLookAt(0.0, 0.0, 10.0,  /* eye is at (0,0,5) */
+    0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+    0.0, 1.0, 0.0);
+
   glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
   glLoadIdentity();        // make sure transformation is "zero'd"
   // glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
