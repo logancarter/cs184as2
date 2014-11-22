@@ -400,32 +400,34 @@ void myReshape(int w, int h) {
 // Simple init function
 //****************************************************
 void initScene(){
+  bool lighting = false;
 
-  glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
-  myReshape(viewport.w,viewport.h);
+  if (lighting){
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f); // Clear to black, fully transparent
+    myReshape(viewport.w,viewport.h);
 
-  glEnable(GL_LIGHT0);
-  glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-  // glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-  // glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-  glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-  glEnable(GL_LIGHTING);
-  glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, diffuse);
+    glEnable(GL_LIGHT0);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+    // glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+    // glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+    glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+    glEnable(GL_LIGHTING);
+    glLightModelfv(GL_LIGHT_MODEL_TWO_SIDE, diffuse);
 
-  /* Use depth buffering for hidden surface elimination. */
-  glEnable(GL_DEPTH_TEST);
-   glDepthFunc(GL_LEQUAL);
+    /* Use depth buffering for hidden surface elimination. */
+    glEnable(GL_DEPTH_TEST);
+     glDepthFunc(GL_LEQUAL);
 
-  /* Setup the view of the cube. */
-  glMatrixMode(GL_PROJECTION);
-  gluPerspective( /* field of view in degree */ 40.0,
-    /* aspect ratio */  1.0,
-    /* Z near */ 1.0, /* Z far */ 10.0);
-  glMatrixMode(GL_MODELVIEW);
-  gluLookAt(0.0, 0.0, 5.0,  /* eye is at (0,0,5) */
-    0.0, 0.0, 0.0,      /* center is at (0,0,0) */
-    0.0, 1.0, 0.0);
-  // glColor3f(1.0,1.0,1.0);
+    /* Setup the view of the cube. */
+    glMatrixMode(GL_PROJECTION);
+    gluPerspective( /* field of view in degree */ 40.0,
+      /* aspect ratio */  1.0,
+      /* Z near */ 1.0, /* Z far */ 10.0);
+    glMatrixMode(GL_MODELVIEW);
+    gluLookAt(0.0, 0.0, 5.0,  /* eye is at (0,0,5) */
+      0.0, 0.0, 0.0,      /* center is at (0,0,0) */
+      0.0, 1.0, 0.0);
+  } else glColor3f(1.0,1.0,1.0);
 }
 
 
