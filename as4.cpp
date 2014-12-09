@@ -43,7 +43,6 @@ public:
 //****************************************************
 // Global Variables
 //****************************************************
-
 Viewport viewport;
 GLfloat zoomamount = 1.0;
 GLfloat horizontalshift = 0.0;
@@ -57,9 +56,12 @@ GLfloat RADIUS = 1.0;
 GLint SLICES = 15;
 GLint STACKS = 15;
 GLfloat OFFSET = 0.6;
-
+Vector3f root = *(new Vector3f(0, 0, 0));
+Vector3f currentendpoint = *(new Vector3f(0, 0, 0));//initialize to wherever we want to start
+float epsilon = .1;
 std::vector< Joint * > joints;
 std::vector< Arm * > arms;
+float armslength = 0.0;
 
 //****************************************************
 // reshape viewport if the window is resized
@@ -82,6 +84,49 @@ void initScene(){
     glColor3f(1.0,1.0,0.0);
 
 }
+
+bool canReach(Vector3f goal) {
+  for (int i = 0; i < arms.size(); i++) {
+    armslength += arms[i]->length;
+  }
+  float d0 = goal[0] - root[0];
+  float d1 = goal[1] - root[1];
+  float d2 = goal[2] - root[2];
+  float distance = sqrt(pow(d0, 2) + pow(d1, 2) + pow(d2, 2));
+  if (abs(distance) > armslength) {
+    return false;
+  }
+  return true;
+}
+
+Vector3f newgoal(Vector3f oldgoal) {
+  Vector3f goal = oldgoal.normalized();
+  Vector3f newgoal = root + goal * armslength;
+  return newgoal;
+}
+//Used code example from Kevin's discussion slide
+//Returns true if reaches target. If it can't reach, it approximates
+
+bool update(Vector3f g) {
+  Vector3f actualgoal;
+  if (!canReach(g)) {
+    actualgoal = newgoal(g);
+  } else {
+    actualgoal = g;
+  }
+  Vector3f dp = actualgoal - currentendpoint;
+  if (dp.norm() > epsilon) {
+//     J = system.getJ(); #jacobian
+//     svd(J);#pseudoinverse function
+//     dtheta = svd.solve(dp);
+
+    // updateAngles(dtheta);
+    // updateEndpoint();
+    return false;
+  }
+  return true;
+}
+
 
 
 //****************************************************
