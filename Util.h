@@ -42,18 +42,29 @@ class Joint {
 public:
 	Vector3f point;
 	GLfloat radius;
-	Joint() {
-		point = *(new Vector3f(0.0, 0.0, 0.0));
+	Joint(Vector3f p) {
+		//point = *(new Vector3f(0.0, 0.0, 0.0));
+		point = p;
 		radius = 1.0;
+	}
+	void changePoint(Vector3f p) {
+		point = p;
 	}
 };
 
 class Arm {
 public:
 	GLfloat radius, length;
-	Arm () {
+	Vector3f startpoint, endpoint;
+	Arm (Vector3f start, Vector3f end, float len) {
 		radius = 1.0;
-		length = 5.0;
+		length = len;
+		startpoint = start;
+		endpoint = end;
+	}
+	void changePoints(Vector3f start, Vector3f end) {
+		startpoint = start;
+		endpoint = end;
 	}
 };
 

@@ -117,7 +117,7 @@ bool update(Vector3f g) {
   Vector3f dp = actualgoal - currentendpoint;
   if (dp.norm() > epsilon) {
 //     J = system.getJ(); #jacobian
-//     svd(J);#pseudoinverse function
+//     svd(J);#singular value decomposition
 //     dtheta = svd.solve(dp);
 
     // updateAngles(dtheta);
@@ -166,7 +166,8 @@ void myDisplay() {
   if (flat) glShadeModel(GL_FLAT);
   else glShadeModel(GL_SMOOTH);    // TODO: change to be smooth and flat
   glFrontFace(GL_CW);
-  glLineWidth(.75);
+  glLineWidth(2);
+  glPointSize(4);
   if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
@@ -179,14 +180,29 @@ void myDisplay() {
   // glutSolidSphere(RADIUS, SLICES, STACKS);
   // glTranslatef(0.0, 0.0, OFFSET);
   // glutSolidCone(RADIUS, ARM_LENGTH, SLICES, STACKS);
-
-  for (int i = 0; i < 4; i++) {
-    glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+    glColor3f(1.0,1.0,0.0);
+    glBegin(GL_LINES);
+  for (int i = 0; i < arms.size(); i++) {
+    //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+    glVertex3f(arms[i]->startpoint[0], arms[i]->startpoint[1], arms[i]->startpoint[2]);
+    glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
+    //cout << arms[i]->startpoint[0] << arms[i]->startpoint[1] << arms[i]->startpoint[2] << endl;
     glTranslatef(0.0, 0.0, OFFSET);
-    glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
-    glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+    //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+    //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
   }
-
+ //glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
+   glEnd();
+  glColor3f(1.0,0.0,0.0);
+     glBegin(GL_POINTS);
+  for (int i = 0; i < joints.size(); i++) {
+    //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+   glVertex3f(joints[i]->point[0], joints[i]->point[1], joints[i]->point[2]);
+    //glTranslatef(0.0, 0.0, OFFSET);
+    //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+    // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+  }
+  glEnd();
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
 }
@@ -316,22 +332,30 @@ void specialKeys(int key, int x, int y) {
 int main(int argc, char *argv[]) {
 
   // TODO: create the joints with inputtable values
-  Joint* joint0 = new Joint();
+  Vector3f *pos0 = (new Vector3f(0, 0, 0));
+  Vector3f *pos1 = (new Vector3f(.4, 0, 0));
+  Vector3f *pos2 = (new Vector3f(1.4, 0, 0));
+  Vector3f *pos3 = (new Vector3f(1.8, 0, 0));
+  Vector3f *pos4 = (new Vector3f(2.0, 0, 0));
+
+  Joint* joint0 = new Joint(*pos0);
     joints.push_back(joint0);
-  Joint* joint1 = new Joint();
+  Joint* joint1 = new Joint(*pos1);
     joints.push_back(joint1);
-  Joint* joint2 = new Joint();
+  Joint* joint2 = new Joint(*pos2);
     joints.push_back(joint2);
-  Joint* joint3 = new Joint();
+  Joint* joint3 = new Joint(*pos3);
+    joints.push_back(joint3);
+  Joint* joint4 = new Joint(*pos4);//endpos
     joints.push_back(joint3);
 
-  Arm* arm0 = new Arm();
+  Arm* arm0 = new Arm(*pos0, *pos1, .4);
     arms.push_back(arm0);
-  Arm* arm1 = new Arm();
+  Arm* arm1 = new Arm(*pos1, *pos2, 1.0);
     arms.push_back(arm1);
-  Arm* arm2 = new Arm();
+  Arm* arm2 = new Arm(*pos2, *pos3, .4);
     arms.push_back(arm2);
-  Arm* arm3 = new Arm();
+  Arm* arm3 = new Arm(*pos3, *pos4, .2);
     arms.push_back(arm3);
 
 
