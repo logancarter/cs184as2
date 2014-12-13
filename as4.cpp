@@ -68,7 +68,7 @@ float armslength = 2.0;//hardcoded for now, the total length of the arm
 Vector3f endpoint(0, 0, 2);//the current endpoint
 // Vector3f goal(0, .5, 1);
 Vector3f goal;
-int t = 0;
+GLfloat t = 0;
 
 
 //****************************************************
@@ -95,11 +95,11 @@ void initScene(){
 
 
 Vector3f getGoal() {
-  t++;
-  GLfloat x = 2 * cos(t);
-  GLfloat y = 2 * sin(t);
+  t+=0.05;
+  GLfloat x = cos(t);
+  GLfloat y = sin(t);
   GLfloat z = 0.0;
-  return *(new Vector3f(x, y, z));
+  return *(new Vector3f(z, x, y));
 }
 
 
