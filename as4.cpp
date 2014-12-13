@@ -345,6 +345,7 @@ void myDisplay() {
 
     updateSystem();
     renderSystem();//ACTUAL STUFF
+
     glColor3f(1.0,1.0,0.0);
 
 
@@ -374,8 +375,7 @@ void myDisplay() {
     // cout << getEndPos(0, angles) << " 0" << endl;
     // cout << getEndPos(1, angles) << " 1" << endl;
   glColor3f(1.0,1.0,0.0);
-  updateSystem();
-  renderSystem();
+
 
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
