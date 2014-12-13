@@ -58,12 +58,12 @@ GLint STACKS = 15;
 GLfloat OFFSET = 0.6;
 Vector3f root = *(new Vector3f(0, 0, 0));
 //Vector3f currentendpoint = *(new Vector3f(0, 0, 0));//initialize to wherever we want to start
-float epsilon = .1;
+GLfloat epsilon = .1;
 //std::vector< Joint * > joints;
 Joint* joints[5];
 std::vector< Arm * > arms;
 Vector4f angles = *(new Vector4f(0, 0, 0, 0));
-float armslength = 2.0;//hardcoded for now, the total length of the arm
+GLfloat armslength = 2.0;//hardcoded for now, the total length of the arm
 Vector3f endpoint = *(new Vector3f(2, 0, 0));//the current endpoint
 Vector3f goal = *(new Vector3f(0.0, 1.0, 0));
 
@@ -149,13 +149,13 @@ void updateAngles(Vector4f dtheta) {
   if (angles[3] < 0) {
     angles[3] += 360;
   }
-  cout << angles << " angles" << endl;
+  // cout << angles << " angles" << endl;
 }
 
 bool canReach() {
   float distance = (goal - root).norm();
   //print()
-  cout << distance << " distance " << armslength << " armslength" << endl;
+  // cout << distance << " distance " << armslength << " armslength" << endl;
   if (abs(distance) > armslength) {
     return false;
   }
@@ -165,7 +165,7 @@ bool canReach() {
 Vector3f newgoal(Vector3f oldgoal) {
   Vector3f goal = oldgoal.normalized();
   Vector3f newgoal = root + goal * armslength;
-  cout << newgoal << " newgoal" << endl;
+  // cout << newgoal << " newgoal" << endl;
   return newgoal;
 }
 
@@ -185,7 +185,7 @@ Vector3f getEndPos(int index, const VectorXf& vec){
             break;
         index--;
     }
-    cout << pos << " get end pos" << endl;
+    // cout << pos << " get end pos" << endl;
     return pos;
 }
 
@@ -193,17 +193,20 @@ void updateEndpoint() {
   //cout << joints.size() << endl;
   for (int i = 0; i < 4; i++) {
     joints[i+1]->changePoint(getEndPos(i, angles));
-    cout << i + 1 << endl;
+    // cout << i + 1 << endl;
   }
-  cout << "updateendpoint " << getEndPos(3, angles) << endl;
+  // cout << "updateendpoint " << getEndPos(3, angles) << endl;
   // cout << joints[3]->point << "joint3b4" << endl;
   joints[3]->changePoint(getEndPos(2, angles));
   // cout << joints[3]->point << "joint3after" << endl;
-  cout << joints[4]->point << "joints4" << endl;
+  // cout << joints[4]->point << "joints4" << endl;
   endpoint = joints[4]->point;
   //cout << joints[4]->point << "hey" << endl;
-  cout << endpoint << " new endpoint" << endl;
+  // cout << endpoint << " new endpoint" << endl;
 }
+
+
+
 //Used code example from Kevin's discussion slide
 //Returns true if reaches target. If it can't reach, it approximates
 bool update() {
@@ -215,20 +218,20 @@ bool update() {
     goal = goal;
   }
   Vector3f dp = goal - endpoint;
-  cout << dp.norm() << " length " << endl;
+  // cout << dp.norm() << " length " << endl;
   if (dp.norm() > epsilon) {
     MatrixXf J = getJ(); //jacobian
-    cout << "J" << J << endl;
-    JacobiSVD<MatrixXf> svd (J,ComputeThinU | ComputeThinV);//singular value decomposition = pseudoinverse
+    // cout << "J" << J << endl;
+    JacobiSVD<MatrixXf> svd (J,ComputeThinU | ComputeThinV);  // singular value decomposition = pseudoinverse
     Vector4f dtheta = svd.solve(dp);
     dtheta = dtheta;
-    cout << dtheta << " dtheta" << endl;
+    // cout << dtheta << " dtheta" << endl;
     updateAngles(dtheta);
     updateEndpoint();
     //cout << "returned false" << endl;
     return false;
   }
-  cout << "returned true" << endl;
+  // cout << "returned true" << endl;
   return true;
 }
 
@@ -261,14 +264,15 @@ void renderSystem() {
       //glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
     glEnd();
     glTranslatef(0, 0, .5);
-    cout << joints[0]->point << " 0" << endl;
-    cout << joints[1]->point << " 01" << endl;
-    cout << joints[2]->point << " 02" << endl;
-    cout << joints[3]->point << " 03" << endl;
-    cout << joints[4]->point << " 04" << endl;
+    // cout << joints[0]->point << " 0" << endl;
+    // cout << joints[1]->point << " 01" << endl;
+    // cout << joints[2]->point << " 02" << endl;
+    // cout << joints[3]->point << " 03" << endl;
+    // cout << joints[4]->point << " 04" << endl;
 
   }
-    glPopMatrix();
+
+  glPopMatrix();
   glColor3f(0.0, 1.0, 0.0);
   glBegin(GL_POINTS);
   for (int x = 0; x < 5; x++) {
@@ -280,29 +284,28 @@ void renderSystem() {
   glVertex3f(goal[0], goal[1], goal[2]);
   glVertex3f(0, 0, 0);
   glEnd();
-  cout << goal << " goal " << endl;
+  // cout << goal << " goal " << endl;
 }
 
 //****************************************************
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
-  glClear(GL_COLOR_BUFFER_BIT);       // clear the color buffer
-  glMatrixMode(GL_PROJECTION);
-  glLoadIdentity();
-  gluPerspective(40.0, 1.0, 1.0, 100.0);
-
-  // gluOrtho2D(0, viewport.w, 0, viewport.h);
-  // glMatrixMode(GL_MODELVIEW);
-  glClearDepth(1.0);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // clear the color buffer
-  gluLookAt(0.0, 0.0, 13.0,  /* eye is at (0,0,5) */
-    0.0, 0.0, 0.0,      /*center is at (0,0,0) */
-    0.0, 1.0, 0.0);
-
-  glMatrixMode(GL_MODELVIEW);        // indicate we are specifying camera transformations
+  glMatrixMode(GL_MODELVIEW);
   glLoadIdentity();        // make sure transformation is "zero'd"
-  // glOrtho(-1, 1, -1, 1, 1, -1);    // resize type = stretch
+  // setupCamera() :::::
+  // glMatrixMode(GL_PROJECTION);
+  // glLoadIdentity();
+  // gluPerspective(40.0, 1.0, 1.0, 100.0);
+  // // glMatrixMode(GL_MODELVIEW);
+  // glClearDepth(1.0);
+  // glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);       // clear the color buffer
+  // gluLookAt(0.0, 0.0, 13.0,  /* eye is at (0,0,5) */
+  //   0.0, 0.0, 0.0,      /*center is at (0,0,0) */
+  //   0.0, 1.0, 0.0);
+
+
 
   /*************************
   ** TRANSFORMATIONS
@@ -338,36 +341,36 @@ void myDisplay() {
 
     // cout << getEndPos(0, angles) << " 0" << endl;
     // cout << getEndPos(1, angles) << " 1" << endl;
-    updateSystem();
-    renderSystem();
-    glColor3f(1.0,1.0,0.0);
+  glColor3f(1.0,1.0,0.0);
+  updateSystem();
+  renderSystem();
 
 
-
-    // glBegin(GL_LINES);
-  // for (int i = 0; i < arms.size(); i++) {
-  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
-  //   glVertex3f(arms[i]->startpoint[0], arms[i]->startpoint[1], arms[i]->startpoint[2]);
-  //   glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
-  //   //cout << arms[i]->startpoint[0] << arms[i]->startpoint[1] << arms[i]->startpoint[2] << endl;
-  //   glTranslatef(0.0, 0.0, OFFSET);
-  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
-  //   //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
-  // }
- //glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
-  //  glEnd();
-  // glColor3f(1.0,0.0,0.0);
-  //    glBegin(GL_POINTS);
-  // for (int i = 0; i < joints.size(); i++) {
-  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
-  //  glVertex3f(joints[i]->point[0], joints[i]->point[1], joints[i]->point[2]);
-  //   //glTranslatef(0.0, 0.0, OFFSET);
-  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
-  //   // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
-  // }
-  // glEnd();
+ //  glBegin(GL_LINES);
+ //  for (int i = 0; i < arms.size(); i++) {
+ //    //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+ //    glVertex3f(arms[i]->startpoint[0], arms[i]->startpoint[1], arms[i]->startpoint[2]);
+ //    glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
+ //    //cout << arms[i]->startpoint[0] << arms[i]->startpoint[1] << arms[i]->startpoint[2] << endl;
+ //    glTranslatef(0.0, 0.0, OFFSET);
+ //    //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+ //    //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+ //  }
+ // glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
+ //   glEnd();
+ //  glColor3f(1.0,0.0,0.0);
+ //     glBegin(GL_POINTS);
+ //  for (int i = 0; i < joints.size(); i++) {
+ //    //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+ //   glVertex3f(joints[i]->point[0], joints[i]->point[1], joints[i]->point[2]);
+ //    //glTranslatef(0.0, 0.0, OFFSET);
+ //    //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+ //    // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+ //  }
+ //  glEnd();
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
+  // glutPostRedisplay();
 }
 
 
