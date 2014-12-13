@@ -88,14 +88,12 @@ void myReshape(int w, int h) {
 // Simple init function
 //****************************************************
 void initScene(){
-
     glColor3f(1.0,1.0,0.0);
-
 }
 
 
 Vector3f getGoal() {
-  t+=0.05;
+  t += 0.01;
   GLfloat x = cos(t);
   GLfloat y = sin(t);
   GLfloat z = 0.0;
@@ -341,10 +339,30 @@ void myDisplay() {
   if (wireframe) glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
+  /* Draw axes */
+  glColor3f(1.0, 0.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(10.0, 0.0, 0.0);
+  glEnd();
+  glColor3f(0.0, 1.0, 0.0);
+  glBegin(GL_LINES);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(0.0, 1.0, 0.0);
+  glEnd();
+  glColor3f(0.0, 0.0, 1.0);
+  glBegin(GL_LINES);
+  glVertex3f(0.0, 0.0, 0.0);
+  glVertex3f(0.0, 0.0, 1.0);
+  glEnd();
 
+  goal = getGoal();
+  glColor3f(1.0, 1.0, 1.0);
+  glBegin(GL_POINTS);
+  glVertex3f(goal[0], goal[1], goal[2]);
+  glEnd();
 
   glColor3f(1.0,1.0,0.0);
-  goal = getGoal();
   cout << "RENDER GOAL: " << goal.transpose() << endl;
   updateSystem();
   renderSystem();
