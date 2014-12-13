@@ -345,7 +345,7 @@ void myDisplay() {
   updateSystem();
   renderSystem();
 
-
+  cout << joints.size() << endl;
  //  glBegin(GL_LINES);
  //  for (int i = 0; i < arms.size(); i++) {
  //    //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
@@ -356,6 +356,7 @@ void myDisplay() {
  //    //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
  //    //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
  //  }
+ // 
  // glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
  //   glEnd();
  //  glColor3f(1.0,0.0,0.0);
@@ -368,6 +369,7 @@ void myDisplay() {
  //    // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
  //  }
  //  glEnd();
+
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
   // glutPostRedisplay();
