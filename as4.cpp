@@ -44,7 +44,7 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = 1.0;
+GLfloat zoomamount = .5;
 GLfloat horizontalshift = 0.0;
 GLfloat verticalshift = 0.0;
 GLfloat rotatehoriz = 0.0;
@@ -56,16 +56,16 @@ GLfloat RADIUS = 1.0;
 GLint SLICES = 15;
 GLint STACKS = 15;
 GLfloat OFFSET = 0.6;
-Vector3f root = *(new Vector3f(0, 0, 0));
+Vector3f root(0, 0, 0);
 //Vector3f currentendpoint = *(new Vector3f(0, 0, 0));//initialize to wherever we want to start
-GLfloat epsilon = .1;
+GLfloat epsilon = .01;
 //std::vector< Joint * > joints;
 Joint* joints[5];
 std::vector< Arm * > arms;
-Vector4f angles = *(new Vector4f(0, 0, 0, 0));
-GLfloat armslength = 2.0;//hardcoded for now, the total length of the arm
-Vector3f endpoint = *(new Vector3f(2, 0, 0));//the current endpoint
-Vector3f goal = *(new Vector3f(0.0, 1.0, 0));
+Vector4f angles(0, 0, 0, 0);
+float armslength = 2.0;//hardcoded for now, the total length of the arm
+Vector3f endpoint(0, 0, 2);//the current endpoint
+Vector3f goal(0, .5, 1);
 
 
 //****************************************************
@@ -106,13 +106,13 @@ MatrixXf getJ() {
     if (length_to_end > 0) {
       to_end.normalize();
     }
-    to_end = to_end.cwiseProduct(rotation_axis);
+    to_end = to_end.cross(rotation_axis);
     //cout << "after cross" << to_end << endl;
     if (length_to_end > 0) {
       float step = 1.0f;
       to_end *= length_to_end * step * M_PI/180.0f;//point of step?
     }
-    //cout << to_end << " toend inside" << endl;
+    cout << to_end << " toend inside" << endl;
     jacobi(0, x) = to_end[0];
     jacobi(1, x) = to_end[1];
     jacobi(2, x) = to_end[2];
@@ -124,7 +124,7 @@ MatrixXf getJ() {
 }
 
 void updateAngles(Vector4f dtheta) {
-  angles += dtheta;
+  angles += dtheta * .1;
   if (angles[0] > 360) {
     angles[0] -= 360;
   }
@@ -185,7 +185,7 @@ Vector3f getEndPos(int index, const VectorXf& vec){
             break;
         index--;
     }
-    // cout << pos << " get end pos" << endl;
+    //cout << pos << " get end pos" << endl;
     return pos;
 }
 
@@ -338,12 +338,45 @@ void myDisplay() {
   // glTranslatef(0.0, 0.0, OFFSET);
   // glutSolidCone(RADIUS, ARM_LENGTH, SLICES, STACKS);
     //Vector3f goal = *(new Vector3f(8.0, 0.0, 0.0));
+    // cout << "     " << endl;
+    // cout << getEndPos(0, angles) << " \n0's end point\n" << endl;
+    // cout << getEndPos(1, angles) << " \n1's end point" << endl;
+    // cout << "     " << endl;
 
+    updateSystem();
+    renderSystem();//ACTUAL STUFF
+    glColor3f(1.0,1.0,0.0);
+
+
+
+    // glBegin(GL_LINES);
+  // for (int i = 0; i < arms.size(); i++) {
+  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+  //   glVertex3f(arms[i]->startpoint[0], arms[i]->startpoint[1], arms[i]->startpoint[2]);
+  //   glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
+  //   //cout << arms[i]->startpoint[0] << arms[i]->startpoint[1] << arms[i]->startpoint[2] << endl;
+  //   glTranslatef(0.0, 0.0, OFFSET);
+  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+  //   //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+  // }
+ //glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
+  //  glEnd();
+  // glColor3f(1.0,0.0,0.0);
+  //    glBegin(GL_POINTS);
+  // for (int i = 0; i < joints.size(); i++) {
+  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
+  //  glVertex3f(joints[i]->point[0], joints[i]->point[1], joints[i]->point[2]);
+  //   //glTranslatef(0.0, 0.0, OFFSET);
+  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
+  //   // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
+  // }
+  // glEnd();
     // cout << getEndPos(0, angles) << " 0" << endl;
     // cout << getEndPos(1, angles) << " 1" << endl;
   glColor3f(1.0,1.0,0.0);
   updateSystem();
   renderSystem();
+
 
   cout << joints.size() << endl;
  //  glBegin(GL_LINES);
@@ -501,10 +534,10 @@ int main(int argc, char *argv[]) {
 
   // TODO: create the joints with inputtable values
   Vector3f *pos0 = (new Vector3f(0, 0, 0));
-  Vector3f *pos1 = (new Vector3f(.5, 0, 0));
-  Vector3f *pos2 = (new Vector3f(1.0, 0, 0));
-  Vector3f *pos3 = (new Vector3f(1.5, 0, 0));
-  Vector3f *pos4 = (new Vector3f(2.0, 0, 0));
+  Vector3f *pos1 = (new Vector3f(0, 0, .5));
+  Vector3f *pos2 = (new Vector3f(0, 0, 1.0));
+  Vector3f *pos3 = (new Vector3f(0, 0, 1.5));
+  Vector3f *pos4 = (new Vector3f(0, 0, 2.0));
 
   Joint* joint0 = new Joint(*pos0);
     joints[0] = joint0;
