@@ -9,6 +9,7 @@
 #include <sstream>
 #include <limits>
 #include <time.h>
+#include <math.h>
 
 #include "Util.h"
 
@@ -65,7 +66,9 @@ std::vector< Arm * > arms;
 Vector4f angles(0, 0, 0, 0);
 float armslength = 2.0;//hardcoded for now, the total length of the arm
 Vector3f endpoint(0, 0, 2);//the current endpoint
-Vector3f goal(0, .5, 1);
+// Vector3f goal(0, .5, 1);
+Vector3f goal;
+GLfloat t = 0;
 
 
 //****************************************************
@@ -90,6 +93,16 @@ void initScene(){
 
 }
 
+
+Vector3f getGoal() {
+  t+=0.05;
+  GLfloat x = cos(t);
+  GLfloat y = sin(t);
+  GLfloat z = 0.0;
+  return *(new Vector3f(z, x, y));
+}
+
+
 //returns the Jacobian of the current system
 //algorithm idea from stack overflow
 MatrixXf getJ() {
@@ -112,7 +125,7 @@ MatrixXf getJ() {
       float step = 1.0f;
       to_end *= length_to_end * step * M_PI/180.0f;//point of step?
     }
-    cout << to_end << " toend inside" << endl;
+    // cout << to_end << " toend inside" << endl;
     jacobi(0, x) = to_end[0];
     jacobi(1, x) = to_end[1];
     jacobi(2, x) = to_end[2];
@@ -269,7 +282,7 @@ void renderSystem() {
     // cout << joints[2]->point << " 02" << endl;
     // cout << joints[3]->point << " 03" << endl;
     // cout << joints[4]->point << " 04" << endl;
-
+    cout << "rederning angle " << i << endl;
   }
 
   glPopMatrix();
@@ -329,53 +342,31 @@ void myDisplay() {
   else glPolygonMode( GL_FRONT_AND_BACK, GL_FILL );
 
 
-  /*************************
-  ** FINALLY DRAW THE STUFF
-  *************************/
+// <<<<<<< HEAD
+//   /*************************
+//   ** FINALLY DRAW THE STUFF
+//   *************************/
 
-  /* stuff goes here */
-  // glutSolidSphere(RADIUS, SLICES, STACKS);
-  // glTranslatef(0.0, 0.0, OFFSET);
-  // glutSolidCone(RADIUS, ARM_LENGTH, SLICES, STACKS);
-    //Vector3f goal = *(new Vector3f(8.0, 0.0, 0.0));
-    // cout << "     " << endl;
-    // cout << getEndPos(0, angles) << " \n0's end point\n" << endl;
-    // cout << getEndPos(1, angles) << " \n1's end point" << endl;
-    // cout << "     " << endl;
+//   /* stuff goes here */
+//   // glutSolidSphere(RADIUS, SLICES, STACKS);
+//   // glTranslatef(0.0, 0.0, OFFSET);
+//   // glutSolidCone(RADIUS, ARM_LENGTH, SLICES, STACKS);
+//     //Vector3f goal = *(new Vector3f(8.0, 0.0, 0.0));
+//     // cout << "     " << endl;
+//     // cout << getEndPos(0, angles) << " \n0's end point\n" << endl;
+//     // cout << getEndPos(1, angles) << " \n1's end point" << endl;
+//     // cout << "     " << endl;
 
-    updateSystem();
-    renderSystem();//ACTUAL STUFF
+//     updateSystem();
+//     renderSystem();//ACTUAL STUFF
 
     glColor3f(1.0,1.0,0.0);
 
 
-
-    // glBegin(GL_LINES);
-  // for (int i = 0; i < arms.size(); i++) {
-  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
-  //   glVertex3f(arms[i]->startpoint[0], arms[i]->startpoint[1], arms[i]->startpoint[2]);
-  //   glVertex3f(arms[i]->endpoint[0], arms[i]->endpoint[1], arms[i]->endpoint[2]);
-  //   //cout << arms[i]->startpoint[0] << arms[i]->startpoint[1] << arms[i]->startpoint[2] << endl;
-  //   glTranslatef(0.0, 0.0, OFFSET);
-  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
-  //   //glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
-  // }
- //glVertex3f(arms[3]->endpoint[0], arms[3]->endpoint[1], arms[3]->endpoint[2]);
-  //  glEnd();
-  // glColor3f(1.0,0.0,0.0);
-  //    glBegin(GL_POINTS);
-  // for (int i = 0; i < joints.size(); i++) {
-  //   //glutSolidSphere(joints[i]->radius, SLICES, STACKS);
-  //  glVertex3f(joints[i]->point[0], joints[i]->point[1], joints[i]->point[2]);
-  //   //glTranslatef(0.0, 0.0, OFFSET);
-  //   //glutSolidCone(arms[i]->radius, arms[i]->length, SLICES, STACKS);
-  //   // glTranslatef(0.0, 0.0, arms[i]->length + OFFSET);
-  // }
-  // glEnd();
-    // cout << getEndPos(0, angles) << " 0" << endl;
-    // cout << getEndPos(1, angles) << " 1" << endl;
-  glColor3f(1.0,1.0,0.0);
-
+  goal = getGoal();
+  cout << "RENDER GOAL: " << goal.transpose() << endl;
+  updateSystem();
+  renderSystem();
 
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
