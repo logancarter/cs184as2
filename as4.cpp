@@ -45,11 +45,11 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = .5;
+GLfloat zoomamount = .6;
 GLfloat horizontalshift = 0.0;
 GLfloat verticalshift = 0.0;
-GLfloat rotatehoriz = 0.0;
-GLfloat rotatevertical = 0.0;
+GLfloat rotatehoriz = 130.0;
+GLfloat rotatevertical = -20.0;
 bool wireframe = true, flat = true;
 
 GLfloat ARM_LENGTH = 5.0;
