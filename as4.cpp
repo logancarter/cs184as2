@@ -69,6 +69,7 @@ Vector3f endpoint(0, 0, 2);//the current endpoint
 // Vector3f goal(0, .5, 1);
 Vector3f goal;
 GLfloat t = 0;
+std::vector< Vector3f* > paths;
 
 
 //****************************************************
@@ -88,7 +89,7 @@ void myReshape(int w, int h) {
 // Simple init function
 //****************************************************
 void initScene(){
-    glColor3f(1.0,1.0,0.0);
+  glColor3f(1.0,1.0,0.0);
 }
 
 
@@ -97,9 +98,38 @@ Vector3f getGoal() {
   GLfloat x = cos(t);
   GLfloat y = sin(t);
   GLfloat z = 0.0;
+  cout << t << endl;
   return *(new Vector3f(z, x, y));
 }
 
+Vector3f* getGoalAt(GLfloat t) {
+  GLfloat x = cos(t);
+  GLfloat y = sin(t);
+  GLfloat z = 0.0;
+  return new Vector3f(z, x, y);
+}
+
+void initPath() {
+  int numsteps = 50;
+  GLfloat step = (GLfloat) 6.3 / numsteps;
+  for (int i = 0; i < numsteps; i++) {
+    GLfloat tz = step * i;
+    Vector3f *pt = getGoalAt(tz);
+    paths.push_back(pt);
+  }
+}
+
+void renderPath() {
+  int numsteps = 50;
+  glColor3f(1.0, 1.0, 1.0);
+  glBegin(GL_POINTS);
+  GLfloat step = (GLfloat) 6.3 / numsteps;
+  for (int i = 0; i < numsteps; i++) {
+    Vector3f pt = *(paths[i]);
+    glVertex3f(pt[0], pt[1], pt[2]);
+  }
+  glEnd();
+}
 
 //returns the Jacobian of the current system
 //algorithm idea from stack overflow
@@ -256,6 +286,7 @@ void updateSystem() {
 
 void renderSystem() {
   glPushMatrix();
+  glColor3f(1.0, 1.0, 0.0);
   //glMultMatrixf(sys)
   for (int i = 0; i < 4; i++) {
     glRotatef(angles[i], -1, 0, 0);
@@ -280,7 +311,7 @@ void renderSystem() {
     // cout << joints[2]->point << " 02" << endl;
     // cout << joints[3]->point << " 03" << endl;
     // cout << joints[4]->point << " 04" << endl;
-    cout << "rederning angle " << i << endl;
+    // cout << "rederning angle " << i << endl;
   }
 
   glPopMatrix();
@@ -296,6 +327,8 @@ void renderSystem() {
   glVertex3f(0, 0, 0);
   glEnd();
   // cout << goal << " goal " << endl;
+
+  renderPath();
 }
 
 //****************************************************
@@ -357,13 +390,8 @@ void myDisplay() {
   glEnd();
 
   goal = getGoal();
-  glColor3f(1.0, 1.0, 1.0);
-  glBegin(GL_POINTS);
-  glVertex3f(goal[0], goal[1], goal[2]);
-  glEnd();
 
-  glColor3f(1.0,1.0,0.0);
-  cout << "RENDER GOAL: " << goal.transpose() << endl;
+  // cout << "RENDER GOAL: " << goal.transpose() << endl;
   updateSystem();
   renderSystem();
 
@@ -496,6 +524,7 @@ void specialKeys(int key, int x, int y) {
 //****************************************************
 int main(int argc, char *argv[]) {
 
+
   // TODO: create the joints with inputtable values
   Vector3f *pos0 = (new Vector3f(0, 0, 0));
   Vector3f *pos1 = (new Vector3f(0, 0, .5));
@@ -545,6 +574,8 @@ int main(int argc, char *argv[]) {
   glutCreateWindow(argv[0]);
 
   initScene();      // quick function to set up scene
+
+  initPath();
 
   glutDisplayFunc(myDisplay);     // function to run when its time to draw something
 
