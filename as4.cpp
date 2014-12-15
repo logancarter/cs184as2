@@ -490,12 +490,12 @@ void specialKeys(int key, int x, int y) {
   } else {
     switch (key) {
     case GLUT_KEY_UP:
-      rotatevertical -= 10;
+      rotatevertical += 10;
       glutPostRedisplay();
       cout << "rotate: up " << rotatevertical << endl;
       break;
     case GLUT_KEY_DOWN:
-      rotatevertical += 10;
+      rotatevertical -= 10;
       glutPostRedisplay();
       cout << "rotate: down " << rotatevertical << endl;
       break;
