@@ -45,11 +45,11 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = .5;
+GLfloat zoomamount = .6;
 GLfloat horizontalshift = 0.0;
 GLfloat verticalshift = 0.0;
-GLfloat rotatehoriz = 0.0;
-GLfloat rotatevertical = 0.0;
+GLfloat rotatehoriz = 130.0;
+GLfloat rotatevertical = -20.0;
 bool wireframe = true, flat = true;
 
 GLfloat ARM_LENGTH = 5.0;
@@ -59,7 +59,7 @@ GLint STACKS = 15;
 GLfloat OFFSET = 0.6;
 Vector3f root(0, 0, 0);
 //Vector3f currentendpoint = *(new Vector3f(0, 0, 0));//initialize to wherever we want to start
-GLfloat epsilon = .1;
+GLfloat epsilon = .001;
 //std::vector< Joint * > joints;
 Joint* joints[5];
 
@@ -71,6 +71,7 @@ Vector3f endpoint(0, 1, 0);//the current endpoint
 // Vector3f goal(0, .5, 1);
 Vector3f goal;
 GLfloat t = 0;
+std::vector< Vector3f* > paths;
 
 
 //****************************************************
@@ -90,7 +91,7 @@ void myReshape(int w, int h) {
 // Simple init function
 //****************************************************
 void initScene(){
-    glColor3f(1.0,1.0,0.0);
+  glColor3f(1.0,1.0,0.0);
 }
 
 
@@ -102,6 +103,34 @@ Vector3f getGoal() {
   return *(new Vector3f(x, y, z));
 }
 
+Vector3f* getGoalAt(GLfloat t) {
+  GLfloat x = cos(t);
+  GLfloat y = sin(t);
+  GLfloat z = 0.0;
+  return new Vector3f(z, x, y);
+}
+
+void initPath() {
+  int numsteps = 50;
+  GLfloat step = (GLfloat) 6.3 / numsteps;
+  for (int i = 0; i < numsteps; i++) {
+    GLfloat tz = step * i;
+    Vector3f *pt = getGoalAt(tz);
+    paths.push_back(pt);
+  }
+}
+
+void renderPath() {
+  int numsteps = 50;
+  glColor3f(1.0, 1.0, 1.0);
+  glBegin(GL_POINTS);
+  GLfloat step = (GLfloat) 6.3 / numsteps;
+  for (int i = 0; i < numsteps; i++) {
+    Vector3f pt = *(paths[i]);
+    glVertex3f(pt[0], pt[1], pt[2]);
+  }
+  glEnd();
+}
 
 //returns the Jacobian of the current system
 //algorithm idea from stack overflow
@@ -321,6 +350,7 @@ void updateSystem() {
 
 void renderSystem() {
   glPushMatrix();
+  glColor3f(1.0, 1.0, 0.0);
   //glMultMatrixf(sys)
   for (int i = 0; i < 4; i++) {
     glRotatef(angles[i * 3 + 0], -1, 0, 0);
@@ -347,7 +377,7 @@ void renderSystem() {
     // cout << joints[2]->point << " 02" << endl;
     // cout << joints[3]->point << " 03" << endl;
     // cout << joints[4]->point << " 04" << endl;
-    cout << "rederning angle " << i << endl;
+    // cout << "rederning angle " << i << endl;
   }
 
   glPopMatrix();
@@ -363,6 +393,8 @@ void renderSystem() {
   glVertex3f(0, 0, 0);
   glEnd();
   // cout << goal << " goal " << endl;
+
+  renderPath();
 }
 
 //****************************************************
@@ -448,15 +480,10 @@ void myDisplay() {
 //   goal = getGoal();
 // =======
   goal = getGoal();
-  glColor3f(1.0, 1.0, 1.0);
-  glBegin(GL_POINTS);
-  glVertex3f(goal[0], goal[1], goal[2]);
-  glEnd();
 
   glColor3f(1.0,1.0,0.0);
 // >>>>>>> 66ecca115f391a8c35ed6fc5e47bf7086a37a797
   cout << "RENDER GOAL: " << goal.transpose() << endl;
-    cout << "hello" << endl;
 
   updateSystem();
   renderSystem();
@@ -639,6 +666,8 @@ int main(int argc, char *argv[]) {
   glutCreateWindow(argv[0]);
 
   initScene();      // quick function to set up scene
+
+  initPath();
 
   glutDisplayFunc(myDisplay);     // function to run when its time to draw something
 
