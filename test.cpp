@@ -2,14 +2,13 @@
 #include <memory>
 #include <vector>
 #include <iostream>
-#include <Eigen/Dense>
 #include <fstream>
 #include <cmath>
 #include <string>
 #include <sstream>
 #include <limits>
 #include <time.h>
-
+#include "eigen/Eigen/Dense"
 #include "Util.h"
 
 #ifdef _WIN32
@@ -154,7 +153,10 @@ void myDisplay() {
   pcross << 0, -p[2], p[1],
             p[2], 0, -p[0],
             -p[1], p[0], 0;
+  cout << pcross << "pcross" << endl;
   Vector3f dp = pcross * rotater;
+  cout << dp << endl;
+  cout << "hi" << endl;
   glBegin(GL_LINES);
   glVertex3f(arms[0]->startpoint[0], arms[0]->startpoint[1], arms[0]->startpoint[2]);
   Vector3f newendpoint;
@@ -311,7 +313,7 @@ int main(int argc, char *argv[]) {
 
   Arm* arm0 = new Arm(*pos0, *pos1, .5);
     arms.push_back(arm0);
-  cout << arms[0]->endpoint[0] << " " << arms[0]->endpoint[1] << " " << arms[0]->endpoint[2] << endl;
+  //cout << arms[0]->endpoint[0] << " " << arms[0]->endpoint[1] << " " << arms[0]->endpoint[2] << endl;
   // Arm* arm1 = new Arm(*pos1, *pos2, .5);
   //   arms.push_back(arm1);
   // Arm* arm2 = new Arm(*pos2, *pos3, .5);
