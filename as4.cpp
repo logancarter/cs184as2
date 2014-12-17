@@ -156,14 +156,11 @@ MatrixXf getJ2() {
       float step = 1.0f;
       to_end *= length_to_end * step * M_PI/180.0f;//point of step?
     }
-    // cout << to_end << " toend inside22222" << endl;
     jacobi(0, x) = to_end[0];
     jacobi(1, x) = to_end[1];
     jacobi(2, x) = to_end[2];
-    //cout << jacobi(1, x);
-    //cout << jacobi(2, x);
+
   }
-  // cout << "jacobi inside2222222" << jacobi << endl;
   return jacobi;
 }
 
