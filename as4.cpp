@@ -45,8 +45,8 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = .6;
-GLfloat horizontalshift = 0.0;
+GLfloat zoomamount = .4;
+GLfloat horizontalshift = 0;
 GLfloat verticalshift = 0.0;
 GLfloat rotatehoriz = 130.0;
 GLfloat rotatevertical = -20.0;
@@ -56,12 +56,13 @@ GLfloat epsilon = .1;
 Joint* joints[5];
 std::vector< Arm * > arms;
 VectorXf angles(12);
-float armslength = 2.0;//hardcoded for now, the total length of the arm
+float armslength = 2 - epsilon;//hardcoded for now, the total length of the arm
 Vector3f endpoint(0, 0, 2);//the current endpoint
 Vector3f goal;
 GLfloat t = 0;
 std::vector< Vector3f* > paths;
 bool canreach = false;
+long rendercount = 0;
 
 
 //****************************************************
@@ -87,16 +88,15 @@ void initScene(){
 
 Vector3f getGoal() {
   t += 0.01;
-  GLfloat x = 2 * cos(t);
+  GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
   GLfloat z = 0.0;
-  //return *(new Vector3f(roundf(x * 100)/100, roundf(x * 100)/100, z));
   return *(new Vector3f(x, y, z));
 
 }
 
 Vector3f* getGoalAt(GLfloat t) {
-  GLfloat x = 2 * cos(t);
+  GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
   GLfloat z = 0.0;
   return new Vector3f(x, y, z);
@@ -153,7 +153,6 @@ MatrixXf getJ2() {
       to_end.normalize();
     }
     to_end = to_end.cross(rotation_axis);
-    // cout << "after cross" << to_end << endl;
     if (length_to_end > 0) {
       float step = 1.0f;
       to_end *= length_to_end * step * M_PI/180.0f;//point of step?
@@ -168,7 +167,7 @@ MatrixXf getJ2() {
 
 
 void updateAngles(VectorXf dtheta, VectorXf angls) {
-  angles += dtheta;
+  angles += dtheta * .1;
   for (int i = 0; i < 12; i ++) {
     if (angls[i] > 360) {
       angls[i] -= 360;
@@ -176,22 +175,21 @@ void updateAngles(VectorXf dtheta, VectorXf angls) {
       angls[i] += 360;
     }
   }
-   // cout << angls << " angles" << endl;
 }
 
 bool canReach() {
   float distance = (goal - root).norm();
   if (abs(distance) > armslength) {
-    canreach = true;
+    //canreach = true;
     return false;
   }
-  canreach = true;
+  //canreach = true;
   return true;
 }
 
 Vector3f newgoal(Vector3f oldgoal) {
   Vector3f goal = oldgoal.normalized();
-  Vector3f newgoal = root + goal * armslength;
+  Vector3f newgoal = goal * armslength;
   cout << "got new goal" << newgoal << endl;
   return newgoal;
 }
@@ -233,27 +231,24 @@ void updateEndpoint() {
 //Used code example from Kevin's discussion slide
 //Returns true if reaches target. If it can't reach, it approximates
 bool update() {
-  if (!canreach and !canReach()) {
+  if (!canReach()) {
+    //cout << "making new goal" << endl;
     goal = newgoal(goal);
+       // cout << "goal made" << endl;
   }
   Vector3f dp = goal - endpoint;
   if (dp.norm() > epsilon) {
+    //cout << "calculating jacobian" << endl;
     MatrixXf J2 = getJ2();
     JacobiSVD<MatrixXf> svd2 (J2,ComputeThinU | ComputeThinV);
     VectorXf dtheta2 = svd2.solve(dp);
     updateAngles(dtheta2, angles);
     updateEndpoint();
+        //  cout << "jacobian done" << endl;
     return false;
   }
+  //cout << "close enough" << endl;
   return true;
-}
-
-void updateSystem() {
-  bool done = false;
-  while (!done) {
-    done = update();
-  }
-  canreach = false;
 }
 
 void renderSystem() {
@@ -282,9 +277,16 @@ void renderSystem() {
   glVertex3f(goal[0], goal[1], goal[2]);
   glVertex3f(0, 0, 0);
   glEnd();
-  // cout << goal << " goal " << endl;
 
   renderPath();
+}
+
+void updateSystem() {
+  bool done = false;
+  while (!done) {
+    //cout << 'not done' << endl;
+    done = update();
+  }
 }
 
 //****************************************************
@@ -298,7 +300,7 @@ void myDisplay() {
   /*************************
   ** TRANSFORMATIONS
   *************************/
-  //glTranslatef(horizontalshift, verticalshift, 0.0);
+  glTranslatef(horizontalshift, verticalshift, 0.0);
   glRotatef(rotatevertical, 1, 0, 0);
   glRotatef(rotatehoriz, 0, 1, 0);
   glScalef(zoomamount, zoomamount, zoomamount);
@@ -337,7 +339,7 @@ void myDisplay() {
   glColor3f(1.0,1.0,0.0);
 
   updateSystem();
-    cout << goal << "current goal" << endl;
+    //cout << goal << "current goal" << endl;
 
   renderSystem();
 
