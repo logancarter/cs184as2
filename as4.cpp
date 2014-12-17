@@ -90,6 +90,7 @@ void initScene(){
 Vector3f getGoal() {
   t += 0.01;
   GLfloat x = 1.2 * cos(t) + 1.2;
+  // GLfloat x = cos(t);
   GLfloat y = sin(t);
   GLfloat z = 0.0;
   return *(new Vector3f(x, y, z));
@@ -167,7 +168,7 @@ MatrixXf getJ2() {
 
 
 void updateAngles(VectorXf dtheta, VectorXf angls) {
-  angles += dtheta * .1;
+  angles += dtheta;
   for (int i = 0; i < 12; i ++) {
     if (angls[i] > 360) {
       angls[i] -= 360;
@@ -256,6 +257,7 @@ void updateSystem() {
   bool done = false;
   while (!done) {
     done = update();
+    // renderSystem();
   }
   canreach = false;
 }
