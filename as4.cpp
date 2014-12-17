@@ -81,10 +81,11 @@ void myReshape(int w, int h) {
 //****************************************************
 // Simple init function
 //****************************************************
+GLfloat radius = 1.0;
+
 void initScene(){
   glColor3f(1.0,1.0,0.0);
 }
-
 
 Vector3f getGoal() {
   t += 0.01;
@@ -101,7 +102,6 @@ Vector3f* getGoalAt(GLfloat t) {
   GLfloat z = 0.0;
   return new Vector3f(x, y, z);
 }
-
 void initPath() {
   int numsteps = 50;
   GLfloat step = (GLfloat) 6.3 / numsteps;
@@ -234,7 +234,6 @@ bool update() {
   if (!canReach()) {
     //cout << "making new goal" << endl;
     goal = newgoal(goal);
-       // cout << "goal made" << endl;
   }
   Vector3f dp = goal - endpoint;
   if (dp.norm() > epsilon) {
@@ -249,6 +248,16 @@ bool update() {
   }
   //cout << "close enough" << endl;
   return true;
+}
+
+void renderSystem();
+
+void updateSystem() {
+  bool done = false;
+  while (!done) {
+    done = update();
+  }
+  canreach = false;
 }
 
 void renderSystem() {
@@ -279,14 +288,6 @@ void renderSystem() {
   glEnd();
 
   renderPath();
-}
-
-void updateSystem() {
-  bool done = false;
-  while (!done) {
-    //cout << 'not done' << endl;
-    done = update();
-  }
 }
 
 //****************************************************
@@ -322,27 +323,29 @@ void myDisplay() {
   glColor3f(1.0, 0.0, 0.0);
   glBegin(GL_LINES);
   glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(10.0, 0.0, 0.0);
+  glVertex3f(3.0, 0.0, 0.0);
   glEnd();
   glColor3f(0.0, 1.0, 0.0);
   glBegin(GL_LINES);
   glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(0.0, 1.0, 0.0);
+  glVertex3f(0.0, 3.0, 0.0);
   glEnd();
   glColor3f(0.0, 0.0, 1.0);
   glBegin(GL_LINES);
   glVertex3f(0.0, 0.0, 0.0);
-  glVertex3f(0.0, 0.0, 1.0);
+  glVertex3f(0.0, 0.0, 3.0);
   glEnd();
+
+// //   /*************************
+// //   ** FINALLY DRAW THE STUFF
+// //   *************************/
+
   goal = getGoal();
 
   glColor3f(1.0,1.0,0.0);
 
   updateSystem();
-    //cout << goal << "current goal" << endl;
-
   renderSystem();
-
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
 }
