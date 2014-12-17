@@ -52,7 +52,7 @@ GLfloat rotatehoriz = 130.0;
 GLfloat rotatevertical = -20.0;
 bool wireframe = true, flat = true;
 Vector3f root(0, 0, 0);
-GLfloat epsilon = .01;
+GLfloat epsilon = .1;
 Joint* joints[5];
 std::vector< Arm * > arms;
 VectorXf angles(12);
@@ -87,14 +87,16 @@ void initScene(){
 
 Vector3f getGoal() {
   t += 0.01;
-  GLfloat x = cos(t);
+  GLfloat x = 2 * cos(t);
   GLfloat y = sin(t);
   GLfloat z = 0.0;
+  //return *(new Vector3f(roundf(x * 100)/100, roundf(x * 100)/100, z));
   return *(new Vector3f(x, y, z));
+
 }
 
 Vector3f* getGoalAt(GLfloat t) {
-  GLfloat x = cos(t);
+  GLfloat x = 2 * cos(t);
   GLfloat y = sin(t);
   GLfloat z = 0.0;
   return new Vector3f(x, y, z);
@@ -166,7 +168,7 @@ MatrixXf getJ2() {
 
 
 void updateAngles(VectorXf dtheta, VectorXf angls) {
-  angles += dtheta * .1;
+  angles += dtheta;
   for (int i = 0; i < 12; i ++) {
     if (angls[i] > 360) {
       angls[i] -= 360;
@@ -190,6 +192,7 @@ bool canReach() {
 Vector3f newgoal(Vector3f oldgoal) {
   Vector3f goal = oldgoal.normalized();
   Vector3f newgoal = root + goal * armslength;
+  cout << "got new goal" << newgoal << endl;
   return newgoal;
 }
 
@@ -250,6 +253,7 @@ void updateSystem() {
   while (!done) {
     done = update();
   }
+  canreach = false;
 }
 
 void renderSystem() {
@@ -297,7 +301,7 @@ void myDisplay() {
   //glTranslatef(horizontalshift, verticalshift, 0.0);
   glRotatef(rotatevertical, 1, 0, 0);
   glRotatef(rotatehoriz, 0, 1, 0);
-  //glScalef(zoomamount, zoomamount, zoomamount);
+  glScalef(zoomamount, zoomamount, zoomamount);
 
 
   /*************************
@@ -333,6 +337,8 @@ void myDisplay() {
   glColor3f(1.0,1.0,0.0);
 
   updateSystem();
+    cout << goal << "current goal" << endl;
+
   renderSystem();
 
   glFlush();
