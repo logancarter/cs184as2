@@ -90,24 +90,25 @@ void myReshape(int w, int h) {
 //****************************************************
 // Simple init function
 //****************************************************
+GLfloat radius = 1.0;
+
 void initScene(){
   glColor3f(1.0,1.0,0.0);
 }
 
-
 Vector3f getGoal() {
   t += 0.01;
-  GLfloat x = cos(t);
-  GLfloat y = sin(t);
-  GLfloat z = 0.0;
-  return *(new Vector3f(x, y, z));
+  GLfloat x = radius * cos(t);
+  GLfloat y = radius * sin(t);
+  GLfloat z = 1.0;
+  return *(new Vector3f(x, z, y));
 }
 
 Vector3f* getGoalAt(GLfloat t) {
-  GLfloat x = cos(t);
-  GLfloat y = sin(t);
-  GLfloat z = 0.0;
-  return new Vector3f(z, x, y);
+  GLfloat x = radius * cos(t);
+  GLfloat y = radius * sin(t);
+  GLfloat z = 1.0;
+  return new Vector3f(x, z, y);
 }
 
 void initPath() {
@@ -215,7 +216,7 @@ MatrixXf getJ2() {
 
 
 void updateAngles(VectorXf dtheta, VectorXf angls) {
-  angles += dtheta * .1;
+  angles += dtheta;
   if (angls[0] > 360) {
     angls[0] -= 360;
   }
@@ -313,9 +314,8 @@ bool update() {
   if (!canReach()) {
     //cout << "can't reach" << endl;
     goal = newgoal(goal);
-  } else {
-    goal = goal;
-  }
+  } 
+
   Vector3f dp = goal - endpoint;
   // cout << dp.norm() << " length " << endl;
   if (dp.norm() > epsilon) {
@@ -340,10 +340,13 @@ bool update() {
   return true;
 }
 
+void renderSystem();
+
 void updateSystem() {
   bool done = false;
   while (!done) {
     done = update();
+    renderSystem();
   }
   //cout << "got out" << endl;
 }
@@ -351,7 +354,7 @@ void updateSystem() {
 void renderSystem() {
   glPushMatrix();
   glColor3f(1.0, 1.0, 0.0);
-  //glMultMatrixf(sys)
+  // glMultMatrixf(sys)
   for (int i = 0; i < 4; i++) {
     glRotatef(angles[i * 3 + 0], -1, 0, 0);
     glRotatef(angles[i * 3 + 1], 0, -1, 0);
@@ -460,30 +463,13 @@ void myDisplay() {
 // //   ** FINALLY DRAW THE STUFF
 // //   *************************/
 
-// //   /* stuff goes here */
-// //   // glutSolidSphere(RADIUS, SLICES, STACKS);
-// //   // glTranslatef(0.0, 0.0, OFFSET);
-// //   // glutSolidCone(RADIUS, ARM_LENGTH, SLICES, STACKS);
-// //     //Vector3f goal = *(new Vector3f(8.0, 0.0, 0.0));
-// //     // cout << "     " << endl;
-// //     // cout << getEndPos(0, angles) << " \n0's end point\n" << endl;
-// //     // cout << getEndPos(1, angles) << " \n1's end point" << endl;
-// //     // cout << "     " << endl;
-
-// //     updateSystem();
-// //     renderSystem();//ACTUAL STUFF
-
-//     glColor3f(1.0,1.0,0.0);
-
-
-//   goal = getGoal();
   goal = getGoal();
 
   glColor3f(1.0,1.0,0.0);
   // cout << "RENDER GOAL: " << goal.transpose() << endl;
 
   updateSystem();
-  renderSystem();
+  // renderSystem();
 
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
