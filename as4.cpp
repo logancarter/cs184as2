@@ -52,7 +52,7 @@ GLfloat rotatehoriz = 130.0;
 GLfloat rotatevertical = -20.0;
 bool wireframe = true, flat = true;
 Vector3f root(0, 0, 0);
-GLfloat epsilon = .1;
+GLfloat epsilon = .01;
 Joint* joints[5];
 std::vector< Arm * > arms;
 VectorXf angles(12);
@@ -89,18 +89,18 @@ void initScene(){
 
 Vector3f getGoal() {
   t += 0.01;
-  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat x = 1.2 * cos(t);
   GLfloat y = sin(t);
-  GLfloat z = 0.0;
-  return *(new Vector3f(x, y, z));
+  GLfloat z = 1.0;
+  return *(new Vector3f(z, y, x));
 
 }
 
 Vector3f* getGoalAt(GLfloat t) {
-  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat x = 1.2 * cos(t);
   GLfloat y = sin(t);
-  GLfloat z = 0.0;
-  return new Vector3f(x, y, z);
+  GLfloat z = 1.0;
+  return new Vector3f(z, y, x);
 }
 void initPath() {
   int numsteps = 50;
