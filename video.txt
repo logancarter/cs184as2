@@ -1,0 +1,27 @@
+vid1
+epsilon 0.01
+  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat y = sin(t);
+  GLfloat z = 0.5 * x + 0.7 * y;
+  x, y, z
+
+vid2
+epsilon 0.01
+  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat y = sin(t);
+  GLfloat z = 0.0;
+  x, z, y
+
+vid3
+ep 0.01
+  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat y = sin(t);
+  GLfloat z = 0.5 * x + 0.7 * y;
+  return *(new Vector3f(z, y, x));
+
+vid4
+ep 0.01
+  GLfloat x = 1.2 * cos(t) + 1.2;
+  GLfloat y = sin(t);
+  GLfloat z = 0.0;
+  return new Vector3f(z, y, x);
