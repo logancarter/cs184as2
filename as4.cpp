@@ -45,24 +45,31 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = .4;
-GLfloat horizontalshift = 0;
+GLfloat zoomamount = .5;
+GLfloat horizontalshift = 0.0;
 GLfloat verticalshift = 0.0;
 GLfloat rotatehoriz = 130.0;
 GLfloat rotatevertical = -20.0;
 bool wireframe = true, flat = true;
+
+GLfloat ARM_LENGTH = 5.0;
+GLfloat RADIUS = 1.0;
+GLint SLICES = 15;
+GLint STACKS = 15;
+GLfloat OFFSET = 0.6;
 Vector3f root(0, 0, 0);
+
 GLfloat epsilon = .01;
+
 Joint* joints[5];
+
 std::vector< Arm * > arms;
 VectorXf angles(12);
-float armslength = 2 - epsilon;//hardcoded for now, the total length of the arm
+float armslength = 2.0 - epsilon;//hardcoded for now, the total length of the arm
 Vector3f endpoint(0, 0, 2);//the current endpoint
 Vector3f goal;
 GLfloat t = 0;
 std::vector< Vector3f* > paths;
-bool canreach = false;
-long rendercount = 0;
 
 
 //****************************************************
@@ -81,27 +88,26 @@ void myReshape(int w, int h) {
 //****************************************************
 // Simple init function
 //****************************************************
-GLfloat radius = 1.0;
-
 void initScene(){
   glColor3f(1.0,1.0,0.0);
 }
 
+
 Vector3f getGoal() {
   t += 0.01;
-  GLfloat x = 1.2 * cos(t);
+  GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
-  GLfloat z = 1.0;
-  return *(new Vector3f(z, y, x));
-
+  GLfloat z = 0.5 * x + 0.7 * y;
+  return *(new Vector3f(x, y, z));
 }
 
 Vector3f* getGoalAt(GLfloat t) {
-  GLfloat x = 1.2 * cos(t);
+  GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
-  GLfloat z = 1.0;
-  return new Vector3f(z, y, x);
+  GLfloat z = 0.5 * x + 0.7 * y;
+  return new Vector3f(x, y, z);
 }
+
 void initPath() {
   int numsteps = 50;
   GLfloat step = (GLfloat) 6.3 / numsteps;
@@ -124,8 +130,8 @@ void renderPath() {
   glEnd();
 }
 
+
 //returns the Jacobian of the current system
-//algorithm idea from stack overflow
 MatrixXf getJ2() {
   MatrixXf jacobi(3, 12);
   jacobi.setZero();
@@ -154,13 +160,11 @@ MatrixXf getJ2() {
     }
     to_end = to_end.cross(rotation_axis);
     if (length_to_end > 0) {
-      float step = 1.0f;
-      to_end *= length_to_end * step * M_PI/180.0f;//point of step?
+      to_end *= length_to_end * M_PI/180.0f;//point of step?
     }
     jacobi(0, x) = to_end[0];
     jacobi(1, x) = to_end[1];
     jacobi(2, x) = to_end[2];
-
   }
   return jacobi;
 }
@@ -168,7 +172,7 @@ MatrixXf getJ2() {
 
 void updateAngles(VectorXf dtheta, VectorXf angls) {
   angles += dtheta * .1;
-  for (int i = 0; i < 12; i ++) {
+  for (int i = 0; i < 12; i++) {
     if (angls[i] > 360) {
       angls[i] -= 360;
     } else if (angls[i] < 360) {
@@ -180,75 +184,75 @@ void updateAngles(VectorXf dtheta, VectorXf angls) {
 bool canReach() {
   float distance = (goal - root).norm();
   if (abs(distance) > armslength) {
-    //canreach = true;
     return false;
   }
-  //canreach = true;
   return true;
 }
 
 Vector3f newgoal(Vector3f oldgoal) {
   Vector3f goal = oldgoal.normalized();
-  Vector3f newgoal = goal * armslength;
-  cout << "got new goal" << newgoal << endl;
+  Vector3f newgoal = root + goal * armslength;
   return newgoal;
 }
 
 
-//Credit goes to SigTerm on Stack Overflow
-Vector3f getEndPos(int index, const VectorXf& vec){
-    Vector3f pos(0, 0, 0);
-    while(true){
-        Affine3f t;
-        float one = index * 3;
-        float two = index * 3 + 1;
-        float three = index * 3 + 2;
-        float radAngle = M_PI * vec[one]/180.0f;
-        float radAngle2 = M_PI * vec[two]/180.0f;
-        float radAngle3 =  M_PI * vec[three]/180.0f;
-        t = AngleAxisf(radAngle, Vector3f(-1, 0, 0))
-         * AngleAxisf(radAngle2, Vector3f(0, -1, 0))
-          * AngleAxisf(radAngle3, Vector3f(0, 0, -1))//CHANGED
-            * Translation3f(Vector3f(0, 0, arms[index]->length));//change .5 to length//keep that for now
-        pos = t * pos;
-        if (index == 0)
-            break;
-        index--;
+//Inspiration comes from SigTerm on Stack Overflow
+Vector3f getEndPos(int currentnum){
+    Vector3f endposition(0, 0, 0);
+    bool keepgoing = true;
+    while(keepgoing){
+        Affine3f transform;
+        float one = currentnum * 3;
+        float two = currentnum * 3 + 1;
+        float three = currentnum * 3 + 2;
+        float angle_in_radian1 = M_PI * angles[one]/180.0f;
+        float angle_in_radian2 = M_PI * angles[two]/180.0f;
+        float angle_in_radian3 =  M_PI * angles[three]/180.0f;
+        transform = AngleAxisf(angle_in_radian1, Vector3f(-1, 0, 0))
+         * AngleAxisf(angle_in_radian2, Vector3f(0, -1, 0))
+          * AngleAxisf(angle_in_radian3, Vector3f(0, 0, -1))
+            * Translation3f(Vector3f(0, 0, arms[currentnum]->length));//gets length of current arm
+        endposition = transform * endposition;
+        if (currentnum == 0) {
+            keepgoing = false;
+        }
+        currentnum--;
     }
-    return pos;
+    return endposition;
 }
 
 void updateEndpoint() {
+  //cout << joints.size() << endl;
   for (int i = 0; i < 4; i++) {
-    joints[i+1]->changePoint(getEndPos(i, angles));
+    joints[i+1]->changePoint(getEndPos(i));
   }
-  joints[3]->changePoint(getEndPos(2, angles));
+  joints[3]->changePoint(getEndPos(2));
   endpoint = joints[4]->point;
 }
 
 
 
-//Used code example from Kevin's discussion slide
+//Used pseudocode from Kevin's discussion slide
 //Returns true if reaches target. If it can't reach, it approximates
 bool update() {
+  //Vector3f actualgoal;
   if (!canReach()) {
-    //cout << "making new goal" << endl;
     goal = newgoal(goal);
+  } else {
+    goal = goal;
   }
   Vector3f dp = goal - endpoint;
   if (dp.norm() > epsilon) {
-    //cout << "calculating jacobian" << endl;
     MatrixXf J2 = getJ2();
     JacobiSVD<MatrixXf> svd2 (J2,ComputeThinU | ComputeThinV);
     VectorXf dtheta2 = svd2.solve(dp);
     updateAngles(dtheta2, angles);
     updateEndpoint();
-        //  cout << "jacobian done" << endl;
     return false;
   }
-  //cout << "close enough" << endl;
   return true;
 }
+
 
 void renderSystem();
 
@@ -257,12 +261,12 @@ void updateSystem() {
   while (!done) {
     done = update();
   }
-  canreach = false;
 }
 
 void renderSystem() {
   glPushMatrix();
   glColor3f(1.0, 1.0, 0.0);
+  //glMultMatrixf(sys)
   for (int i = 0; i < 4; i++) {
     glRotatef(angles[i * 3 + 0], -1, 0, 0);
     glRotatef(angles[i * 3 + 1], 0, -1, 0);
@@ -286,6 +290,7 @@ void renderSystem() {
   glVertex3f(goal[0], goal[1], goal[2]);
   glVertex3f(0, 0, 0);
   glEnd();
+  // cout << goal << " goal " << endl;
 
   renderPath();
 }
@@ -336,18 +341,17 @@ void myDisplay() {
   glVertex3f(0.0, 0.0, 3.0);
   glEnd();
 
-// //   /*************************
-// //   ** FINALLY DRAW THE STUFF
-// //   *************************/
-
   goal = getGoal();
 
   glColor3f(1.0,1.0,0.0);
+  // cout << "RENDER GOAL: " << goal.transpose() << endl;
 
   updateSystem();
   renderSystem();
+
   glFlush();
   glutSwapBuffers();        // swap buffers (we earlier set double buffer)
+  // glutPostRedisplay();
 }
 
 
@@ -474,6 +478,7 @@ void specialKeys(int key, int x, int y) {
 //****************************************************
 int main(int argc, char *argv[]) {
   angles << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0;
+  // TODO: create the joints with inputtable values
   Vector3f *pos0 = (new Vector3f(0, 0, 0));
   Vector3f *pos1 = (new Vector3f(0, 0, .8));
   Vector3f *pos2 = (new Vector3f(0, 0, 1.4));
@@ -536,5 +541,6 @@ int main(int argc, char *argv[]) {
 
   return 0;
 }
+
 
 
