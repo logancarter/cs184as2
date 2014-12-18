@@ -45,11 +45,11 @@ public:
 // Global Variables
 //****************************************************
 Viewport viewport;
-GLfloat zoomamount = .5;
+GLfloat zoomamount = .3;
 GLfloat horizontalshift = 0.0;
 GLfloat verticalshift = 0.0;
-GLfloat rotatehoriz = 130.0;
-GLfloat rotatevertical = -20.0;
+GLfloat rotatehoriz = 140.0;
+GLfloat rotatevertical = 70.0;
 bool wireframe = true, flat = true;
 
 GLfloat ARM_LENGTH = 5.0;
@@ -59,7 +59,7 @@ GLint STACKS = 15;
 GLfloat OFFSET = 0.6;
 Vector3f root(0, 0, 0);
 
-GLfloat epsilon = .01;
+GLfloat epsilon = .1;
 
 Joint* joints[5];
 
@@ -98,14 +98,14 @@ Vector3f getGoal() {
   GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
   GLfloat z = 0.5 * x + 0.7 * y;
-  return *(new Vector3f(x, y, z));
+  return *(new Vector3f(z, y, x));
 }
 
 Vector3f* getGoalAt(GLfloat t) {
   GLfloat x = 1.2 * cos(t) + 1.2;
   GLfloat y = sin(t);
   GLfloat z = 0.5 * x + 0.7 * y;
-  return new Vector3f(x, y, z);
+  return new Vector3f(z, y, x);
 }
 
 void initPath() {
